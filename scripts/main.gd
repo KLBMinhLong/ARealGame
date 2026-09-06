@@ -6,11 +6,13 @@ const PlayerActor = preload("res://scripts/actors/player.gd")
 const EnemyActor = preload("res://scripts/actors/enemy.gd")
 const HudView = preload("res://scripts/ui/hud.gd")
 const EnemyScene = preload("res://scenes/enemy.tscn")
+const SaveManager = preload("res://scripts/core/save_manager.gd")
 enum State { MENU, RUNNING, PAUSED, WON, LOST }
 
 @onready var player: PlayerActor = $World/Player
 @onready var enemies: Node2D = $World/Enemies
 @onready var hud: HudView = $HUD
+var save_manager: SaveManager = SaveManager.new()
 var state: State = State.MENU
 var elapsed: float = 0.0
 var spawn_remaining: float = 0.0
@@ -19,6 +21,8 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 func _ready() -> void:
 	Engine.max_fps = 60
 	rng.randomize()
+	save_manager.load_data()
+	hud.set_best_record(save_manager.best_survival_seconds, save_manager.win_count, save_manager.total_runs)
 	hud.start_requested.connect(start_run)
 	hud.resume_requested.connect(resume_run)
 	hud.menu_requested.connect(return_to_menu)
@@ -31,14 +35,21 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and state == State.RUNNING:
 		pause_run()
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause_game"):
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("pause_game") or (event is InputEventKey and event.pressed and not event.echo and (event.physical_keycode == KEY_ESCAPE or event.keycode == KEY_ESCAPE)):
+		if hud.panel_mode == "tutorial":
+			hud.show_panel(hud.previous_panel_mode)
+			get_viewport().set_input_as_handled()
+			return
 		if state == State.RUNNING:
 			pause_run()
+			get_viewport().set_input_as_handled()
 		elif state == State.PAUSED:
 			resume_run()
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("restart_game") and (state == State.WON or state == State.LOST):
+			get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("restart_game") or (event is InputEventKey and event.pressed and not event.echo and (event.physical_keycode == KEY_R or event.keycode == KEY_R)):
+		if hud.panel_mode == "tutorial":
+			return
 		start_run()
 		get_viewport().set_input_as_handled()
 
@@ -56,6 +67,7 @@ func return_to_menu() -> void:
 	_clear_enemies()
 	elapsed = 0.0
 	player.reset()
+	hud.set_best_record(save_manager.best_survival_seconds, save_manager.win_count, save_manager.total_runs)
 	hud.update_run(0.0, 0, 0.0)
 	hud.show_panel("menu")
 
@@ -124,8 +136,10 @@ func finish_run(won: bool) -> void:
 	if state != State.RUNNING:
 		return
 	state = State.WON if won else State.LOST
+	var run_stats: Dictionary = save_manager.record_run(elapsed, won)
+	hud.set_best_record(save_manager.best_survival_seconds, save_manager.win_count, save_manager.total_runs)
 	hud.update_run(elapsed, enemies.get_child_count(), player.pulse_cooldown_remaining)
-	hud.show_panel("won" if won else "lost", elapsed, enemies.get_child_count())
+	hud.show_panel("won" if won else "lost", elapsed, enemies.get_child_count(), run_stats)
 
 func _clear_enemies() -> void:
 	for enemy in enemies.get_children():

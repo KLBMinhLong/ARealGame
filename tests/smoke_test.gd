@@ -4,6 +4,7 @@ extends SceneTree
 const Config = preload("res://scripts/core/game_config.gd")
 const Game = preload("res://scripts/main.gd")
 const GameScene = preload("res://scenes/main.tscn")
+const SaveManager = preload("res://scripts/core/save_manager.gd")
 var failures: int = 0
 var checks: int = 0
 
@@ -146,6 +147,58 @@ func _run() -> void:
 	expect(game.hud.title_label.text == "How to Play", "Tutorial title is correct")
 	game.hud._on_secondary()
 	expect(game.hud.panel_mode == "menu", "Secondary button returns from tutorial to menu")
+	# SaveManager test suite (T310)
+	var test_save_path: String = "user://test_save_data.json"
+	if FileAccess.file_exists(test_save_path):
+		DirAccess.remove_absolute(test_save_path)
+	var test_sm = SaveManager.new(test_save_path)
+	expect(not test_sm.load_data(), "SaveManager returns false when file does not exist")
+	expect(test_sm.best_survival_seconds == 0.0, "Initial best survival is 0.0")
+	expect(test_sm.win_count == 0, "Initial win count is 0")
+	expect(test_sm.total_runs == 0, "Initial total runs is 0")
+
+	var res1 = test_sm.record_run(45.5, false)
+	expect(res1.is_new_best == true, "First run is recorded as new best")
+	expect(is_equal_approx(test_sm.best_survival_seconds, 45.5), "Best survival is 45.5s")
+	expect(test_sm.total_runs == 1, "Total runs is 1")
+	expect(test_sm.win_count == 0, "Win count is 0")
+
+	var reload_sm = SaveManager.new(test_save_path)
+	expect(reload_sm.load_data() == true, "SaveManager successfully loads saved file")
+	expect(is_equal_approx(reload_sm.best_survival_seconds, 45.5), "Reloaded best survival matches")
+	expect(reload_sm.total_runs == 1, "Reloaded total runs matches")
+
+	var res2 = reload_sm.record_run(30.0, false)
+	expect(res2.is_new_best == false, "Lower time is not a new best")
+	expect(is_equal_approx(reload_sm.best_survival_seconds, 45.5), "Best survival remains 45.5s")
+	expect(reload_sm.total_runs == 2, "Total runs increased to 2")
+
+	var res3 = reload_sm.record_run(180.0, true)
+	expect(res3.is_new_best == true, "Max time is new best")
+	expect(reload_sm.win_count == 1, "Win count increased to 1")
+
+	var corrupt_file = FileAccess.open(test_save_path, FileAccess.WRITE)
+	corrupt_file.store_string("{corrupted_json_syntax_without_quotes: true,")
+	corrupt_file.close()
+	var fallback_sm = SaveManager.new(test_save_path)
+	expect(not fallback_sm.load_data(), "Corrupted save data fails safely to defaults")
+	expect(fallback_sm.best_survival_seconds == 0.0, "Corrupted fallback resets best survival")
+	expect(fallback_sm.win_count == 0, "Corrupted fallback resets win count")
+
+	if FileAccess.file_exists(test_save_path):
+		DirAccess.remove_absolute(test_save_path)
+
+	game.hud.set_best_record(95.0, 2, 5)
+	expect(game.hud.best_label.text.contains("01:35"), "HUD best label shows formatted time 01:35")
+
+	# Test R restart key input
+	game.state = Game.State.LOST
+	var r_event: InputEventKey = InputEventKey.new()
+	r_event.physical_keycode = KEY_R
+	r_event.pressed = true
+	game._input(r_event)
+	expect(game.state == Game.State.RUNNING, "Pressing R restarts run into RUNNING state")
+
 	game.queue_free()
 	await process_frame
 	if failures == 0:

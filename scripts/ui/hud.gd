@@ -7,11 +7,13 @@ signal menu_requested
 signal quit_requested
 
 const Config = preload("res://scripts/core/game_config.gd")
+const SaveManager = preload("res://scripts/core/save_manager.gd")
 const INK: Color = Color("eef5fa")
 const MUTED: Color = Color("afc2d0")
 var timer_label: Label
 var health_label: Label
 var pulse_label: Label
+var best_label: Label
 var drones_label: Label
 var shade: ColorRect
 var panel: PanelContainer
@@ -24,6 +26,9 @@ var secondary_button: Button
 var quit_button: Button
 var panel_mode: String = "menu"
 var previous_panel_mode: String = "menu"
+var current_best_seconds: float = 0.0
+var current_win_count: int = 0
+var current_total_runs: int = 0
 
 func _ready() -> void:
 	var root: Control = Control.new()
@@ -33,11 +38,12 @@ func _ready() -> void:
 	add_child(root)
 	_label(root, "VONG VAY", Vector2(40, 24), Vector2(420, 34), 27, INK)
 	_label(root, "ARENA LAB  /  PLAYABLE STARTER 0.1", Vector2(41, 64), Vector2(500, 24), 14, MUTED)
-	health_label = _label(root, "HULL  3 / 3", Vector2(620, 31), Vector2(190, 30), 22, INK)
-	pulse_label = _label(root, "PULSE  READY", Vector2(620, 67), Vector2(220, 24), 14, Color("64b7ff"))
+	health_label = _label(root, "HULL  3 / 3", Vector2(590, 31), Vector2(170, 30), 22, INK)
+	pulse_label = _label(root, "PULSE  READY", Vector2(590, 67), Vector2(170, 24), 14, Color("64b7ff"))
 	timer_label = _label(root, "00:00 / 03:00", Vector2(852, 29), Vector2(260, 34), 24, INK)
 	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	drones_label = _label(root, "DRONES  00", Vector2(906, 67), Vector2(206, 24), 14, MUTED)
+	best_label = _label(root, "BEST  --:--", Vector2(764, 67), Vector2(160, 24), 14, Color("ffe5ad"))
+	drones_label = _label(root, "DRONES  00", Vector2(932, 67), Vector2(180, 24), 14, MUTED)
 	drones_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_label(root, "WASD / ARROWS   Move       SPACE   Pulse (4s CD)       ESC   Pause       R   Retry", Vector2(40, 612), Vector2(930, 26), 16, MUTED)
 	shade = ColorRect.new()
@@ -137,6 +143,16 @@ func update_run(elapsed: float, enemy_count: int, pulse_cooldown: float = 0.0) -
 			pulse_label.text = "PULSE  %.1fs" % pulse_cooldown
 			pulse_label.add_theme_color_override("font_color", MUTED)
 
+func set_best_record(best_seconds: float, wins: int = 0, runs: int = 0) -> void:
+	current_best_seconds = best_seconds
+	current_win_count = wins
+	current_total_runs = runs
+	if best_label != null:
+		if best_seconds > 0.0:
+			best_label.text = "BEST  " + SaveManager.format_seconds(best_seconds)
+		else:
+			best_label.text = "BEST  --:--"
+
 func hide_panel() -> void:
 	panel.hide()
 	shade.hide()
@@ -145,7 +161,7 @@ func hide_panel() -> void:
 	secondary_button.release_focus()
 	quit_button.release_focus()
 
-func show_panel(mode: String, elapsed: float = 0.0, enemy_count: int = 0) -> void:
+func show_panel(mode: String, elapsed: float = 0.0, enemy_count: int = 0, run_stats: Dictionary = {}) -> void:
 	panel_mode = mode
 	shade.show()
 	panel.show()
@@ -157,7 +173,10 @@ func show_panel(mode: String, elapsed: float = 0.0, enemy_count: int = 0) -> voi
 		"menu":
 			kicker_label.text = "ONE FIELD. ONE MORE TRY."
 			title_label.text = "Vong Vay"
-			body_label.text = "Dodge the drones. Survive the 3-minute gauntlet.\nWASD / Arrows to Move • SPACE to Shockwave Pulse."
+			if current_best_seconds > 0.0:
+				body_label.text = "Dodge the drones. Survive the 3-minute gauntlet.\nWASD / Arrows to Move • SPACE to Shockwave Pulse.\n\nPersonal Best: %s  •  Wins: %d  •  Runs: %d" % [SaveManager.format_seconds(current_best_seconds), current_win_count, current_total_runs]
+			else:
+				body_label.text = "Dodge the drones. Survive the 3-minute gauntlet.\nWASD / Arrows to Move • SPACE to Shockwave Pulse.\n\nNo recorded runs yet. Step into the arena!"
 			primary_button.text = "START RUN"
 			secondary_button.text = "MENU"
 		"tutorial":
@@ -176,7 +195,11 @@ func show_panel(mode: String, elapsed: float = 0.0, enemy_count: int = 0) -> voi
 		"won":
 			kicker_label.text = "ARENA CLEARED"
 			title_label.text = "Victory!"
-			body_label.text = "You survived the full 03:00 run (100%)!\nFinal Drones Evaded: %02d\n\nOutstanding evasion and pulse mastery." % enemy_count
+			var is_new: bool = run_stats.get("is_new_best", false)
+			var wins: int = int(run_stats.get("win_count", current_win_count))
+			var best_sec: float = float(run_stats.get("best_survival_seconds", current_best_seconds))
+			var new_badge: String = "★ NEW RECORD! ★\n" if is_new else ""
+			body_label.text = "%sYou survived the full 03:00 run (100%)!\nFinal Drones Evaded: %02d  •  Total Wins: %d\nBest Record: %s\n\nOutstanding evasion and pulse mastery." % [new_badge, enemy_count, wins, SaveManager.format_seconds(best_sec)]
 			primary_button.text = "PLAY AGAIN (R)"
 			secondary_button.text = "BACK TO MENU"
 		_:
@@ -186,7 +209,12 @@ func show_panel(mode: String, elapsed: float = 0.0, enemy_count: int = 0) -> voi
 			var secs: int = int(elapsed) % 60
 			var pct: float = clampf((elapsed / Config.RUN_SECONDS) * 100.0, 0.0, 100.0)
 			var tip: String = "Tip: Circle around arena edges to herd Chasers." if elapsed < 30.0 else "Tip: Watch for red laser lines — step aside before Sprinters dash!"
-			body_label.text = "Survived: %02d:%02d / 03:00 (%.0f%% completed)\nDrones Active: %02d\n\n%s" % [mins, secs, pct, enemy_count, tip]
+			var is_new: bool = run_stats.get("is_new_best", false)
+			var best_sec: float = float(run_stats.get("best_survival_seconds", current_best_seconds))
+			var runs: int = int(run_stats.get("total_runs", current_total_runs))
+			var record_header: String = "★ NEW BEST SURVIVAL RECORD! ★\n" if is_new else ""
+			var best_display: String = "Best Record: %s" % SaveManager.format_seconds(best_sec)
+			body_label.text = "%sSurvived: %02d:%02d / 03:00 (%.0f%%)\nDrones Active: %02d  •  Runs: %d  •  %s\n\n%s" % [record_header, mins, secs, pct, enemy_count, runs, best_display, tip]
 			primary_button.text = "TRY AGAIN (R)"
 			secondary_button.text = "BACK TO MENU"
 	primary_button.grab_focus()
