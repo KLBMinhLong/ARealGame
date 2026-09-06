@@ -13,6 +13,8 @@ var timer_label: Label
 var health_label: Label
 var pulse_label: Label
 var drones_label: Label
+var shade: ColorRect
+var panel: PanelContainer
 var kicker_label: Label
 var title_label: Label
 var body_label: Label
