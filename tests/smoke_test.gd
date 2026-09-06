@@ -102,6 +102,11 @@ func _run() -> void:
 	expect(sprinter.position == telegraph_pos, "Sprinter stays in place during telegraph")
 	sprinter.tick(Config.SPRINTER_TELEGRAPH_SECONDS, center)
 	expect(sprinter.sprinter_phase == sprinter.SprinterPhase.DASH, "Sprinter transitions to DASH phase")
+	# Advance dash until hitting boundary
+	sprinter.tick(2.0, center)
+	expect(sprinter.sprinter_phase == sprinter.SprinterPhase.REST, "Sprinter enters REST after reaching arena boundary")
+	# Test pulse push interrupts dash into REST
+	sprinter.sprinter_phase = sprinter.SprinterPhase.DASH
 	sprinter.push_back(center, 50.0, 0.5)
 	expect(sprinter.sprinter_phase == sprinter.SprinterPhase.REST, "Pulse push interrupts Sprinter into REST phase")
 	expect(sprinter.stun_remaining > 0.0, "Interrupted Sprinter is stunned")

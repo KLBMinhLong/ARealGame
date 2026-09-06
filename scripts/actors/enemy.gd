@@ -71,13 +71,15 @@ func _tick_sprinter(delta: float, target_position: Vector2) -> void:
 			queue_redraw()
 			if phase_timer <= 0.0:
 				sprinter_phase = SprinterPhase.DASH
-				phase_timer = Config.SPRINTER_DASH_SECONDS
+				phase_timer = Config.SPRINTER_DASH_MAX_SECONDS
 				queue_redraw()
 
 		SprinterPhase.DASH:
 			var next_pos: Vector2 = position + locked_direction * Config.SPRINTER_DASH_SPEED * delta
-			position = Config.clamp_inside(next_pos, Config.ENEMY_RADIUS)
-			if phase_timer <= 0.0:
+			var clamped_pos: Vector2 = Config.clamp_inside(next_pos, Config.ENEMY_RADIUS)
+			var hit_wall: bool = not is_equal_approx(next_pos.x, clamped_pos.x) or not is_equal_approx(next_pos.y, clamped_pos.y)
+			position = clamped_pos
+			if hit_wall or phase_timer <= 0.0:
 				sprinter_phase = SprinterPhase.REST
 				phase_timer = Config.SPRINTER_REST_SECONDS
 				queue_redraw()
@@ -108,8 +110,8 @@ func _draw() -> void:
 		draw_circle(Vector2(2.0, 0.0), 2.0, Color("4a1212"))
 
 		if sprinter_phase == SprinterPhase.TELEGRAPH and stun_remaining <= 0.0:
-			var dash_length: float = Config.SPRINTER_DASH_SPEED * Config.SPRINTER_DASH_SECONDS
+			var ray_length: float = 1200.0
 			var start_point: Vector2 = Vector2(radius + 4.0, 0.0)
-			var end_point: Vector2 = Vector2(radius + 4.0 + dash_length, 0.0)
-			draw_line(start_point, end_point, Color(1.0, 0.35, 0.25, 0.55), 1.8)
-			draw_line(end_point + Vector2(0, -6), end_point + Vector2(0, 6), Color(1.0, 0.5, 0.3, 0.65), 1.8)
+			var end_point: Vector2 = Vector2(radius + 4.0 + ray_length, 0.0)
+			draw_line(start_point, end_point, Color(1.0, 0.32, 0.25, 0.55), 2.0)
+			draw_line(start_point, end_point, Color(1.0, 0.85, 0.70, 0.30), 1.0)
