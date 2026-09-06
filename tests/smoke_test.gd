@@ -89,6 +89,23 @@ func _run() -> void:
 	expect(enemy_near.stun_remaining > 0.0, "Enemy in radius is stunned")
 	expect(is_equal_approx(enemy_far.position.x, center.x + 200.0), "Enemy outside radius is unaffected")
 	expect(enemy_far.stun_remaining == 0.0, "Enemy outside radius is not stunned")
+
+	# Sprinter enemy state machine test
+	var sprinter = EnemyScene.instantiate()
+	game.enemies.add_child(sprinter)
+	sprinter.configure(center + Vector2(100.0, 0.0), 100.0, sprinter.Type.SPRINTER)
+	expect(sprinter.sprinter_phase == sprinter.SprinterPhase.STALK, "Sprinter starts in STALK phase")
+	sprinter.tick(Config.SPRINTER_STALK_SECONDS + 0.05, center)
+	expect(sprinter.sprinter_phase == sprinter.SprinterPhase.TELEGRAPH, "Sprinter transitions to TELEGRAPH phase")
+	var telegraph_pos: Vector2 = sprinter.position
+	sprinter.tick(0.2, center + Vector2(0.0, 50.0))
+	expect(sprinter.position == telegraph_pos, "Sprinter stays in place during telegraph")
+	sprinter.tick(Config.SPRINTER_TELEGRAPH_SECONDS, center)
+	expect(sprinter.sprinter_phase == sprinter.SprinterPhase.DASH, "Sprinter transitions to DASH phase")
+	sprinter.push_back(center, 50.0, 0.5)
+	expect(sprinter.sprinter_phase == sprinter.SprinterPhase.REST, "Pulse push interrupts Sprinter into REST phase")
+	expect(sprinter.stun_remaining > 0.0, "Interrupted Sprinter is stunned")
+
 	game.start_run()
 	game.register_hit()
 	game.register_hit()

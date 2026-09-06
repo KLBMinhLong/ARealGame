@@ -107,7 +107,11 @@ func spawn_one() -> void:
 	if enemies.get_child_count() >= Config.MAX_ENEMIES:
 		return
 	var enemy: EnemyActor = EnemyScene.instantiate() as EnemyActor
-	enemy.configure(Config.choose_spawn(rng, player.position), Config.enemy_speed(elapsed))
+	var spawn_pos: Vector2 = Config.choose_spawn(rng, player.position)
+	var enemy_type: EnemyActor.Type = EnemyActor.Type.CHASER
+	if elapsed >= Config.SPRINTER_SPAWN_START_TIME and rng.randf() < Config.SPRINTER_SPAWN_CHANCE:
+		enemy_type = EnemyActor.Type.SPRINTER
+	enemy.configure(spawn_pos, Config.enemy_speed(elapsed), enemy_type)
 	enemies.add_child(enemy)
 
 func register_hit() -> void:
