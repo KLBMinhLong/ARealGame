@@ -10,24 +10,31 @@
 
 ## Việc tiếp theo
 
-Chuyển sang nhiệm vụ tiếp theo: **T300 — Art/audio direction + inventory**:
-1. Rà soát và hoàn thiện định hướng thị giác và âm thanh theo [docs/ART_AUDIO.md](file:///d:/HandMakeGame/ARealGame/docs/ART_AUDIO.md).
-2. Lập danh mục tài nguyên âm thanh cần thiết cho v1 (Pulse whoosh, Hit thud, Sprinter laser telegraph/dash, Victory/Defeat stinger).
-3. Đảm bảo nguồn gốc, giấy phép rõ ràng trong [docs/ASSET_REGISTER.md](file:///d:/HandMakeGame/ARealGame/docs/ASSET_REGISTER.md) trước khi triển khai hệ thống Audio Buses trong T330.
+Chuyển sang nhiệm vụ tiếp theo: **T330 — Âm thanh và audio buses**:
+1. Thiết lập Audio Buses trong Godot (`default_bus_layout.tres`): Master, Music, SFX với Compressor/Limiter bảo vệ chống clipping.
+2. Xây dựng module phát âm thanh `scripts/core/audio_manager.gd` quản lý phát các hiệu ứng âm thanh cốt lõi (Pulse, Hit, Telegraph, Dash, Win, Game Over).
+3. Đấu nối các sự kiện game sang `audio_manager`:
+   - Space pulse -> phát âm `sfx_pulse`.
+   - Player trúng đòn -> phát âm `sfx_hit`.
+   - Sprinter báo trước -> phát âm `sfx_telegraph`.
+   - Sprinter lao -> phát âm `sfx_dash`.
+   - Chiến thắng 03:00 -> phát âm `sfx_win`.
+   - Thua trận -> phát âm `sfx_game_over`.
+4. Đảm bảo âm lượng tuân thủ cài đặt trong Settings (Master / SFX volume) và tạm dừng/tiếp tục đúng khi Pause game.
 
 ## Cập nhật phiên
 
 ```text
 Ngày: 06/09/2026
-Task: T320 — Settings cơ bản (DONE)
-Commit gần nhất: faba3ea feat(save): implement persistent progress tracking and best records (T310)
-Thay đổi chưa commit: scripts/core/settings_manager.gd, scripts/actors/player.gd, scripts/main.gd, scripts/ui/hud.gd, tests/smoke_test.gd, docs/TASKS.md, docs/SESSION_HANDOFF.md
-Files/wiring vừa đổi: settings_manager.gd (ConfigFile user://settings.cfg, volume/fullscreen/reduced_effects, default/reset), hud.gd (SETTINGS button on menu/pause, sliders, toggles, reset, back), player.gd (reduced_effects softer shockwave), main.gd (wire settings_manager, ESC back from settings), smoke_test.gd (test settings save/reload/reset, HUD settings navigation)
-Test đã chạy và log: tools/verify_structure.py (75/75 PASS), test manual bởi chủ project: hoạt động chuẩn xác
-Test chưa chạy: Kiểm thử hướng âm thanh/tài nguyên (T300/T330)
+Task: T300 — Art/audio direction + inventory (DONE)
+Commit gần nhất: dade734 feat(settings): add persistent volume, display, and accessibility options (T320)
+Thay đổi chưa commit: docs/ART_AUDIO.md, docs/ASSET_REGISTER.md, docs/TASKS.md, docs/SESSION_HANDOFF.md
+Files/wiring vừa đổi: ART_AUDIO.md (hoàn thiện quy chuẩn hình học vector và thông số 6 SFX cốt lõi), ASSET_REGISTER.md (đăng ký 100% tài nguyên visual, UI và audio kế hoạch)
+Test đã chạy và log: tools/verify_structure.py (75/75 PASS)
+Test chưa chạy: Kiểm thử hệ thống âm thanh (T330)
 Bug còn: Không
-Quyết định đang chờ chủ project: Duyệt phương án T300 — Art/audio direction + inventory
-Task tiếp theo (chỉ một): T300 — Art/audio direction + inventory
+Quyết định đang chờ chủ project: Duyệt phương án triển khai Hệ thống Âm thanh và Audio Buses T330
+Task tiếp theo (chỉ một): T330 — Âm thanh và audio buses (Master/Music/SFX)
 ```
 
 

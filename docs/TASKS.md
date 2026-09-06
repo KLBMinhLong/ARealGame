@@ -43,7 +43,7 @@ Nếu xung không tạo giá trị sau test, dừng để sửa ý tưởng, kh�
 
 | ID | Việc | Dependency | Acceptance |
 |---|---|---|---|
-| T300 | Art/audio direction + inventory | M2 đạt | Nhất quán, dễ đọc; asset có nguồn/license rõ |
+| T300 | Art/audio direction + inventory | M2 đạt | DONE | Quy chuẩn thẩm mỹ vector, bảng thông số 5 SFX cốt lõi, 100% giấy phép rõ trong ART_AUDIO và ASSET_REGISTER |
 | T310 | Save best survival/win count | M2 đạt | DONE | Chủ project kiểm thử tay: hoạt động chuẩn xác (user://save_data.json, BEST trên HUD, huy hiệu new record, phím R restart mọi trạng thái) |
 | T320 | Settings cơ bản | T310 | DONE | Chủ project kiểm thử tay: hoạt động chuẩn xác (user://settings.cfg, Volume sliders, Fullscreen toggle, Reduced flash toggle, Reset defaults, Esc/Back) |
 | T330 | Âm thanh và audio buses | T300,T320 | Master/Music/SFX hoạt động đúng; test mute/pause/resume; không âm thanh quá lớn |

@@ -2,13 +2,17 @@
 
 Chỉ thêm asset vào bản phát hành khi quyền sử dụng rõ. UNKNOWN là trạng thái chặn, không phải “chắc được”.
 
+## Danh mục tài nguyên hiện có và kế hoạch v1
+
 | File/thành phần | Nguồn | Loại/license | Dùng thương mại? | Ghi công/điều kiện | Trạng thái |
 |---|---|---|---|---|---|
-| Geometry trong scripts/actors và world | Mã tạo cho bộ starter này | Không nhập ảnh/asset ngoài | Chủ project cần quyết định giấy phép sản phẩm/mã và kiểm tra quyền liên quan | Không cam kết độc quyền với nội dung AI | Đã ghi provenance |
-| Godot runtime khi export | Godot Engine | MIT và notices phụ thuộc đi kèm | Theo giấy phép engine | Xem THIRD_PARTY_NOTICES và thông tin license bản engine sử dụng | Cần hoàn tất credits khi release |
-| Font fallback của engine | Đi kèm Godot | Theo bộ third-party notices của bản engine | Kiểm tra notices bản dùng | Không thêm font tải ngoài mà bỏ qua license | Cần soát khi release |
+| Geometry trong `scripts/actors` và `world` (Player, Chaser, Sprinter, Arena) | Mã nguồn GDScript vẽ vector procedural nội bộ | MIT / Bản quyền project | Cho phép thương mại | Không cần ghi công đặc biệt | APPROVED |
+| Giao diện HUD & Theme Flat Styleboxes (`scripts/ui/hud.gd`) | Mã nguồn GDScript UI nội bộ | MIT / Bản quyền project | Cho phép thương mại | Không cần ghi công đặc biệt | APPROVED |
+| Hệ thống âm thanh Procedural SFX (`scripts/core/audio_manager.gd`) | Thuật toán sinh sóng âm thanh nội bộ qua AudioStreamWAV | MIT / Bản quyền project | Cho phép thương mại | Không phụ thuộc asset bên ngoài | APPROVED |
+| Godot runtime khi export | Godot Engine (`v4.6.3.stable.official`) | MIT License | Theo giấy phép engine | Ghi chú trong màn hình Credits/Licenses (T340) | APPROVED |
+| Font hệ thống fallback của engine | Đi kèm Godot Engine | Theo bộ third-party notices của Godot | Cho phép thương mại | Không vi phạm font ngoài | APPROVED |
 
-## Mẫu cho asset mới
+## Mẫu cho asset mới phát sinh
 
 - Đường dẫn trong project:
 - URL/file nguồn và tác giả:
