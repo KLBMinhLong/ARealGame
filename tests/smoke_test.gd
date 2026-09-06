@@ -5,6 +5,7 @@ const Config = preload("res://scripts/core/game_config.gd")
 const Game = preload("res://scripts/main.gd")
 const GameScene = preload("res://scenes/main.tscn")
 const SaveManager = preload("res://scripts/core/save_manager.gd")
+const SettingsManager = preload("res://scripts/core/settings_manager.gd")
 var failures: int = 0
 var checks: int = 0
 
@@ -198,6 +199,46 @@ func _run() -> void:
 	r_event.pressed = true
 	game._input(r_event)
 	expect(game.state == Game.State.RUNNING, "Pressing R restarts run into RUNNING state")
+
+	# SettingsManager test suite (T320)
+	var test_settings_path: String = "user://test_settings.cfg"
+	if FileAccess.file_exists(test_settings_path):
+		DirAccess.remove_absolute(test_settings_path)
+	var test_set: SettingsManager = SettingsManager.new(test_settings_path)
+	expect(not test_set.load_settings(), "SettingsManager loads defaults when file missing")
+	expect(is_equal_approx(test_set.master_volume, 0.8), "Default master volume is 0.8")
+	expect(is_equal_approx(test_set.sfx_volume, 0.8), "Default sfx volume is 0.8")
+	expect(test_set.fullscreen == false, "Default fullscreen is false")
+	expect(test_set.reduced_effects == false, "Default reduced_effects is false")
+
+	test_set.set_master_volume(0.5)
+	test_set.set_sfx_volume(0.6)
+	test_set.set_fullscreen(true)
+	test_set.set_reduced_effects(true)
+
+	var reload_set: SettingsManager = SettingsManager.new(test_settings_path)
+	expect(reload_set.load_settings() == true, "SettingsManager loads saved config")
+	expect(is_equal_approx(reload_set.master_volume, 0.5), "Reloaded master volume is 0.5")
+	expect(is_equal_approx(reload_set.sfx_volume, 0.6), "Reloaded sfx volume is 0.6")
+	expect(reload_set.fullscreen == true, "Reloaded fullscreen is true")
+	expect(reload_set.reduced_effects == true, "Reloaded reduced_effects is true")
+
+	reload_set.reset_to_defaults()
+	expect(is_equal_approx(reload_set.master_volume, 0.8), "Reset restored default master volume")
+	expect(reload_set.fullscreen == false, "Reset restored default fullscreen")
+
+	if FileAccess.file_exists(test_settings_path):
+		DirAccess.remove_absolute(test_settings_path)
+
+	# Test Settings panel navigation in HUD
+	game.hud._on_settings()
+	expect(game.hud.panel_mode == "settings", "HUD switches to settings panel mode")
+	expect(game.hud.settings_box.visible == true, "Settings box is visible")
+	expect(game.hud.main_box.visible == false, "Main box is hidden while settings open")
+	game.hud._on_settings_back()
+	expect(game.hud.panel_mode == "menu", "Settings back returns to previous menu mode")
+	expect(game.hud.settings_box.visible == false, "Settings box is hidden after returning")
+	expect(game.hud.main_box.visible == true, "Main box is restored")
 
 	game.queue_free()
 	await process_frame

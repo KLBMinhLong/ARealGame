@@ -8,6 +8,7 @@ signal quit_requested
 
 const Config = preload("res://scripts/core/game_config.gd")
 const SaveManager = preload("res://scripts/core/save_manager.gd")
+const SettingsManager = preload("res://scripts/core/settings_manager.gd")
 const INK: Color = Color("eef5fa")
 const MUTED: Color = Color("afc2d0")
 var timer_label: Label
@@ -17,13 +18,25 @@ var best_label: Label
 var drones_label: Label
 var shade: ColorRect
 var panel: PanelContainer
+var main_box: VBoxContainer
+var settings_box: VBoxContainer
 var kicker_label: Label
 var title_label: Label
 var body_label: Label
 var primary_button: Button
 var tutorial_button: Button
+var settings_button: Button
 var secondary_button: Button
 var quit_button: Button
+var master_label: Label
+var master_slider: HSlider
+var sfx_label: Label
+var sfx_slider: HSlider
+var fullscreen_button: Button
+var reduced_effects_button: Button
+var reset_defaults_button: Button
+var settings_back_button: Button
+var settings_manager: SettingsManager
 var panel_mode: String = "menu"
 var previous_panel_mode: String = "menu"
 var current_best_seconds: float = 0.0
@@ -51,43 +64,47 @@ func _ready() -> void:
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.add_child(shade)
 	panel = PanelContainer.new()
-	panel.position = Vector2(286, 96)
-	panel.size = Vector2(580, 456)
+	panel.position = Vector2(286, 76)
+	panel.size = Vector2(580, 480)
 	panel.add_theme_stylebox_override("panel", _style(Color("182a37"), Color("597789"), 24))
 	root.add_child(panel)
-	var box: VBoxContainer = VBoxContainer.new()
-	box.add_theme_constant_override("separation", 10)
-	panel.add_child(box)
+	main_box = VBoxContainer.new()
+	main_box.add_theme_constant_override("separation", 10)
+	panel.add_child(main_box)
 	kicker_label = Label.new()
 	kicker_label.text = "ONE FIELD. ONE MORE TRY."
 	kicker_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	kicker_label.add_theme_font_size_override("font_size", 14)
 	kicker_label.add_theme_color_override("font_color", MUTED)
-	box.add_child(kicker_label)
+	main_box.add_child(kicker_label)
 	title_label = Label.new()
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.add_theme_font_size_override("font_size", 28)
 	title_label.add_theme_color_override("font_color", INK)
-	box.add_child(title_label)
+	main_box.add_child(title_label)
 	body_label = Label.new()
 	body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body_label.custom_minimum_size = Vector2(500, 110)
+	body_label.custom_minimum_size = Vector2(500, 95)
 	body_label.add_theme_font_size_override("font_size", 15)
 	body_label.add_theme_color_override("font_color", MUTED)
-	box.add_child(body_label)
+	main_box.add_child(body_label)
 	primary_button = _button("START RUN", true)
 	primary_button.pressed.connect(_on_primary)
-	box.add_child(primary_button)
+	main_box.add_child(primary_button)
 	tutorial_button = _button("HOW TO PLAY", false)
 	tutorial_button.pressed.connect(_on_tutorial)
-	box.add_child(tutorial_button)
+	main_box.add_child(tutorial_button)
+	settings_button = _button("SETTINGS", false)
+	settings_button.pressed.connect(_on_settings)
+	main_box.add_child(settings_button)
 	secondary_button = _button("BACK TO MENU", false)
 	secondary_button.pressed.connect(_on_secondary)
-	box.add_child(secondary_button)
+	main_box.add_child(secondary_button)
 	quit_button = _button("QUIT", false)
 	quit_button.pressed.connect(func() -> void: quit_requested.emit())
-	box.add_child(quit_button)
+	main_box.add_child(quit_button)
+	_build_settings_ui()
 	show_panel("menu")
 
 func _label(parent: Control, text: String, at: Vector2, dimensions: Vector2, font_size: int, color: Color) -> Label:
@@ -158,15 +175,34 @@ func hide_panel() -> void:
 	shade.hide()
 	primary_button.release_focus()
 	tutorial_button.release_focus()
+	settings_button.release_focus()
 	secondary_button.release_focus()
 	quit_button.release_focus()
+	if settings_back_button != null:
+		settings_back_button.release_focus()
+	if fullscreen_button != null:
+		fullscreen_button.release_focus()
+	if reduced_effects_button != null:
+		reduced_effects_button.release_focus()
+	if reset_defaults_button != null:
+		reset_defaults_button.release_focus()
 
 func show_panel(mode: String, elapsed: float = 0.0, enemy_count: int = 0, run_stats: Dictionary = {}) -> void:
 	panel_mode = mode
 	shade.show()
 	panel.show()
+	if mode == "settings":
+		main_box.hide()
+		settings_box.show()
+		refresh_settings_ui()
+		settings_back_button.grab_focus()
+		return
+
+	main_box.show()
+	settings_box.hide()
 	primary_button.visible = mode != "tutorial"
 	tutorial_button.visible = mode != "tutorial"
+	settings_button.visible = mode == "menu" or mode == "paused"
 	secondary_button.visible = mode != "menu"
 	quit_button.visible = mode == "menu"
 	match mode:
@@ -229,8 +265,134 @@ func _on_tutorial() -> void:
 	previous_panel_mode = panel_mode
 	show_panel("tutorial")
 
+func _on_settings() -> void:
+	previous_panel_mode = panel_mode
+	show_panel("settings")
+
 func _on_secondary() -> void:
-	if panel_mode == "tutorial":
+	if panel_mode == "tutorial" or panel_mode == "settings":
 		show_panel(previous_panel_mode)
 	else:
 		menu_requested.emit()
+
+func _build_settings_ui() -> void:
+	settings_box = VBoxContainer.new()
+	settings_box.add_theme_constant_override("separation", 8)
+	panel.add_child(settings_box)
+	settings_box.hide()
+
+	_container_label(settings_box, "AUDIO & DISPLAY PREFERENCES", 14, MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	_container_label(settings_box, "Settings", 28, INK, HORIZONTAL_ALIGNMENT_CENTER)
+
+	var spacer1: Control = Control.new()
+	spacer1.custom_minimum_size = Vector2(0, 4)
+	settings_box.add_child(spacer1)
+
+	var master_row: HBoxContainer = HBoxContainer.new()
+	master_row.add_theme_constant_override("separation", 12)
+	settings_box.add_child(master_row)
+	master_label = _container_label(master_row, "Master Volume: 80%", 15, INK)
+	master_label.custom_minimum_size = Vector2(210, 26)
+	master_slider = HSlider.new()
+	master_slider.min_value = 0.0
+	master_slider.max_value = 100.0
+	master_slider.step = 5.0
+	master_slider.value = 80.0
+	master_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	master_slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	master_slider.value_changed.connect(_on_master_slider_changed)
+	master_row.add_child(master_slider)
+
+	var sfx_row: HBoxContainer = HBoxContainer.new()
+	sfx_row.add_theme_constant_override("separation", 12)
+	settings_box.add_child(sfx_row)
+	sfx_label = _container_label(sfx_row, "SFX Volume: 80%", 15, INK)
+	sfx_label.custom_minimum_size = Vector2(210, 26)
+	sfx_slider = HSlider.new()
+	sfx_slider.min_value = 0.0
+	sfx_slider.max_value = 100.0
+	sfx_slider.step = 5.0
+	sfx_slider.value = 80.0
+	sfx_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sfx_slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	sfx_slider.value_changed.connect(_on_sfx_slider_changed)
+	sfx_row.add_child(sfx_slider)
+
+	var spacer2: Control = Control.new()
+	spacer2.custom_minimum_size = Vector2(0, 4)
+	settings_box.add_child(spacer2)
+
+	fullscreen_button = _button("FULLSCREEN: OFF", false)
+	fullscreen_button.pressed.connect(_on_toggle_fullscreen)
+	settings_box.add_child(fullscreen_button)
+
+	reduced_effects_button = _button("REDUCED FLASH: OFF", false)
+	reduced_effects_button.pressed.connect(_on_toggle_reduced_effects)
+	settings_box.add_child(reduced_effects_button)
+
+	reset_defaults_button = _button("RESET TO DEFAULTS", false)
+	reset_defaults_button.pressed.connect(_on_reset_defaults)
+	settings_box.add_child(reset_defaults_button)
+
+	settings_back_button = _button("BACK", true)
+	settings_back_button.pressed.connect(_on_settings_back)
+	settings_box.add_child(settings_back_button)
+
+func _container_label(parent: Control, text: String, font_size: int, color: Color, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
+	var label: Label = Label.new()
+	label.text = text
+	label.horizontal_alignment = align
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	parent.add_child(label)
+	return label
+
+func configure_settings(manager: SettingsManager) -> void:
+	settings_manager = manager
+	settings_manager.settings_changed.connect(refresh_settings_ui)
+	refresh_settings_ui()
+
+func refresh_settings_ui() -> void:
+	if settings_manager == null:
+		return
+	var m_pct: int = int(roundf(settings_manager.master_volume * 100.0))
+	var s_pct: int = int(roundf(settings_manager.sfx_volume * 100.0))
+	if master_slider != null:
+		master_slider.set_value_no_signal(m_pct)
+	if master_label != null:
+		master_label.text = "Master Volume: %d%%" % m_pct
+	if sfx_slider != null:
+		sfx_slider.set_value_no_signal(s_pct)
+	if sfx_label != null:
+		sfx_label.text = "SFX Volume: %d%%" % s_pct
+	if fullscreen_button != null:
+		fullscreen_button.text = "FULLSCREEN: ON" if settings_manager.fullscreen else "FULLSCREEN: OFF"
+	if reduced_effects_button != null:
+		reduced_effects_button.text = "REDUCED FLASH: ON" if settings_manager.reduced_effects else "REDUCED FLASH: OFF"
+
+func _on_master_slider_changed(value: float) -> void:
+	if settings_manager != null:
+		settings_manager.set_master_volume(value / 100.0)
+	if master_label != null:
+		master_label.text = "Master Volume: %d%%" % int(value)
+
+func _on_sfx_slider_changed(value: float) -> void:
+	if settings_manager != null:
+		settings_manager.set_sfx_volume(value / 100.0)
+	if sfx_label != null:
+		sfx_label.text = "SFX Volume: %d%%" % int(value)
+
+func _on_toggle_fullscreen() -> void:
+	if settings_manager != null:
+		settings_manager.set_fullscreen(not settings_manager.fullscreen)
+
+func _on_toggle_reduced_effects() -> void:
+	if settings_manager != null:
+		settings_manager.set_reduced_effects(not settings_manager.reduced_effects)
+
+func _on_reset_defaults() -> void:
+	if settings_manager != null:
+		settings_manager.reset_to_defaults()
+
+func _on_settings_back() -> void:
+	show_panel(previous_panel_mode)

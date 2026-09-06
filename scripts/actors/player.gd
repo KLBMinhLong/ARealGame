@@ -12,6 +12,7 @@ var grace_remaining: float = 0.0
 var pulse_cooldown_remaining: float = 0.0
 var pulse_visual_timer: float = 0.0
 var facing: Vector2 = Vector2.UP
+var reduced_effects: bool = false
 
 func reset() -> void:
 	position = Config.PLAYFIELD.get_center()
@@ -78,5 +79,6 @@ func _draw() -> void:
 	if pulse_visual_timer > 0.0:
 		var progress: float = 1.0 - (pulse_visual_timer / PULSE_VISUAL_DURATION)
 		var shock_radius: float = lerpf(Config.PLAYER_RADIUS, Config.PULSE_RADIUS, progress)
-		var shock_alpha: float = (1.0 - progress) * 0.55
+		var base_alpha: float = 0.28 if reduced_effects else 0.55
+		var shock_alpha: float = (1.0 - progress) * base_alpha
 		draw_arc(Vector2.ZERO, shock_radius, 0.0, TAU, 48, Color(0.39, 0.72, 1.0, shock_alpha), 2.0, true)

@@ -45,7 +45,7 @@ Nếu xung không tạo giá trị sau test, dừng để sửa ý tưởng, kh�
 |---|---|---|---|
 | T300 | Art/audio direction + inventory | M2 đạt | Nhất quán, dễ đọc; asset có nguồn/license rõ |
 | T310 | Save best survival/win count | M2 đạt | DONE | Chủ project kiểm thử tay: hoạt động chuẩn xác (user://save_data.json, BEST trên HUD, huy hiệu new record, phím R restart mọi trạng thái) |
-| T320 | Settings cơ bản | T310 | Volume/fullscreen/reduced effects giữ qua restart; có default/reset |
+| T320 | Settings cơ bản | T310 | DONE | Chủ project kiểm thử tay: hoạt động chuẩn xác (user://settings.cfg, Volume sliders, Fullscreen toggle, Reduced flash toggle, Reset defaults, Esc/Back) |
 | T330 | Âm thanh và audio buses | T300,T320 | Master/Music/SFX hoạt động đúng; test mute/pause/resume; không âm thanh quá lớn |
 | T340 | Credits + license trong game | T300 | Tài nguyên thực dùng khớp register; ghi nhận engine/dependencies đúng |
 | T350 | Cân bằng đủ lượt 180 giây | M3 còn lại | Test đầu/giữa/cuối; không spawn unfair; không dễ thắng vì exploit rõ ràng |

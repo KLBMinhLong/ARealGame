@@ -10,29 +10,24 @@
 
 ## Việc tiếp theo
 
-Chuyển sang nhiệm vụ tiếp theo trong Milestone M3: **T320 — Settings cơ bản**:
-1. Tạo module quản lý cấu hình người dùng `scripts/core/settings_manager.gd` lưu trữ tại `user://settings.cfg` (sử dụng ConfigFile an toàn).
-2. Lưu các thiết lập:
-   - `master_volume`: 0.0 - 1.0 (mặc định 0.8).
-   - `sfx_volume`: 0.0 - 1.0 (mặc định 0.8).
-   - `fullscreen`: bool (mặc định false).
-   - `reduced_effects`: bool (mặc định false - giảm bớt hiệu ứng lóe sáng).
-3. Hỗ trợ nút `Reset to Default`.
-4. Giao diện modal `SETTINGS` trong HUD có thể mở từ Menu chính và màn hình Pause.
+Chuyển sang nhiệm vụ tiếp theo: **T300 — Art/audio direction + inventory**:
+1. Rà soát và hoàn thiện định hướng thị giác và âm thanh theo [docs/ART_AUDIO.md](file:///d:/HandMakeGame/ARealGame/docs/ART_AUDIO.md).
+2. Lập danh mục tài nguyên âm thanh cần thiết cho v1 (Pulse whoosh, Hit thud, Sprinter laser telegraph/dash, Victory/Defeat stinger).
+3. Đảm bảo nguồn gốc, giấy phép rõ ràng trong [docs/ASSET_REGISTER.md](file:///d:/HandMakeGame/ARealGame/docs/ASSET_REGISTER.md) trước khi triển khai hệ thống Audio Buses trong T330.
 
 ## Cập nhật phiên
 
 ```text
 Ngày: 06/09/2026
-Task: T310 — Save best survival/win count (DONE)
-Commit gần nhất: ee63425 docs: mark T240 tutorial and results screen as verified and DONE
-Thay đổi chưa commit: scripts/core/save_manager.gd, scripts/main.gd, scripts/ui/hud.gd, tests/smoke_test.gd, docs/TASKS.md, docs/SESSION_HANDOFF.md
-Files/wiring vừa đổi: save_manager.gd (JSON user://save_data.json, schema_version 1, safe parsing & fallback), main.gd (load on ready, record_run on finish_run, _input R restart), hud.gd (BEST label, runs display, run stats on menu/won/lost), smoke_test.gd (test defaults, record_run, reload, corrupt fallback, R input)
-Test đã chạy và log: tools/verify_structure.py (72/72 PASS), test manual bởi chủ project: hoạt động chuẩn xác
-Test chưa chạy: Kiểm thử Settings (T320)
+Task: T320 — Settings cơ bản (DONE)
+Commit gần nhất: faba3ea feat(save): implement persistent progress tracking and best records (T310)
+Thay đổi chưa commit: scripts/core/settings_manager.gd, scripts/actors/player.gd, scripts/main.gd, scripts/ui/hud.gd, tests/smoke_test.gd, docs/TASKS.md, docs/SESSION_HANDOFF.md
+Files/wiring vừa đổi: settings_manager.gd (ConfigFile user://settings.cfg, volume/fullscreen/reduced_effects, default/reset), hud.gd (SETTINGS button on menu/pause, sliders, toggles, reset, back), player.gd (reduced_effects softer shockwave), main.gd (wire settings_manager, ESC back from settings), smoke_test.gd (test settings save/reload/reset, HUD settings navigation)
+Test đã chạy và log: tools/verify_structure.py (75/75 PASS), test manual bởi chủ project: hoạt động chuẩn xác
+Test chưa chạy: Kiểm thử hướng âm thanh/tài nguyên (T300/T330)
 Bug còn: Không
-Quyết định đang chờ chủ project: Duyệt phương án triển khai Cài đặt cơ bản T320
-Task tiếp theo (chỉ một): T320 — Settings cơ bản (Volume, Fullscreen, Reduced effects)
+Quyết định đang chờ chủ project: Duyệt phương án T300 — Art/audio direction + inventory
+Task tiếp theo (chỉ một): T300 — Art/audio direction + inventory
 ```
 
 

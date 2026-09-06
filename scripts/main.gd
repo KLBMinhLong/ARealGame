@@ -7,12 +7,14 @@ const EnemyActor = preload("res://scripts/actors/enemy.gd")
 const HudView = preload("res://scripts/ui/hud.gd")
 const EnemyScene = preload("res://scenes/enemy.tscn")
 const SaveManager = preload("res://scripts/core/save_manager.gd")
+const SettingsManager = preload("res://scripts/core/settings_manager.gd")
 enum State { MENU, RUNNING, PAUSED, WON, LOST }
 
 @onready var player: PlayerActor = $World/Player
 @onready var enemies: Node2D = $World/Enemies
 @onready var hud: HudView = $HUD
 var save_manager: SaveManager = SaveManager.new()
+var settings_manager: SettingsManager = SettingsManager.new()
 var state: State = State.MENU
 var elapsed: float = 0.0
 var spawn_remaining: float = 0.0
@@ -22,6 +24,10 @@ func _ready() -> void:
 	Engine.max_fps = 60
 	rng.randomize()
 	save_manager.load_data()
+	settings_manager.load_settings()
+	settings_manager.settings_changed.connect(_on_settings_changed)
+	hud.configure_settings(settings_manager)
+	_on_settings_changed()
 	hud.set_best_record(save_manager.best_survival_seconds, save_manager.win_count, save_manager.total_runs)
 	hud.start_requested.connect(start_run)
 	hud.resume_requested.connect(resume_run)
@@ -37,7 +43,7 @@ func _notification(what: int) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause_game") or (event is InputEventKey and event.pressed and not event.echo and (event.physical_keycode == KEY_ESCAPE or event.keycode == KEY_ESCAPE)):
-		if hud.panel_mode == "tutorial":
+		if hud.panel_mode == "tutorial" or hud.panel_mode == "settings":
 			hud.show_panel(hud.previous_panel_mode)
 			get_viewport().set_input_as_handled()
 			return
@@ -48,10 +54,14 @@ func _input(event: InputEvent) -> void:
 			resume_run()
 			get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("restart_game") or (event is InputEventKey and event.pressed and not event.echo and (event.physical_keycode == KEY_R or event.keycode == KEY_R)):
-		if hud.panel_mode == "tutorial":
+		if hud.panel_mode == "tutorial" or hud.panel_mode == "settings":
 			return
 		start_run()
 		get_viewport().set_input_as_handled()
+
+func _on_settings_changed() -> void:
+	if player != null:
+		player.reduced_effects = settings_manager.reduced_effects
 
 func start_run() -> void:
 	_clear_enemies()
