@@ -36,7 +36,15 @@ func _run() -> void:
 		if input_event is InputEventKey:
 			space_found = space_found or input_event.physical_keycode == KEY_SPACE
 	expect(space_found, "Correct Space key mapped: pulse")
+	var test_smoke_save_path: String = "user://test_smoke_save_data.json"
+	var test_smoke_settings_path: String = "user://test_smoke_settings.cfg"
+	if FileAccess.file_exists(test_smoke_save_path):
+		DirAccess.remove_absolute(test_smoke_save_path)
+	if FileAccess.file_exists(test_smoke_settings_path):
+		DirAccess.remove_absolute(test_smoke_settings_path)
 	var game: Game = GameScene.instantiate() as Game
+	game.custom_save_path = test_smoke_save_path
+	game.custom_settings_path = test_smoke_settings_path
 	root.add_child(game)
 	await process_frame
 	game.set_physics_process(false)
@@ -299,8 +307,16 @@ func _run() -> void:
 	expect(game.state == Game.State.WON, "Reaching 180.0s triggers victory state (WON)")
 	expect(game.hud.panel_mode == "won", "HUD displays victory panel mode")
 	expect(game.hud.title_label.text == "Victory!", "HUD displays Victory title")
+	# Verify that test data was isolated to test_smoke_save_path and not user://save_data.json (R01)
+	expect(game.save_manager.save_path == test_smoke_save_path, "Game save manager path is isolated")
+	expect(game.settings_manager.settings_path == test_smoke_settings_path, "Game settings manager path is isolated")
+	expect(FileAccess.file_exists(test_smoke_save_path), "Smoke test recorded to isolated test save path")
 
 	game.queue_free()
+	if FileAccess.file_exists(test_smoke_save_path):
+		DirAccess.remove_absolute(test_smoke_save_path)
+	if FileAccess.file_exists(test_smoke_settings_path):
+		DirAccess.remove_absolute(test_smoke_settings_path)
 	await process_frame
 	if failures == 0:
 		print("ALL_TESTS_PASSED: %d checks" % checks)

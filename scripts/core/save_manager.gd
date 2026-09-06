@@ -49,13 +49,14 @@ func load_data() -> bool:
 		reset_to_defaults()
 		return false
 
-	var parsed: Variant = JSON.parse_string(content)
-	if not (parsed is Dictionary):
+	var json: JSON = JSON.new()
+	var parse_result: Error = json.parse(content)
+	if parse_result != OK or not (json.data is Dictionary):
 		push_warning("SaveManager: Corrupted save data (not a JSON dictionary), falling back to defaults.")
 		reset_to_defaults()
 		return false
 
-	var dict: Dictionary = parsed as Dictionary
+	var dict: Dictionary = json.data as Dictionary
 	schema_version = int(dict.get("schema_version", CURRENT_SCHEMA_VERSION))
 	var raw_best = dict.get("best_survival_seconds", 0.0)
 	if raw_best is float or raw_best is int:

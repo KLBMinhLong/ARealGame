@@ -14,8 +14,10 @@ enum State { MENU, RUNNING, PAUSED, WON, LOST }
 @onready var player: PlayerActor = $World/Player
 @onready var enemies: Node2D = $World/Enemies
 @onready var hud: HudView = $HUD
-var save_manager: SaveManager = SaveManager.new()
-var settings_manager: SettingsManager = SettingsManager.new()
+var save_manager: SaveManager
+var settings_manager: SettingsManager
+var custom_save_path: String = ""
+var custom_settings_path: String = ""
 var audio_manager: AudioManager = AudioManager.new()
 var state: State = State.MENU
 var elapsed: float = 0.0
@@ -25,6 +27,10 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 func _ready() -> void:
 	Engine.max_fps = 60
 	rng.randomize()
+	if save_manager == null:
+		save_manager = SaveManager.new(custom_save_path)
+	if settings_manager == null:
+		settings_manager = SettingsManager.new(custom_settings_path)
 	add_child(audio_manager)
 	save_manager.load_data()
 	settings_manager.load_settings()

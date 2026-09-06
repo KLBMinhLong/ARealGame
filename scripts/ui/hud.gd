@@ -260,7 +260,7 @@ func show_panel(mode: String, elapsed: float = 0.0, enemy_count: int = 0, run_st
 			var wins: int = int(run_stats.get("win_count", current_win_count))
 			var best_sec: float = float(run_stats.get("best_survival_seconds", current_best_seconds))
 			var new_badge: String = "★ NEW RECORD! ★\n" if is_new else ""
-			body_label.text = "%sYou survived the full 03:00 run (100%)!\nFinal Drones Evaded: %02d  •  Total Wins: %d\nBest Record: %s\n\nOutstanding evasion and pulse mastery." % [new_badge, enemy_count, wins, SaveManager.format_seconds(best_sec)]
+			body_label.text = "%sYou survived the full 03:00 run (100%%)!\nFinal Drones Evaded: %02d  •  Total Wins: %d\nBest Record: %s\n\nOutstanding evasion and pulse mastery." % [new_badge, enemy_count, wins, SaveManager.format_seconds(best_sec)]
 			primary_button.text = "PLAY AGAIN (R)"
 			secondary_button.text = "BACK TO MENU"
 		_:

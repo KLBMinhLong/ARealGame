@@ -68,17 +68,37 @@ Nếu xung không tạo giá trị sau test, dừng để sửa ý tưởng, kh�
 | T520 | Soát giấy phép và chính sách nền tảng | T510 | Không mục UNKNOWN trong asset thực dùng; điều khoản/khai báo AI đã kiểm tra |
 | T530 | Chủ project duyệt build và bấm phát hành | T520 | Có phê duyệt riêng, kế hoạch hỗ trợ/rollback, không AI tự thanh toán/upload |
 
+
+## Giai đoạn 2: Phát triển thương mại dài hạn (Lộ trình Cổng chất lượng G0–G6)
+
+*Theo đánh giá và định hướng phát triển sản phẩm thương mại dài hạn (GEMINI_REVIEW_AND_IMPROVEMENT_PLAN.md).*
+
+| Cổng | ID | Nhiệm vụ chính | Trạng thái | Điều kiện nghiệm thu / Kết quả |
+|---|---|---|---|---|
+| G0 | G0-R01 | Cô lập hoàn toàn đường dẫn save & settings của test tự động | DONE | Đã inject custom path; SHA256 file save/settings thật nguyên vẹn qua 133 automated checks; JSON parser an toàn không sinh engine error log |
+| G0 | G0-AUD | Ghi nhận và đối chiếu kỹ thuật R02–R06 | DONE | Xác minh trực tiếp trên source: R02 (trần 64 quái), R03 (tia laser 1200px), R04 (pháp lý bản quyền), R05 (ghi atomic), R06 (phân biệt pass test và trải nghiệm game) |
+| G1 | G1-SPEC | Chốt sản phẩm: Core Loop, Art & Animation Target, Audio Target | IN_PROGRESS | Đề xuất giải pháp lối chơi giữ chân người chơi (Lõi Từ), mỹ thuật nhân vật và phong cách nhạc nền |
+| G2 | G2-SLICE | Sản xuất Vertical Slice 60–90 giây hoàn thiện mỹ thuật & âm thanh | TODO | 1 phòng + 1 robot riêng có animation + 2 quái có sprite/telegraph rõ + 1 cơ chế lõi tương tác + 1 nhạc nền loop + SFX mix |
+| G3 | G3-TEST | Playtest bên ngoài & Đánh giá độ cuốn / giữ chân | TODO | Người chơi trải nghiệm độc lập; đo lường độ hiểu cơ chế và mong muốn chơi lại thật sự |
+| G4 | G4-EXPAND| Mở rộng nội dung có kiểm soát | TODO | Bổ sung nội dung v1 dựa trên dữ liệu slice G2/G3; hoàn thiện nâng cấp, save/settings/accessibility |
+| G5 | G5-RC | Release Candidate & Benchmark máy thật | TODO | Regression 100%, đo hiệu năng thực tế trên i5/8GB/Iris Xe, xuất bản Windows sạch, rà soát bản quyền |
+| G6 | G6-COMM | Chuẩn bị thương mại & phát hành | TODO | Store page, demo/trailer từ build thật, chính sách nền tảng; chủ project trực tiếp duyệt phát hành |
+
 ## Mẫu cập nhật cho mỗi task
 
 ```text
-Task ID:
-Trạng thái:
-Mục tiêu đã duyệt:
-Files + wiring:
+Task ID: G0-R01
+Trạng thái: DONE (TECHNICALLY_VERIFIED)
+Mục tiêu đã duyệt: Cô lập hoàn toàn smoke test không can thiệp save và settings thật của người chơi
+Files + wiring: scripts/main.gd, scripts/ui/hud.gd, scripts/core/save_manager.gd, tests/smoke_test.gd
 Lệnh/test thật:
-Kết quả + đường dẫn log:
-Test tay bởi chủ project:
-Bug còn lại:
-Commit:
-Task tiếp theo:
+- tools/verify.ps1 -GodotExe "D:\InstallProgram\Gotdot\Godot_v4.6.3-stable_win64.exe" (133/133 checks PASS, exit code 0)
+- python tools/verify_structure.py (77/77 checks PASS, exit code 0)
+- Kiểm tra SHA256 file save_data.json thật: khớp 100% trước và sau test (E0E63222...AB2398)
+- Kiểm tra SHA256 file settings.cfg thật: khớp 100% trước và sau test (CCD25F65...061E3)
+Kết quả + đường dẫn log: logs/smoke-test.log, logs/main-startup.log
+Test tay bởi chủ project: Cần F5 vào game để xác nhận run count, win count và best record hiển thị đúng dữ liệu chơi thật
+Bug còn lại: Không có bug blocker trong R01. Đã ghi nhận các điểm R02-R06 để xử lý theo lộ trình.
+Commit: fix(test): isolate smoke test save and settings paths (R01)
+Task tiếp theo: G1-SPEC — Chốt đặc tả sản phẩm (Core Loop, Art Direction, Audio Direction)
 ```
