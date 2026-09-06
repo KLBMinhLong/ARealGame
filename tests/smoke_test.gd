@@ -276,6 +276,30 @@ func _run() -> void:
 	expect(true, "Audio playback executes safely across all cues")
 	am.queue_free()
 
+	# 180-Second Balance and Progression test suite (T350)
+	expect(is_equal_approx(Config.difficulty_progress(0.0), 0.0), "Progression at 0s is 0%")
+	expect(is_equal_approx(Config.difficulty_progress(90.0), 0.5), "Progression at 90s is 50%")
+	expect(is_equal_approx(Config.difficulty_progress(180.0), 1.0), "Progression at 180s is 100%")
+	expect(is_equal_approx(Config.difficulty_progress(200.0), 1.0), "Progression past 180s is clamped at 100%")
+	expect(is_equal_approx(Config.spawn_interval(0.0), 1.35), "Initial spawn interval is 1.35s")
+	expect(is_equal_approx(Config.spawn_interval(90.0), 0.915), "Mid-run spawn interval is 0.915s")
+	expect(is_equal_approx(Config.spawn_interval(180.0), 0.48), "Late-run spawn interval is 0.48s")
+	expect(is_equal_approx(Config.enemy_speed(0.0), 72.0), "Initial enemy speed is 72 px/s")
+	expect(is_equal_approx(Config.enemy_speed(90.0), 95.0), "Mid-run enemy speed is 95 px/s")
+	expect(is_equal_approx(Config.enemy_speed(180.0), 118.0), "Late-run enemy speed is 118 px/s")
+	expect(Config.ENEMY_SPEED_END < Config.PLAYER_SPEED * 0.5, "Max chaser speed (118) is under 50% player speed (270)")
+	expect(Config.MIN_SPAWN_DISTANCE >= 200.0, "Min spawn distance ensures no instant hit upon spawning")
+	expect(Config.SPRINTER_SPAWN_START_TIME == 30.0, "Sprinter spawns only after 30s warmup")
+	expect(Config.SPRINTER_TELEGRAPH_SECONDS >= 0.5, "Sprinter telegraph warning allows sufficient reaction time")
+
+	# Simulate 180-second run victory trigger
+	game.start_run()
+	game.elapsed = 179.95
+	game._physics_process(0.1)
+	expect(game.state == Game.State.WON, "Reaching 180.0s triggers victory state (WON)")
+	expect(game.hud.panel_mode == "won", "HUD displays victory panel mode")
+	expect(game.hud.title_label.text == "Victory!", "HUD displays Victory title")
+
 	game.queue_free()
 	await process_frame
 	if failures == 0:

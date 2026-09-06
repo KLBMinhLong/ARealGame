@@ -48,7 +48,7 @@ Nếu xung không tạo giá trị sau test, dừng để sửa ý tưởng, kh�
 | T320 | Settings cơ bản | T310 | DONE | Chủ project kiểm thử tay: hoạt động chuẩn xác (user://settings.cfg, Volume sliders, Fullscreen toggle, Reduced flash toggle, Reset defaults, Esc/Back) |
 | T330 | Âm thanh và audio buses | T300,T320 | DONE | Chủ project kiểm thử tay: hoạt động chuẩn xác (default_bus_layout.tres, synth 16-bit PCM: pulse, hit, telegraph, dash, win, game_over; Master limiter chống rè, mute/slider đúng) |
 | T340 | Credits + license trong game | T300 | DONE | Chủ project kiểm thử tay: hoạt động chuẩn xác (credits_button, scroll modal 4 mục pháp lý khớp register 100%, Esc/Back mượt, chặn R) |
-| T350 | Cân bằng đủ lượt 180 giây | M3 còn lại | Test đầu/giữa/cuối; không spawn unfair; không dễ thắng vì exploit rõ ràng |
+| T350 | Cân bằng đủ lượt 180 giây | M3 còn lại | DONE | Chủ project kiểm thử tay: hoạt động mượt mà, cân bằng chuẩn xác (test mô phỏng 0s/90s/180s, pacing tăng tiến tốt, win condition chuẩn) |
 
 ## M4 — release candidate
 
