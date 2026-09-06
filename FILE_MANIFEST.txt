@@ -1,0 +1,81 @@
+VONG VAY - AI STARTER / GODOT 4.6.3
+Exact user-reported engine: v4.6.3.stable.official [7d41c59c4]
+Start with START_HERE.html or START_HERE.md.
+This is source + docs, not a completed commercial game or executable.
+Total files including this manifest and checksums: 55
+
+vong-vay-ai-starter/
+├── .agents/
+│   └── rules/
+│       └── 00-project.md
+├── assets/
+│   ├── art/
+│   │   └── .gitkeep
+│   ├── audio/
+│   │   └── .gitkeep
+│   └── fonts/
+│       └── .gitkeep
+├── builds/
+│   └── .gitkeep
+├── docs/
+│   ├── qa/
+│   │   └── static-check.txt
+│   ├── AI_WORKFLOW.md
+│   ├── ART_AUDIO.md
+│   ├── ASSET_REGISTER.md
+│   ├── BUG_REPORT_TEMPLATE.md
+│   ├── DECISIONS.md
+│   ├── GAME_BRIEF.md
+│   ├── MARKET_VALIDATION.md
+│   ├── QA_REPORT.md
+│   ├── RELEASE_CHECKLIST.md
+│   ├── SESSION_HANDOFF.md
+│   ├── SOURCES.md
+│   ├── TASKS.md
+│   ├── TECH_SPEC.md
+│   └── TEST_PLAN.md
+├── logs/
+│   └── .gitkeep
+├── prompts/
+│   ├── 00_BOOTSTRAP.md
+│   ├── 01_NEXT_TASK.md
+│   ├── 02_IMPLEMENT_APPROVED_TASK.md
+│   ├── 03_FIX_BUG.md
+│   ├── 04_REVIEW_DIFF.md
+│   ├── 05_PLAYTEST_AND_POLISH.md
+│   ├── 06_EXPORT_CANDIDATE.md
+│   └── 07_END_SESSION.md
+├── scenes/
+│   ├── enemy.tscn
+│   ├── main.tscn
+│   └── player.tscn
+├── scripts/
+│   ├── actors/
+│   │   ├── enemy.gd
+│   │   └── player.gd
+│   ├── core/
+│   │   └── game_config.gd
+│   ├── ui/
+│   │   └── hud.gd
+│   ├── world/
+│   │   └── arena.gd
+│   └── main.gd
+├── tests/
+│   └── smoke_test.gd
+├── tools/
+│   ├── verify.ps1
+│   └── verify_structure.py
+├── .editorconfig
+├── .gitattributes
+├── .gitignore
+├── AGENT_RULES.md
+├── CHANGELOG.md
+├── ENGINE_VERSION.txt
+├── export_presets.cfg
+├── FILE_MANIFEST.txt
+├── project.godot
+├── README.md
+├── SHA256SUMS.txt
+├── START_HERE.html
+├── START_HERE.md
+└── THIRD_PARTY_NOTICES.md

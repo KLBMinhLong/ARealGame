@@ -1,0 +1,69 @@
+PASS: Required file: project.godot
+PASS: Required file: ENGINE_VERSION.txt
+PASS: Required file: README.md
+PASS: Required file: START_HERE.md
+PASS: Required file: AGENT_RULES.md
+PASS: Required file: docs/GAME_BRIEF.md
+PASS: Required file: docs/TECH_SPEC.md
+PASS: Required file: docs/TASKS.md
+PASS: Required file: docs/TEST_PLAN.md
+PASS: Required file: docs/RELEASE_CHECKLIST.md
+PASS: Required file: docs/QA_REPORT.md
+PASS: Required file: prompts/00_BOOTSTRAP.md
+PASS: Required file: .agents/rules/00-project.md
+PASS: Required file: scenes/main.tscn
+PASS: Required file: scenes/player.tscn
+PASS: Required file: scenes/enemy.tscn
+PASS: Required file: tests/smoke_test.gd
+PASS: Required file: tools/verify.ps1
+PASS: Required file: export_presets.cfg
+PASS: project.godot references res://scenes/main.tscn
+PASS: scenes/enemy.tscn references res://scripts/actors/enemy.gd
+PASS: Scene resource IDs: scenes/enemy.tscn
+PASS: scenes/main.tscn references res://scenes/player.tscn
+PASS: scenes/main.tscn references res://scripts/main.gd
+PASS: scenes/main.tscn references res://scripts/ui/hud.gd
+PASS: scenes/main.tscn references res://scripts/world/arena.gd
+PASS: Scene resource IDs: scenes/main.tscn
+PASS: scenes/player.tscn references res://scripts/actors/player.gd
+PASS: Scene resource IDs: scenes/player.tscn
+PASS: scripts/actors/enemy.gd references res://scripts/core/game_config.gd
+PASS: scripts/actors/player.gd references res://scripts/core/game_config.gd
+PASS: scripts/main.gd references res://scenes/enemy.tscn
+PASS: scripts/main.gd references res://scripts/actors/enemy.gd
+PASS: scripts/main.gd references res://scripts/actors/player.gd
+PASS: scripts/main.gd references res://scripts/core/game_config.gd
+PASS: scripts/main.gd references res://scripts/ui/hud.gd
+PASS: scripts/ui/hud.gd references res://scripts/core/game_config.gd
+PASS: scripts/world/arena.gd references res://scripts/core/game_config.gd
+PASS: tests/smoke_test.gd references res://scenes/main.tscn
+PASS: tests/smoke_test.gd references res://scripts/core/game_config.gd
+PASS: tests/smoke_test.gd references res://scripts/main.gd
+PASS: Compatibility renderer configured
+PASS: Main scene configured
+PASS: Input action configured: move_left
+PASS: Input action configured: move_right
+PASS: Input action configured: move_up
+PASS: Input action configured: move_down
+PASS: Input action configured: pause_game
+PASS: Input action configured: restart_game
+PASS: User-reported exact version recorded
+PASS: Antigravity rule length: 00-project.md
+PASS: Markdown link in README.md: docs/QA_REPORT.md
+PASS: Markdown link in README.md: START_HERE.md
+PASS: Markdown link in README.md: docs/TASKS.md
+PASS: Markdown link in README.md: prompts/00_BOOTSTRAP.md
+PASS: Markdown link in README.md: START_HERE.md
+PASS: Markdown link in README.md: AGENT_RULES.md
+PASS: Markdown link in README.md: docs/GAME_BRIEF.md
+PASS: Markdown link in README.md: docs/TECH_SPEC.md
+PASS: Markdown link in README.md: docs/TASKS.md
+PASS: Markdown link in README.md: docs/TEST_PLAN.md
+PASS: Markdown link in README.md: docs/AI_WORKFLOW.md
+PASS: Markdown link in README.md: docs/ART_AUDIO.md
+PASS: Markdown link in README.md: docs/MARKET_VALIDATION.md
+PASS: Markdown link in README.md: docs/RELEASE_CHECKLIST.md
+PASS: Markdown link in README.md: docs/QA_REPORT.md
+
+STATIC_RESULT: 66/66 checks passed
+Static checks do not compile GDScript, run the game, validate engine APIs, or benchmark hardware.

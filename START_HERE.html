@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Bắt đầu · Vòng Vây AI Starter</title>
+<style>
+:root{--bg:#fff;--ink:#2c2c2b;--muted:#67645f;--surface:#f9f8f7;--border:#e6e5e3;--blue:#196dab;--blue-soft:#e5f2fc;--warn:#77420e;--warn-bg:#fbebde;--code:#f0efed}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.65;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}a{color:var(--blue);text-underline-offset:3px}a:focus-visible,button:focus-visible,summary:focus-visible,textarea:focus-visible{outline:3px solid var(--blue);outline-offset:4px}header,main,footer{max-width:1080px;margin:auto;padding:0 32px}header{padding-top:40px;padding-bottom:32px}.brand{font-size:14px;letter-spacing:.12em;font-weight:700;color:var(--muted)}.eyebrow{font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-top:32px;font-weight:700}h1{font-size:44px;line-height:1.14;letter-spacing:-.035em;margin:12px 0 16px;max-width:780px}h2{font-size:26px;line-height:1.3;letter-spacing:-.02em;margin:0 0 12px}h3{font-size:19px;line-height:1.4;margin:0 0 8px}p{margin:0 0 16px}.lede{max-width:730px;font-size:18px;color:var(--muted)}.meta{display:flex;gap:24px;flex-wrap:wrap;padding:20px 0 0;margin-top:20px;border-top:1px solid var(--border);font-size:14px;color:var(--muted)}.meta b{display:block;color:var(--ink);font-size:16px}.notice{background:var(--warn-bg);color:var(--warn);border-left:3px solid #d5803b;padding:16px 20px;border-radius:0 8px 8px 0;margin:0 0 28px;font-size:15px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}.card{border:1px solid var(--border);border-radius:8px;padding:24px;background:var(--surface);min-width:0}.number{font-size:14px;font-weight:700;color:var(--blue);margin-bottom:20px}.card p{font-size:15px;color:var(--muted);margin:0}.section{padding:32px 0;border-top:1px solid var(--border)}.section-intro{max-width:720px;color:var(--muted)}.rows{border:1px solid var(--border);border-radius:8px;overflow:hidden}.row{display:grid;grid-template-columns:230px 1fr;gap:24px;padding:16px 20px;border-bottom:1px solid var(--border);align-items:start}.row:last-child{border:0}.row div:last-child{color:var(--muted)}code{font:14px/1.55 Consolas,"Liberation Mono",monospace;background:var(--code);padding:2px 5px;border-radius:4px;overflow-wrap:anywhere}pre{font-size:14px;line-height:1.6;background:var(--code);padding:20px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%;margin:16px 0}pre code{background:none;padding:0}details{border:1px solid var(--border);border-radius:8px;margin:12px 0;padding:0 20px}summary{cursor:pointer;font-weight:650;padding:18px 0;min-height:56px}details>div{padding:0 0 20px;max-width:760px}ol,ul{padding-left:24px;margin:12px 0}li{margin:8px 0}.toolbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:16px 0}button,.primary-link{font-family:inherit;font-size:15px;font-weight:600;line-height:1.4;border:1px solid var(--blue);border-radius:8px;background:var(--blue);color:#fff;min-height:44px;padding:11px 18px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}button:hover,.primary-link:hover{filter:brightness(.93)}textarea{display:block;width:100%;min-height:310px;resize:vertical;padding:20px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--ink);font:14px/1.65 Consolas,"Liberation Mono",monospace}#copy-status{font-size:14px;color:var(--muted)}.roadmap{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.roadmap article{border-left:2px solid var(--border);padding-left:16px}.roadmap b{display:block;color:var(--blue);font-size:14px;margin-bottom:4px}.roadmap p{color:var(--muted);font-size:15px}.note{color:var(--muted);font-size:14px}.sources{display:flex;flex-wrap:wrap;gap:16px;font-size:14px}footer{padding-top:28px;padding-bottom:40px;border-top:1px solid var(--border);color:var(--muted);font-size:14px}section{scroll-margin-top:24px}@media(prefers-color-scheme:dark){:root{--bg:#191919;--ink:#fff;--muted:#b8b5b0;--surface:#202020;--border:#444;--blue:#8ac6f7;--blue-soft:#20303c;--warn:#f1c59e;--warn-bg:#32271d;--code:#292929}button,.primary-link{color:#13212c}}@media(max-width:720px){header,main,footer{padding-left:20px;padding-right:20px}header{padding-top:24px}h1{font-size:34px}.eyebrow{margin-top:24px}.grid,.roadmap{grid-template-columns:1fr}.grid{gap:12px}.card{padding:20px}.number{margin-bottom:10px}.meta{gap:16px}.row{grid-template-columns:1fr;gap:6px;padding:16px}.section{padding:28px 0}details{padding:0 16px}textarea{padding:16px}h2{font-size:24px}.notice{padding:16px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}@media print{body{color:#000;background:#fff}.toolbar{display:none}textarea{min-height:600px;overflow:visible}details>div{display:block}.grid,.roadmap{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+<div class="brand">VÒNG VÂY / AI GAME STARTER</div>
+<div class="eyebrow">Hướng dẫn thực hành · 01</div>
+<h1>Từ bộ file đầu tiên<br>đến một game hoàn thiện.</h1>
+<p class="lede">Một project nhỏ để bạn điều khiển AI theo từng nhiệm vụ: đọc đúng cấu trúc, viết có giới hạn, chạy kiểm tra và giữ lại bản tốt.</p>
+<div class="meta"><div><b>Godot 4.6.3</b>Build theo thông tin bạn cung cấp</div><div><b>GDScript · Compatibility</b>Không plugin, không asset tải ngoài</div><div><b>Antigravity IDE</b>Một agent sửa project mỗi lần</div></div>
+</header>
+<main>
+<div class="notice"><strong>Đây là starter, chưa phải game thương mại.</strong> Runtime Godot chưa được xác minh trong môi trường tạo file. Bắt buộc chạy M0 trên máy bạn; đọc <a href="docs/QA_REPORT.md">báo cáo QA</a> trước khi tiếp tục.</div>
+<div class="grid">
+<article class="card"><div class="number">01 / MỞ PROJECT</div><h3>Giải nén rồi bấm F5.</h3><p>Import <code>project.godot</code> bằng Godot đang cài. Chạy menu, di chuyển và thử lại — chưa thêm tính năng.</p></article>
+<article class="card"><div class="number">02 / GIAO VIỆC CHO AI</div><h3>Đọc rules, kiểm tra trước.</h3><p>Mở cùng thư mục trong Antigravity. Bật Workspace Rule và dùng prompt khởi động ở dưới.</p></article>
+<article class="card"><div class="number">03 / HOÀN THIỆN TỪNG LÁT CẮT</div><h3>Một task. Một bằng chứng.</h3><p>Duyệt kế hoạch → AI sửa → test → bạn chơi → commit. Không giao “làm tất cả rồi báo xong”.</p></article>
+</div>
+<section class="section" id="setup">
+<h2>Làm lần đầu trên máy bạn</h2><p class="section-intro">Bản hướng dẫn đầy đủ ở <a href="START_HERE.md">START_HERE.md</a>. Các bước dưới giả định Windows; không cần cài Python để chơi game.</p>
+<details open><summary>1. Giải nén và chạy Godot</summary><div><ol><li>Giải nén vào thư mục riêng, không đè project cũ. Root phải có <code>project.godot</code>, <code>scenes/</code>, <code>scripts/</code>.</li><li>Godot Project Manager → Import → chọn <code>project.godot</code> → mở và chờ import xong.</li><li>Bấm <strong>F5</strong>. Start Run, dùng WASD/mũi tên; Esc tạm dừng, R thử lại sau khi kết thúc. <strong>F8</strong> dừng game từ editor.</li><li>Nếu lỗi, copy lỗi đầu tiên ở Output/Debugger kèm file/dòng. Dùng <code>prompts/03_FIX_BUG.md</code>; không tạo lại project.</li></ol></div></details>
+<details><summary>2. Cho Antigravity đọc đúng rules</summary><div><ol><li>Mở chính root project trong IDE, không mở thư mục cha hoặc file ZIP.</li><li>Bảng agent → … → Customizations → Rules. Chọn Workspace Rule <code>00-project</code>, đặt <strong>Always On</strong>.</li><li>Nếu IDE không nhận, tạo Workspace Rule qua UI, dán nội dung <code>.agents/rules/00-project.md</code>. Không ghi đè Global Rules.</li><li>Chọn model có sẵn trong tài khoản. Chỉ cho quyền cần thiết trong project; giữ duyệt lệnh/thay đổi. Chưa tải asset hay gói trả tiền.</li></ol><p class="note">Tài liệu hiện dùng .agents/rules; hỗ trợ cũ .agent/rules. Kiểm tra UI nếu phiên bản IDE của bạn khác.</p></div></details>
+<details><summary>3. Chạy kiểm tra trước khi thêm feature</summary><div><p>Lưu project, dừng game; nên đóng Godot editor trước headless import. Trong PowerShell ở root, thay đường dẫn ví dụ bằng exe thật:</p><pre><code>&amp; .\tools\verify.ps1 -GodotExe 'C:\DUONG_DAN_THAT\Godot_console.exe'</code></pre><p>Không đổi policy toàn hệ thống nếu script bị chặn. Xem lệnh trực tiếp thay thế trong START_HERE.md. Cần đúng version, log không lỗi và marker <code>ALL_TESTS_PASSED</code>.</p><p><strong>Test tự động không thay thế chơi thử.</strong> Bạn vẫn phải kiểm tra UI, phím, va chạm, pause, retry và bản export.</p></div></details>
+</section>
+<section class="section" id="prompt">
+<h2>Prompt đầu tiên cho agent</h2><p class="section-intro">Dùng sau khi mở đúng workspace. Agent chỉ kiểm tra baseline; nếu thiếu đường dẫn Godot, hãy cung cấp đường dẫn exe trên máy, không phải mật khẩu.</p>
+<div class="toolbar"><button type="button" id="copy-button">Sao chép prompt</button><span id="copy-status" role="status" aria-live="polite">Hoặc chọn văn bản và Ctrl+C.</span></div>
+<textarea id="bootstrap" readonly aria-label="Prompt khởi động Antigravity">Bạn đang làm trong workspace Vòng Vây. Tôi muốn hoàn thành M0 trước khi thêm tính năng.
+
+Đọc lần lượt README.md, ENGINE_VERSION.txt, AGENT_RULES.md, docs/GAME_BRIEF.md, docs/TECH_SPEC.md, docs/TASKS.md, docs/QA_REPORT.md và docs/SESSION_HANDOFF.md. Đọc file thật, không suy đoán từ tên.
+
+1. Xác nhận workspace root là thư mục chứa project.godot. Kiểm tra git status nếu repo đã có Git, không ghi đè thay đổi của tôi.
+2. Tóm tắt luồng scene/script/input/signal đang nối, phân biệt source đã viết với tính năng đã kiểm chứng.
+3. Xác định Godot executable tại đường dẫn tôi cung cấp hoặc cấu hình IDE/PATH. Không quét dữ liệu riêng/toàn ổ đĩa. Nếu thiếu đường dẫn, hỏi tôi. Chạy --version và đối chiếu ENGINE_VERSION.txt; mismatch thì dừng để hỏi, không tự đổi engine.
+4. Trước import, nhắc tôi lưu/dừng game và đóng editor nếu đang mở. Dùng tools/verify.ps1 hoặc lệnh tương đương để chạy import, smoke và startup; không đổi execution policy hay cài phần mềm. Lưu log trong logs/.
+5. Nếu lỗi, báo lỗi đầu tiên + file/dòng + giả thuyết + đề xuất sửa nhỏ. Không viết lại toàn bộ project và không thêm gameplay mới.
+6. Trả bảng PASS/FAIL/BLOCKED cho T001/T002. Đưa checklist T003 để tôi kiểm thử tay. Không tự đánh dấu manual test là PASS.
+
+Chỉ audit/xác minh baseline ở lượt này. Không mua asset, tải dependency, upload, public repo hay phát hành. Kết thúc bằng cập nhật handoff trung thực và một bước tiếp theo.</textarea>
+</section>
+<section class="section" id="files">
+<h2>File nào dùng lúc nào?</h2><div class="rows">
+<div class="row"><div><code>AGENT_RULES.md</code></div><div>Giới hạn phạm vi, đọc wiring, bằng chứng kiểm thử và bảo vệ máy/tài khoản.</div></div>
+<div class="row"><div><code>docs/GAME_BRIEF.md</code></div><div>Game làm gì, không làm gì; ý tưởng mặc định cần bạn duyệt.</div></div>
+<div class="row"><div><code>docs/TECH_SPEC.md</code></div><div>Scene tree, input, signal, state và trách nhiệm từng script.</div></div>
+<div class="row"><div><code>docs/TASKS.md</code></div><div>Task có dependency, acceptance test và trạng thái. Chọn một task mỗi phiên.</div></div>
+<div class="row"><div><code>docs/TEST_PLAN.md</code></div><div>Kiểm thử tay và tự động; phân biệt viết test với thực sự chạy test.</div></div>
+<div class="row"><div><code>prompts/</code></div><div>Khởi động, chọn task, triển khai, sửa bug, review, polish, export và bàn giao.</div></div>
+<div class="row"><div><code>docs/RELEASE_CHECKLIST.md</code></div><div>Template đúng phiên bản, xuất Windows, đủ exe/PCK, license và cổng phát hành.</div></div>
+</div>
+</section>
+<section class="section" id="roadmap">
+<h2>Lộ trình đến bản hoàn thiện</h2><p class="section-intro">Tiến theo cổng kiểm tra, không theo lời hứa “AI sẽ xong trong vài ngày”.</p>
+<div class="roadmap"><article><b>M0 · BASELINE</b><h3>Chạy được trên máy bạn</h3><p>Đúng engine, import/smoke, test tay và mốc Git đầu tiên.</p></article><article><b>M1 · THIẾT KẾ</b><h3>Chốt vòng chơi</h3><p>Duyệt brief, quan sát người ngoài, chọn một giả thuyết cải thiện.</p></article><article><b>M2 · LÁT CẮT NHỎ</b><h3>Một cơ chế có chất lượng</h3><p>Xung đẩy đề xuất, quái có hành vi rõ, tutorial và feedback.</p></article><article><b>M3 · V1</b><h3>Đủ phần bắt buộc</h3><p>Save, settings, âm thanh, credits và cân bằng.</p></article><article><b>M4 · BẢN BUILD</b><h3>Kiểm chứng thực tế</h3><p>Regression, hiệu năng laptop, export Windows, chạy không cần editor.</p></article><article><b>M5 · PHÁT HÀNH</b><h3>Bạn quyết định bán</h3><p>Phản hồi thật, licensing, nội dung trang bán và phê duyệt riêng.</p></article></div>
+</section>
+<section class="section">
+<h2>Điều bạn cần giữ quyền quyết định</h2><p class="section-intro">AI có thể hỗ trợ phần lớn code, nhưng bạn vẫn quyết định game có vui không, chọn tài nguyên, duyệt chi phí, chơi thử và bấm phát hành. Game chạy được không tự chứng minh có người muốn mua.</p><p class="note">Bộ này không kèm engine, export templates, tài khoản, executable Windows hay API key. Không tự động cài gì khi bạn mở trang HTML này.</p>
+<div class="sources"><a href="README.md">Bản đồ tài liệu</a><a href="FILE_MANIFEST.txt">Toàn bộ cấu trúc</a><a href="docs/QA_REPORT.md">Trạng thái kiểm tra</a><a href="docs/SOURCES.md">Nguồn kỹ thuật</a></div>
+</section>
+</main>
+<footer>Chuẩn bị ngày 05/09/2026 · Nội dung tiếng Việt · Mã nguồn starter 0.1.0<br>Build engine người dùng cung cấp: v4.6.3.stable.official [7d41c59c4].</footer>
+<script>
+document.getElementById('copy-button').addEventListener('click', async function(){
+ const area=document.getElementById('bootstrap');const status=document.getElementById('copy-status');
+ try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(area.value)}else{area.focus();area.select();if(!document.execCommand('copy'))throw Error('manual')}status.textContent='Đã sao chép. Dán vào agent trong Antigravity.'}
+ catch(e){area.focus();area.select();status.textContent='Đã chọn văn bản. Nhấn Ctrl+C để sao chép.'}
+});
+</script>
+</body>
+</html>
