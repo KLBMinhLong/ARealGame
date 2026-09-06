@@ -8,6 +8,7 @@ const HudView = preload("res://scripts/ui/hud.gd")
 const EnemyScene = preload("res://scenes/enemy.tscn")
 const SaveManager = preload("res://scripts/core/save_manager.gd")
 const SettingsManager = preload("res://scripts/core/settings_manager.gd")
+const AudioManager = preload("res://scripts/core/audio_manager.gd")
 enum State { MENU, RUNNING, PAUSED, WON, LOST }
 
 @onready var player: PlayerActor = $World/Player
@@ -15,6 +16,7 @@ enum State { MENU, RUNNING, PAUSED, WON, LOST }
 @onready var hud: HudView = $HUD
 var save_manager: SaveManager = SaveManager.new()
 var settings_manager: SettingsManager = SettingsManager.new()
+var audio_manager: AudioManager = AudioManager.new()
 var state: State = State.MENU
 var elapsed: float = 0.0
 var spawn_remaining: float = 0.0
@@ -23,6 +25,7 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 func _ready() -> void:
 	Engine.max_fps = 60
 	rng.randomize()
+	add_child(audio_manager)
 	save_manager.load_data()
 	settings_manager.load_settings()
 	settings_manager.settings_changed.connect(_on_settings_changed)
@@ -118,6 +121,7 @@ func _physics_process(delta: float) -> void:
 func _on_player_pulse() -> void:
 	if state != State.RUNNING:
 		return
+	audio_manager.play_pulse()
 	for child in enemies.get_children():
 		var enemy: EnemyActor = child as EnemyActor
 		if enemy == null:
@@ -134,18 +138,26 @@ func spawn_one() -> void:
 	if elapsed >= Config.SPRINTER_SPAWN_START_TIME and rng.randf() < Config.SPRINTER_SPAWN_CHANCE:
 		enemy_type = EnemyActor.Type.SPRINTER
 	enemy.configure(spawn_pos, Config.enemy_speed(elapsed), enemy_type)
+	enemy.telegraph_started.connect(func() -> void: if state == State.RUNNING: audio_manager.play_telegraph())
+	enemy.dash_started.connect(func() -> void: if state == State.RUNNING: audio_manager.play_dash())
 	enemies.add_child(enemy)
 
 func register_hit() -> void:
 	if state != State.RUNNING:
 		return
-	if player.take_hit() and player.health <= 0:
-		finish_run(false)
+	if player.take_hit():
+		audio_manager.play_hit()
+		if player.health <= 0:
+			finish_run(false)
 
 func finish_run(won: bool) -> void:
 	if state != State.RUNNING:
 		return
 	state = State.WON if won else State.LOST
+	if won:
+		audio_manager.play_win()
+	else:
+		audio_manager.play_game_over()
 	var run_stats: Dictionary = save_manager.record_run(elapsed, won)
 	hud.set_best_record(save_manager.best_survival_seconds, save_manager.win_count, save_manager.total_runs)
 	hud.update_run(elapsed, enemies.get_child_count(), player.pulse_cooldown_remaining)

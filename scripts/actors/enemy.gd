@@ -1,5 +1,8 @@
 extends Node2D
 
+signal telegraph_started
+signal dash_started
+
 const Config = preload("res://scripts/core/game_config.gd")
 
 enum Type { CHASER, SPRINTER }
@@ -65,6 +68,7 @@ func _tick_sprinter(delta: float, target_position: Vector2) -> void:
 				phase_timer = Config.SPRINTER_TELEGRAPH_SECONDS
 				locked_direction = (target_position - position).normalized() if offset.length_squared() > 0.001 else Vector2.RIGHT
 				rotation = locked_direction.angle()
+				telegraph_started.emit()
 				queue_redraw()
 
 		SprinterPhase.TELEGRAPH:
@@ -72,6 +76,7 @@ func _tick_sprinter(delta: float, target_position: Vector2) -> void:
 			if phase_timer <= 0.0:
 				sprinter_phase = SprinterPhase.DASH
 				phase_timer = Config.SPRINTER_DASH_MAX_SECONDS
+				dash_started.emit()
 				queue_redraw()
 
 		SprinterPhase.DASH:

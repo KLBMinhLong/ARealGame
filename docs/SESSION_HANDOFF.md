@@ -10,31 +10,34 @@
 
 ## Việc tiếp theo
 
-Chuyển sang nhiệm vụ tiếp theo: **T330 — Âm thanh và audio buses**:
-1. Thiết lập Audio Buses trong Godot (`default_bus_layout.tres`): Master, Music, SFX với Compressor/Limiter bảo vệ chống clipping.
-2. Xây dựng module phát âm thanh `scripts/core/audio_manager.gd` quản lý phát các hiệu ứng âm thanh cốt lõi (Pulse, Hit, Telegraph, Dash, Win, Game Over).
-3. Đấu nối các sự kiện game sang `audio_manager`:
-   - Space pulse -> phát âm `sfx_pulse`.
-   - Player trúng đòn -> phát âm `sfx_hit`.
-   - Sprinter báo trước -> phát âm `sfx_telegraph`.
-   - Sprinter lao -> phát âm `sfx_dash`.
-   - Chiến thắng 03:00 -> phát âm `sfx_win`.
-   - Thua trận -> phát âm `sfx_game_over`.
-4. Đảm bảo âm lượng tuân thủ cài đặt trong Settings (Master / SFX volume) và tạm dừng/tiếp tục đúng khi Pause game.
+Chuyển sang nhiệm vụ tiếp theo: **T340 — Credits + license trong game**:
+1. **Thiết kế UI Credits & Licenses:**
+   - Bổ sung nút `CREDITS & LICENSES` trên Main Menu (song song với START RUN, HOW TO PLAY, SETTINGS).
+   - Modal hiển thị bảng cuộn (ScrollContainer/VBoxContainer) hoặc bảng tab tối giản, trang trọng:
+     - Tên game: **VÒNG VÂY** (AI Starter Arena Survival).
+     - Đội ngũ phát triển & Công nghệ: Phát triển bởi Chủ project cùng Antigravity AI Pair Programmer.
+     - Giấy phép Động cơ: **Godot Engine** (MIT License, Copyright (c) 2014-present Godot Engine contributors).
+     - Giấy phép Đồ họa & Âm thanh: 100% Procedural Vector Geometry & 16-bit PCM Synthesizer (Bản quyền tự do MIT / CC0).
+     - Third-party Notice: Trích dẫn liên kết và ghi nhận các thành phần mã nguồn mở theo đúng thông lệ của Godot (FreeType, MbedTLS, Libpng, v.v.).
+2. **Tương tác & Khả năng truy cập:**
+   - Nút `BACK` hoặc bấm `Esc` để đóng bảng Credits và quay lại Main Menu.
+   - Hỗ trợ phím điều hướng hoặc cuộn mượt mà.
+3. **Đồng bộ tài liệu:**
+   - Đối chiếu chéo 100% khớp với `docs/ASSET_REGISTER.md` và `docs/ART_AUDIO.md`.
 
 ## Cập nhật phiên
 
 ```text
 Ngày: 06/09/2026
-Task: T300 — Art/audio direction + inventory (DONE)
-Commit gần nhất: dade734 feat(settings): add persistent volume, display, and accessibility options (T320)
-Thay đổi chưa commit: docs/ART_AUDIO.md, docs/ASSET_REGISTER.md, docs/TASKS.md, docs/SESSION_HANDOFF.md
-Files/wiring vừa đổi: ART_AUDIO.md (hoàn thiện quy chuẩn hình học vector và thông số 6 SFX cốt lõi), ASSET_REGISTER.md (đăng ký 100% tài nguyên visual, UI và audio kế hoạch)
-Test đã chạy và log: tools/verify_structure.py (75/75 PASS)
-Test chưa chạy: Kiểm thử hệ thống âm thanh (T330)
+Task: T330 — Âm thanh và audio buses (DONE)
+Commit gần nhất: 2511deb docs(art-audio): specify visual geometry standards and audio asset inventory (T300)
+Thay đổi chưa commit: default_bus_layout.tres, scripts/core/audio_manager.gd, scripts/actors/enemy.gd, scripts/main.gd, tests/smoke_test.gd, docs/TASKS.md, docs/SESSION_HANDOFF.md
+Files/wiring vừa đổi: default_bus_layout.tres (Master with Limiter, Music, SFX buses), audio_manager.gd (procedural 16-bit PCM synth: pulse, hit, telegraph, dash, win, game_over), enemy.gd (telegraph_started, dash_started signals), main.gd (wire audio to pulse, hit, sprinter, won, lost), smoke_test.gd (test audio buses and streams)
+Test đã chạy và log: tools/verify_structure.py (77/77 PASS)
+Test chưa chạy: Không
 Bug còn: Không
-Quyết định đang chờ chủ project: Duyệt phương án triển khai Hệ thống Âm thanh và Audio Buses T330
-Task tiếp theo (chỉ một): T330 — Âm thanh và audio buses (Master/Music/SFX)
+Quyết định đang chờ chủ project: Duyệt phương án kiến trúc T340 (Credits + license trong game)
+Task tiếp theo (chỉ một): T340 — Credits + license trong game
 ```
 
 

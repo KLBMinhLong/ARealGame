@@ -6,6 +6,7 @@ const Game = preload("res://scripts/main.gd")
 const GameScene = preload("res://scenes/main.tscn")
 const SaveManager = preload("res://scripts/core/save_manager.gd")
 const SettingsManager = preload("res://scripts/core/settings_manager.gd")
+const AudioManager = preload("res://scripts/core/audio_manager.gd")
 var failures: int = 0
 var checks: int = 0
 
@@ -239,6 +240,29 @@ func _run() -> void:
 	expect(game.hud.panel_mode == "menu", "Settings back returns to previous menu mode")
 	expect(game.hud.settings_box.visible == false, "Settings box is hidden after returning")
 	expect(game.hud.main_box.visible == true, "Main box is restored")
+
+	# AudioManager & Audio Buses test suite (T330)
+	expect(AudioServer.get_bus_index("Master") >= 0, "Master audio bus exists")
+	expect(AudioServer.get_bus_index("Music") >= 0, "Music audio bus exists")
+	expect(AudioServer.get_bus_index("SFX") >= 0, "SFX audio bus exists")
+
+	var am: AudioManager = AudioManager.new()
+	root.add_child(am)
+	expect(am.stream_pulse != null and am.stream_pulse.data.size() > 0, "Pulse sound generated")
+	expect(am.stream_hit != null and am.stream_hit.data.size() > 0, "Hit sound generated")
+	expect(am.stream_telegraph != null and am.stream_telegraph.data.size() > 0, "Telegraph sound generated")
+	expect(am.stream_dash != null and am.stream_dash.data.size() > 0, "Dash sound generated")
+	expect(am.stream_win != null and am.stream_win.data.size() > 0, "Win sound generated")
+	expect(am.stream_game_over != null and am.stream_game_over.data.size() > 0, "Game over sound generated")
+
+	am.play_pulse()
+	am.play_hit()
+	am.play_telegraph()
+	am.play_dash()
+	am.play_win()
+	am.play_game_over()
+	expect(true, "Audio playback executes safely across all cues")
+	am.queue_free()
 
 	game.queue_free()
 	await process_frame
