@@ -5,6 +5,7 @@ signal start_requested
 signal resume_requested
 signal menu_requested
 signal quit_requested
+signal upgrade_selected(upgrade_id: String)
 
 const Config = preload("res://scripts/core/game_config.gd")
 const SaveManager = preload("res://scripts/core/save_manager.gd")
@@ -14,6 +15,7 @@ const MUTED: Color = Color("afc2d0")
 var timer_label: Label
 var health_label: Label
 var pulse_label: Label
+var scrap_label: Label
 var best_label: Label
 var drones_label: Label
 var shade: ColorRect
@@ -30,6 +32,8 @@ var secondary_button: Button
 var quit_button: Button
 var master_label: Label
 var master_slider: HSlider
+var music_label: Label
+var music_slider: HSlider
 var sfx_label: Label
 var sfx_slider: HSlider
 var fullscreen_button: Button
@@ -39,6 +43,9 @@ var settings_back_button: Button
 var credits_button: Button
 var credits_box: VBoxContainer
 var credits_back_button: Button
+var upgrade_box: VBoxContainer
+var upgrade_buttons: Array[Button] = []
+var current_upgrade_options: Array[Dictionary] = []
 var settings_manager: SettingsManager
 var panel_mode: String = "menu"
 var previous_panel_mode: String = "menu"
@@ -56,6 +63,7 @@ func _ready() -> void:
 	_label(root, "ARENA LAB  /  PLAYABLE STARTER 0.1", Vector2(41, 64), Vector2(500, 24), 14, MUTED)
 	health_label = _label(root, "HULL  3 / 3", Vector2(590, 31), Vector2(170, 30), 22, INK)
 	pulse_label = _label(root, "PULSE  READY", Vector2(590, 67), Vector2(170, 24), 14, Color("64b7ff"))
+	scrap_label = _label(root, "SCRAPS  00 / 15", Vector2(400, 67), Vector2(170, 24), 14, Color("facc15"))
 	timer_label = _label(root, "00:00 / 03:00", Vector2(852, 29), Vector2(260, 34), 24, INK)
 	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	best_label = _label(root, "BEST  --:--", Vector2(764, 67), Vector2(160, 24), 14, Color("ffe5ad"))
@@ -112,6 +120,7 @@ func _ready() -> void:
 	main_box.add_child(quit_button)
 	_build_settings_ui()
 	_build_credits_ui()
+	_build_upgrade_ui()
 	show_panel("menu")
 
 func _label(parent: Control, text: String, at: Vector2, dimensions: Vector2, font_size: int, color: Color) -> Label:
@@ -155,10 +164,12 @@ func _button(text: String, primary: bool) -> Button:
 func set_health(value: int) -> void:
 	health_label.text = "HULL  %d / %d" % [value, Config.MAX_HEALTH]
 
-func update_run(elapsed: float, enemy_count: int, pulse_cooldown: float = 0.0) -> void:
+func update_run(elapsed: float, enemy_count: int, pulse_cooldown: float = 0.0, scraps: int = 0, next_scrap_threshold: int = 15) -> void:
 	var seconds: int = int(minf(elapsed, Config.RUN_SECONDS))
 	timer_label.text = "%02d:%02d / 03:00" % [int(seconds / 60.0), seconds % 60]
 	drones_label.text = "DRONES  %02d" % enemy_count
+	if scrap_label != null:
+		scrap_label.text = "SCRAPS  %02d / %02d" % [scraps, next_scrap_threshold]
 	if pulse_label != null:
 		if pulse_cooldown <= 0.001:
 			pulse_label.text = "PULSE  READY"
@@ -197,11 +208,23 @@ func hide_panel() -> void:
 		reset_defaults_button.release_focus()
 	if credits_back_button != null:
 		credits_back_button.release_focus()
+	if upgrade_box != null:
+		upgrade_box.hide()
 
 func show_panel(mode: String, elapsed: float = 0.0, enemy_count: int = 0, run_stats: Dictionary = {}) -> void:
 	panel_mode = mode
 	shade.show()
 	panel.show()
+	if upgrade_box != null:
+		upgrade_box.hide()
+	if mode == "upgrade":
+		main_box.hide()
+		settings_box.hide()
+		if credits_box != null:
+			credits_box.hide()
+		if upgrade_box != null:
+			upgrade_box.show()
+		return
 	if mode == "settings":
 		main_box.hide()
 		if credits_box != null:
@@ -328,6 +351,21 @@ func _build_settings_ui() -> void:
 	master_slider.value_changed.connect(_on_master_slider_changed)
 	master_row.add_child(master_slider)
 
+	var music_row: HBoxContainer = HBoxContainer.new()
+	music_row.add_theme_constant_override("separation", 12)
+	settings_box.add_child(music_row)
+	music_label = _container_label(music_row, "Music Volume: 70%", 15, INK)
+	music_label.custom_minimum_size = Vector2(210, 26)
+	music_slider = HSlider.new()
+	music_slider.min_value = 0.0
+	music_slider.max_value = 100.0
+	music_slider.step = 5.0
+	music_slider.value = 70.0
+	music_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	music_slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	music_slider.value_changed.connect(_on_music_slider_changed)
+	music_row.add_child(music_slider)
+
 	var sfx_row: HBoxContainer = HBoxContainer.new()
 	sfx_row.add_theme_constant_override("separation", 12)
 	settings_box.add_child(sfx_row)
@@ -381,11 +419,16 @@ func refresh_settings_ui() -> void:
 	if settings_manager == null:
 		return
 	var m_pct: int = int(roundf(settings_manager.master_volume * 100.0))
+	var mu_pct: int = int(roundf(settings_manager.music_volume * 100.0))
 	var s_pct: int = int(roundf(settings_manager.sfx_volume * 100.0))
 	if master_slider != null:
 		master_slider.set_value_no_signal(m_pct)
 	if master_label != null:
 		master_label.text = "Master Volume: %d%%" % m_pct
+	if music_slider != null:
+		music_slider.set_value_no_signal(mu_pct)
+	if music_label != null:
+		music_label.text = "Music Volume: %d%%" % mu_pct
 	if sfx_slider != null:
 		sfx_slider.set_value_no_signal(s_pct)
 	if sfx_label != null:
@@ -400,6 +443,12 @@ func _on_master_slider_changed(value: float) -> void:
 		settings_manager.set_master_volume(value / 100.0)
 	if master_label != null:
 		master_label.text = "Master Volume: %d%%" % int(value)
+
+func _on_music_slider_changed(value: float) -> void:
+	if settings_manager != null:
+		settings_manager.set_music_volume(value / 100.0)
+	if music_label != null:
+		music_label.text = "Music Volume: %d%%" % int(value)
 
 func _on_sfx_slider_changed(value: float) -> void:
 	if settings_manager != null:
@@ -449,9 +498,9 @@ func _build_credits_ui() -> void:
 	content_box.add_theme_constant_override("separation", 8)
 	scroll.add_child(content_box)
 
-	_credit_section(content_box, "PROJECT & GAME DESIGN", "VÒNG VÂY (AI Starter Arena Survival) — v0.1.0\nCreated & Designed by Project Owner\nPair Programming: Antigravity AI Pair Programmer\nLicense: MIT License")
+	_credit_section(content_box, "PROJECT & GAME DESIGN", "VÒNG VÂY: LÕI TỪ (Circuit Siege: Magnetic Core)\nDesigned & Produced by Project Owner\nPair Programming: Antigravity IDE\nProject Copyright (c) 2026 Project Owner. All rights reserved.")
 	_credit_section(content_box, "GAME ENGINE ATTRIBUTION", "Godot Engine (v4.6.3)\nCopyright (c) 2014-present Godot Engine contributors\nCopyright (c) 2007-2014 Juan Linietsky, Ariel Manzur\nLicense: MIT License (https://godotengine.org/license)")
-	_credit_section(content_box, "GRAPHICS & AUDIO ASSETS", "• Visuals: Procedural 2D Vector Geometry via GDScript Draw API\n• Audio: Procedural 16-bit PCM AudioStreamWAV Synthesizer\nStatus: 0 external proprietary assets, 100% royalty-free MIT / CC0.")
+	_credit_section(content_box, "GRAPHICS & AUDIO ASSETS", "• Visuals & Audio: Custom game assets and procedural generation\n• Engine Libraries: Third-party open source components under respective licenses\nDetailed attribution: docs/ASSET_REGISTER.md & THIRD_PARTY_NOTICES.md")
 	_credit_section(content_box, "THIRD-PARTY OPEN SOURCE LIBRARIES", "Godot Engine incorporates code and libraries from third parties:\nFreeType, MbedTLS, Libpng, Zlib, ENet, WebP.\nFull license texts preserved in engine binary and repository.")
 
 	credits_back_button = _button("BACK", true)
@@ -475,3 +524,76 @@ func _credit_section(parent: Control, section_title: String, section_body: Strin
 	var spacer: Control = Control.new()
 	spacer.custom_minimum_size = Vector2(0, 4)
 	parent.add_child(spacer)
+
+func _build_upgrade_ui() -> void:
+	upgrade_box = VBoxContainer.new()
+	upgrade_box.add_theme_constant_override("separation", 10)
+	panel.add_child(upgrade_box)
+	upgrade_box.hide()
+
+func show_upgrade_options(options: Array[Dictionary]) -> void:
+	current_upgrade_options = options
+	previous_panel_mode = panel_mode
+	panel_mode = "upgrade"
+	shade.show()
+	panel.show()
+	main_box.hide()
+	settings_box.hide()
+	if credits_box != null:
+		credits_box.hide()
+	upgrade_box.show()
+
+	for child in upgrade_box.get_children():
+		upgrade_box.remove_child(child)
+		child.queue_free()
+
+	var upg_title: Label = Label.new()
+	upg_title.text = "★ CORE EVOLUTION / NÂNG CẤP LÕI TỪ ★"
+	upg_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	upg_title.add_theme_font_size_override("font_size", 20)
+	upg_title.add_theme_color_override("font_color", Color("facc15"))
+	upgrade_box.add_child(upg_title)
+
+	var upg_sub: Label = Label.new()
+	upg_sub.text = "Thu thập đủ phế liệu! Chọn 1 mô-đun để tiến hóa (Phím 1, 2, 3):"
+	upg_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	upg_sub.add_theme_font_size_override("font_size", 13)
+	upg_sub.add_theme_color_override("font_color", MUTED)
+	upgrade_box.add_child(upg_sub)
+
+	upgrade_buttons.clear()
+	for i in range(options.size()):
+		var opt: Dictionary = options[i]
+		var opt_id: String = str(opt.get("id", ""))
+		var opt_title: String = str(opt.get("title", ""))
+		var opt_desc: String = str(opt.get("desc", ""))
+		var opt_tier: int = int(opt.get("tier", 1))
+
+		var card_btn: Button = Button.new()
+		card_btn.text = "[%d]  %s  (Cấp %d)\n%s" % [i + 1, opt_title, opt_tier, opt_desc]
+		card_btn.custom_minimum_size = Vector2(540, 72)
+		card_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		card_btn.add_theme_font_size_override("font_size", 14)
+		card_btn.add_theme_stylebox_override("normal", _style(Color("182b3a"), Color("38bdf8"), 12))
+		card_btn.add_theme_stylebox_override("hover", _style(Color("264157"), Color("00f0ff"), 12))
+		card_btn.add_theme_stylebox_override("pressed", _style(Color("10202c"), Color("00f0ff"), 12))
+		card_btn.add_theme_color_override("font_color", INK)
+		var captured_id: String = opt_id
+		card_btn.pressed.connect(func() -> void:
+			upgrade_box.hide()
+			hide_panel()
+			upgrade_selected.emit(captured_id)
+		)
+		upgrade_box.add_child(card_btn)
+		upgrade_buttons.append(card_btn)
+
+	if not upgrade_buttons.is_empty():
+		upgrade_buttons[0].grab_focus()
+
+func select_upgrade_by_index(idx: int) -> void:
+	if panel_mode != "upgrade" or idx < 0 or idx >= current_upgrade_options.size():
+		return
+	var opt_id: String = str(current_upgrade_options[idx].get("id", ""))
+	upgrade_box.hide()
+	hide_panel()
+	upgrade_selected.emit(opt_id)

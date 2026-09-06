@@ -79,14 +79,22 @@ func load_data() -> bool:
 	return true
 
 func save_data() -> bool:
-	var file: FileAccess = FileAccess.open(save_path, FileAccess.WRITE)
+	var tmp_path: String = save_path + ".tmp"
+	var file: FileAccess = FileAccess.open(tmp_path, FileAccess.WRITE)
 	if file == null:
-		push_warning("SaveManager: Failed to open %s for writing. Progress not saved." % save_path)
+		push_warning("SaveManager: Failed to open %s for writing. Progress not saved." % tmp_path)
 		return false
 
 	var json_text: String = JSON.stringify(to_dict(), "\t")
 	file.store_string(json_text)
 	file.close()
+
+	if FileAccess.file_exists(save_path):
+		DirAccess.remove_absolute(save_path)
+	var err: Error = DirAccess.rename_absolute(tmp_path, save_path)
+	if err != OK:
+		DirAccess.copy_absolute(tmp_path, save_path)
+		DirAccess.remove_absolute(tmp_path)
 	return true
 
 func record_run(elapsed: float, won: bool) -> Dictionary:

@@ -77,8 +77,8 @@ Nếu xung không tạo giá trị sau test, dừng để sửa ý tưởng, kh�
 |---|---|---|---|---|
 | G0 | G0-R01 | Cô lập hoàn toàn đường dẫn save & settings của test tự động | DONE | Đã inject custom path; SHA256 file save/settings thật nguyên vẹn qua 133 automated checks; JSON parser an toàn không sinh engine error log |
 | G0 | G0-AUD | Ghi nhận và đối chiếu kỹ thuật R02–R06 | DONE | Xác minh trực tiếp trên source: R02 (trần 64 quái), R03 (tia laser 1200px), R04 (pháp lý bản quyền), R05 (ghi atomic), R06 (phân biệt pass test và trải nghiệm game) |
-| G1 | G1-SPEC | Chốt sản phẩm: Core Loop, Art & Animation Target, Audio Target | IN_PROGRESS | Đề xuất giải pháp lối chơi giữ chân người chơi (Lõi Từ), mỹ thuật nhân vật và phong cách nhạc nền |
-| G2 | G2-SLICE | Sản xuất Vertical Slice 60–90 giây hoàn thiện mỹ thuật & âm thanh | TODO | 1 phòng + 1 robot riêng có animation + 2 quái có sprite/telegraph rõ + 1 cơ chế lõi tương tác + 1 nhạc nền loop + SFX mix |
+| G1 | G1-SPEC | Chốt sản phẩm: Core Loop, Art & Animation Target, Audio Target | DONE | Đã chốt 4 trụ cột lối chơi (Xung công phá, Flocking AI, Scrap tăng tiến, Meta/Monetization) & Visual formula: Dark Metal + Neon + Cute Droid + Explosive VFX |
+| G2 | G2-SLICE | Sản xuất Vertical Slice 60–90 giây hoàn thiện mỹ thuật & âm thanh | IMPLEMENTED_AWAITING_TEST | Đã hoàn thành: Arena kim loại tối/lưới rivet/hàng rào cyan; Robot Scrappy Chibi với mắt kính visor/phản lực/khiên điện; Chaser Crawler + Sprinter Razor Droid; Scrap bánh răng phát sáng; Nhạc nền Synthwave 128BPM; Modal nâng cấp 3 thẻ chọn phím [1,2,3]; Camera trauma shake. 139 checks PASS |
 | G3 | G3-TEST | Playtest bên ngoài & Đánh giá độ cuốn / giữ chân | TODO | Người chơi trải nghiệm độc lập; đo lường độ hiểu cơ chế và mong muốn chơi lại thật sự |
 | G4 | G4-EXPAND| Mở rộng nội dung có kiểm soát | TODO | Bổ sung nội dung v1 dựa trên dữ liệu slice G2/G3; hoàn thiện nâng cấp, save/settings/accessibility |
 | G5 | G5-RC | Release Candidate & Benchmark máy thật | TODO | Regression 100%, đo hiệu năng thực tế trên i5/8GB/Iris Xe, xuất bản Windows sạch, rà soát bản quyền |

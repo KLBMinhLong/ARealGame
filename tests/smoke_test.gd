@@ -4,6 +4,8 @@ extends SceneTree
 const Config = preload("res://scripts/core/game_config.gd")
 const Game = preload("res://scripts/main.gd")
 const GameScene = preload("res://scenes/main.tscn")
+const EnemyActor = preload("res://scripts/actors/enemy.gd")
+const EnemyScene = preload("res://scenes/enemy.tscn")
 const SaveManager = preload("res://scripts/core/save_manager.gd")
 const SettingsManager = preload("res://scripts/core/settings_manager.gd")
 const AudioManager = preload("res://scripts/core/audio_manager.gd")
@@ -80,7 +82,6 @@ func _run() -> void:
 	expect(game.enemies.get_child_count() == Config.MAX_ENEMIES, "Enemy cap is enforced")
 	game.start_run()
 	expect(game.enemies.get_child_count() == 0, "Restart removes previous enemies")
-	var EnemyScene: PackedScene = preload("res://scenes/enemy.tscn")
 	var enemy_near = EnemyScene.instantiate()
 	var enemy_far = EnemyScene.instantiate()
 	game.enemies.add_child(enemy_near)
@@ -311,6 +312,28 @@ func _run() -> void:
 	expect(game.save_manager.save_path == test_smoke_save_path, "Game save manager path is isolated")
 	expect(game.settings_manager.settings_path == test_smoke_settings_path, "Game settings manager path is isolated")
 	expect(FileAccess.file_exists(test_smoke_save_path), "Smoke test recorded to isolated test save path")
+
+	# Test G2 Mechanics: Wall slam, Scrap collection, and Upgrades
+	game.start_run()
+	var test_enemy: EnemyActor = EnemyScene.instantiate() as EnemyActor
+	test_enemy.configure(Vector2(Config.PLAYFIELD.end.x - Config.ENEMY_RADIUS - 10.0, Config.PLAYFIELD.get_center().y), 70.0, EnemyActor.Type.CHASER)
+	game.enemies.add_child(test_enemy)
+	var push_res: Dictionary = test_enemy.push_back(Vector2(test_enemy.position.x - 50.0, test_enemy.position.y), 80.0, 0.25)
+	expect(push_res.get("hit_wall", false) == true, "Enemy pushed into arena boundary registers wall hit")
+	var died_called: bool = test_enemy.take_damage(1, true)
+	expect(died_called == true, "Enemy takes fatal damage on wall slam")
+
+	# Test Scrap spawning & collection
+	game.spawn_scrap(game.player.position, 2, Vector2.ZERO)
+	expect(game.scraps.get_child_count() > 0, "Scrap item spawned in game world")
+	game._physics_process(0.016)
+	expect(game.total_scraps >= 2, "Scrap collected by player immediately")
+
+	# Test Upgrade application
+	var initial_force: float = game.player.pulse_push_force
+	game.apply_upgrade("kinetic")
+	expect(game.player.pulse_push_force > initial_force, "Kinetic upgrade increases pulse push force")
+	expect(game.upgrade_tiers["kinetic"] == 1, "Kinetic upgrade tier tracked")
 
 	game.queue_free()
 	if FileAccess.file_exists(test_smoke_save_path):

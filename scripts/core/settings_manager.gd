@@ -9,12 +9,14 @@ const SECTION: String = "preferences"
 
 const DEFAULT_MASTER_VOLUME: float = 0.8
 const DEFAULT_SFX_VOLUME: float = 0.8
+const DEFAULT_MUSIC_VOLUME: float = 0.7
 const DEFAULT_FULLSCREEN: bool = false
 const DEFAULT_REDUCED_EFFECTS: bool = false
 
 var settings_path: String = DEFAULT_SETTINGS_PATH
 var master_volume: float = DEFAULT_MASTER_VOLUME
 var sfx_volume: float = DEFAULT_SFX_VOLUME
+var music_volume: float = DEFAULT_MUSIC_VOLUME
 var fullscreen: bool = DEFAULT_FULLSCREEN
 var reduced_effects: bool = DEFAULT_REDUCED_EFFECTS
 
@@ -25,6 +27,7 @@ func _init(custom_path: String = "") -> void:
 func reset_to_defaults() -> void:
 	master_volume = DEFAULT_MASTER_VOLUME
 	sfx_volume = DEFAULT_SFX_VOLUME
+	music_volume = DEFAULT_MUSIC_VOLUME
 	fullscreen = DEFAULT_FULLSCREEN
 	reduced_effects = DEFAULT_REDUCED_EFFECTS
 	apply_all()
@@ -40,6 +43,7 @@ func load_settings() -> bool:
 
 	master_volume = clampf(float(config.get_value(SECTION, "master_volume", DEFAULT_MASTER_VOLUME)), 0.0, 1.0)
 	sfx_volume = clampf(float(config.get_value(SECTION, "sfx_volume", DEFAULT_SFX_VOLUME)), 0.0, 1.0)
+	music_volume = clampf(float(config.get_value(SECTION, "music_volume", DEFAULT_MUSIC_VOLUME)), 0.0, 1.0)
 	fullscreen = bool(config.get_value(SECTION, "fullscreen", DEFAULT_FULLSCREEN))
 	reduced_effects = bool(config.get_value(SECTION, "reduced_effects", DEFAULT_REDUCED_EFFECTS))
 
@@ -51,6 +55,7 @@ func save_settings() -> bool:
 	var config: ConfigFile = ConfigFile.new()
 	config.set_value(SECTION, "master_volume", master_volume)
 	config.set_value(SECTION, "sfx_volume", sfx_volume)
+	config.set_value(SECTION, "music_volume", music_volume)
 	config.set_value(SECTION, "fullscreen", fullscreen)
 	config.set_value(SECTION, "reduced_effects", reduced_effects)
 	var err: Error = config.save(settings_path)
@@ -77,6 +82,11 @@ func apply_audio() -> void:
 		AudioServer.set_bus_volume_db(master_idx, linear_to_db(master_volume))
 		AudioServer.set_bus_mute(master_idx, master_volume <= 0.001)
 
+	var music_idx: int = AudioServer.get_bus_index("Music")
+	if music_idx >= 0:
+		AudioServer.set_bus_volume_db(music_idx, linear_to_db(music_volume))
+		AudioServer.set_bus_mute(music_idx, music_volume <= 0.001)
+
 	var sfx_idx: int = AudioServer.get_bus_index("SFX")
 	if sfx_idx >= 0:
 		AudioServer.set_bus_volume_db(sfx_idx, linear_to_db(sfx_volume))
@@ -84,6 +94,12 @@ func apply_audio() -> void:
 
 func set_master_volume(val: float) -> void:
 	master_volume = clampf(val, 0.0, 1.0)
+	apply_audio()
+	save_settings()
+	settings_changed.emit()
+
+func set_music_volume(val: float) -> void:
+	music_volume = clampf(val, 0.0, 1.0)
 	apply_audio()
 	save_settings()
 	settings_changed.emit()
