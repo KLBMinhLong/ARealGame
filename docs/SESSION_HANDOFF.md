@@ -10,34 +10,33 @@
 
 ## Việc tiếp theo
 
-Chuyển sang nhiệm vụ tiếp theo: **T340 — Credits + license trong game**:
-1. **Thiết kế UI Credits & Licenses:**
-   - Bổ sung nút `CREDITS & LICENSES` trên Main Menu (song song với START RUN, HOW TO PLAY, SETTINGS).
-   - Modal hiển thị bảng cuộn (ScrollContainer/VBoxContainer) hoặc bảng tab tối giản, trang trọng:
-     - Tên game: **VÒNG VÂY** (AI Starter Arena Survival).
-     - Đội ngũ phát triển & Công nghệ: Phát triển bởi Chủ project cùng Antigravity AI Pair Programmer.
-     - Giấy phép Động cơ: **Godot Engine** (MIT License, Copyright (c) 2014-present Godot Engine contributors).
-     - Giấy phép Đồ họa & Âm thanh: 100% Procedural Vector Geometry & 16-bit PCM Synthesizer (Bản quyền tự do MIT / CC0).
-     - Third-party Notice: Trích dẫn liên kết và ghi nhận các thành phần mã nguồn mở theo đúng thông lệ của Godot (FreeType, MbedTLS, Libpng, v.v.).
-2. **Tương tác & Khả năng truy cập:**
-   - Nút `BACK` hoặc bấm `Esc` để đóng bảng Credits và quay lại Main Menu.
-   - Hỗ trợ phím điều hướng hoặc cuộn mượt mà.
-3. **Đồng bộ tài liệu:**
-   - Đối chiếu chéo 100% khớp với `docs/ASSET_REGISTER.md` và `docs/ART_AUDIO.md`.
+Chủ project mở Godot bấm F5 kiểm thử tay Màn hình Credits & Licenses (T340):
+1. **Kiểm tra nút bấm tại Main Menu:**
+   - Khởi động game -> Trên Menu chính có nút mới `CREDITS & LICENSES` nằm ngay ngắn giữa `SETTINGS` và `QUIT`.
+2. **Kiểm tra hiển thị nội dung pháp lý & bản quyền:**
+   - Bấm `CREDITS & LICENSES`: Modal hiển thị tiêu đề `Credits & Licenses` cùng khung cuộn trang nhã gồm 4 mục:
+     - **PROJECT & GAME DESIGN:** Tên game Vòng Vây, bản quyền Chủ project & Antigravity AI Pair Programmer (MIT License).
+     - **GAME ENGINE ATTRIBUTION:** Bản quyền Godot Engine v4.6.3 (MIT License).
+     - **GRAPHICS & AUDIO ASSETS:** 100% Procedural Vector Geometry & 16-bit PCM Audio Synthesizer nội bộ, 0 asset ngoài, royalty-free MIT/CC0.
+     - **THIRD-PARTY OPEN SOURCE LIBRARIES:** Ghi nhận các thư viện FreeType, MbedTLS, Libpng, Zlib, ENet, WebP.
+3. **Kiểm tra điều hướng & phím tắt:**
+   - Dùng con lăn chuột hoặc phím điều hướng cuộn đọc nội dung.
+   - Bấm nút `BACK` hoặc nhấn phím `Esc`: Trở về Main Menu ngay lập tức.
+   - Khi đang mở Credits, nhấn phím `R`: Không bị kích hoạt trận đấu ngầm.
 
 ## Cập nhật phiên
 
 ```text
 Ngày: 06/09/2026
-Task: T330 — Âm thanh và audio buses (DONE)
-Commit gần nhất: 2511deb docs(art-audio): specify visual geometry standards and audio asset inventory (T300)
-Thay đổi chưa commit: default_bus_layout.tres, scripts/core/audio_manager.gd, scripts/actors/enemy.gd, scripts/main.gd, tests/smoke_test.gd, docs/TASKS.md, docs/SESSION_HANDOFF.md
-Files/wiring vừa đổi: default_bus_layout.tres (Master with Limiter, Music, SFX buses), audio_manager.gd (procedural 16-bit PCM synth: pulse, hit, telegraph, dash, win, game_over), enemy.gd (telegraph_started, dash_started signals), main.gd (wire audio to pulse, hit, sprinter, won, lost), smoke_test.gd (test audio buses and streams)
-Test đã chạy và log: tools/verify_structure.py (77/77 PASS)
-Test chưa chạy: Không
+Task: T340 — Credits + license trong game (IMPLEMENTED_AWAITING_TEST)
+Commit gần nhất: 76a2d15 feat(audio): implement procedural SFX synthesizer and audio buses (T330)
+Thay đổi chưa commit: scripts/ui/hud.gd, scripts/main.gd, tests/smoke_test.gd, docs/qa/static-check.txt, scripts/core/audio_manager.gd.uid, docs/TASKS.md, docs/SESSION_HANDOFF.md
+Files/wiring vừa đổi: hud.gd (credits_button, credits_box with ScrollContainer, _build_credits_ui, _credit_section, centered panel 620x540), main.gd (support Esc and suppress R in credits mode), smoke_test.gd (test credits button and panel navigation)
+Test đã chạy và log: tools/verify_structure.py (77/77 PASS), docs/qa/static-check.txt
+Test chưa chạy: Kiểm thử tay trên Godot bởi chủ project
 Bug còn: Không
-Quyết định đang chờ chủ project: Duyệt phương án kiến trúc T340 (Credits + license trong game)
-Task tiếp theo (chỉ một): T340 — Credits + license trong game
+Quyết định đang chờ chủ project: Kiểm thử màn hình Credits & Licenses trên Godot
+Task tiếp theo (chỉ một): T350 — Cân bằng đủ lượt 180 giây
 ```
 
 

@@ -36,6 +36,9 @@ var fullscreen_button: Button
 var reduced_effects_button: Button
 var reset_defaults_button: Button
 var settings_back_button: Button
+var credits_button: Button
+var credits_box: VBoxContainer
+var credits_back_button: Button
 var settings_manager: SettingsManager
 var panel_mode: String = "menu"
 var previous_panel_mode: String = "menu"
@@ -64,12 +67,12 @@ func _ready() -> void:
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.add_child(shade)
 	panel = PanelContainer.new()
-	panel.position = Vector2(286, 76)
-	panel.size = Vector2(580, 480)
+	panel.position = Vector2(266, 54)
+	panel.size = Vector2(620, 540)
 	panel.add_theme_stylebox_override("panel", _style(Color("182a37"), Color("597789"), 24))
 	root.add_child(panel)
 	main_box = VBoxContainer.new()
-	main_box.add_theme_constant_override("separation", 10)
+	main_box.add_theme_constant_override("separation", 8)
 	panel.add_child(main_box)
 	kicker_label = Label.new()
 	kicker_label.text = "ONE FIELD. ONE MORE TRY."
@@ -98,6 +101,9 @@ func _ready() -> void:
 	settings_button = _button("SETTINGS", false)
 	settings_button.pressed.connect(_on_settings)
 	main_box.add_child(settings_button)
+	credits_button = _button("CREDITS & LICENSES", false)
+	credits_button.pressed.connect(_on_credits)
+	main_box.add_child(credits_button)
 	secondary_button = _button("BACK TO MENU", false)
 	secondary_button.pressed.connect(_on_secondary)
 	main_box.add_child(secondary_button)
@@ -105,6 +111,7 @@ func _ready() -> void:
 	quit_button.pressed.connect(func() -> void: quit_requested.emit())
 	main_box.add_child(quit_button)
 	_build_settings_ui()
+	_build_credits_ui()
 	show_panel("menu")
 
 func _label(parent: Control, text: String, at: Vector2, dimensions: Vector2, font_size: int, color: Color) -> Label:
@@ -133,8 +140,8 @@ func _style(background: Color, border: Color, padding: int) -> StyleBoxFlat:
 func _button(text: String, primary: bool) -> Button:
 	var button: Button = Button.new()
 	button.text = text
-	button.custom_minimum_size = Vector2(0, 44)
-	button.add_theme_font_size_override("font_size", 17)
+	button.custom_minimum_size = Vector2(0, 40)
+	button.add_theme_font_size_override("font_size", 16)
 	var background: Color = Color("327fba") if primary else Color("203946")
 	button.add_theme_stylebox_override("normal", _style(background, Color("6e98b3"), 8))
 	button.add_theme_stylebox_override("hover", _style(background.lightened(0.12), Color("b7dcff"), 8))
@@ -176,6 +183,8 @@ func hide_panel() -> void:
 	primary_button.release_focus()
 	tutorial_button.release_focus()
 	settings_button.release_focus()
+	if credits_button != null:
+		credits_button.release_focus()
 	secondary_button.release_focus()
 	quit_button.release_focus()
 	if settings_back_button != null:
@@ -186,6 +195,8 @@ func hide_panel() -> void:
 		reduced_effects_button.release_focus()
 	if reset_defaults_button != null:
 		reset_defaults_button.release_focus()
+	if credits_back_button != null:
+		credits_back_button.release_focus()
 
 func show_panel(mode: String, elapsed: float = 0.0, enemy_count: int = 0, run_stats: Dictionary = {}) -> void:
 	panel_mode = mode
@@ -193,16 +204,30 @@ func show_panel(mode: String, elapsed: float = 0.0, enemy_count: int = 0, run_st
 	panel.show()
 	if mode == "settings":
 		main_box.hide()
+		if credits_box != null:
+			credits_box.hide()
 		settings_box.show()
 		refresh_settings_ui()
 		settings_back_button.grab_focus()
 		return
+	if mode == "credits":
+		main_box.hide()
+		settings_box.hide()
+		if credits_box != null:
+			credits_box.show()
+		if credits_back_button != null:
+			credits_back_button.grab_focus()
+		return
 
 	main_box.show()
 	settings_box.hide()
+	if credits_box != null:
+		credits_box.hide()
 	primary_button.visible = mode != "tutorial"
 	tutorial_button.visible = mode != "tutorial"
 	settings_button.visible = mode == "menu" or mode == "paused"
+	if credits_button != null:
+		credits_button.visible = mode == "menu"
 	secondary_button.visible = mode != "menu"
 	quit_button.visible = mode == "menu"
 	match mode:
@@ -270,7 +295,7 @@ func _on_settings() -> void:
 	show_panel("settings")
 
 func _on_secondary() -> void:
-	if panel_mode == "tutorial" or panel_mode == "settings":
+	if panel_mode == "tutorial" or panel_mode == "settings" or panel_mode == "credits":
 		show_panel(previous_panel_mode)
 	else:
 		menu_requested.emit()
@@ -396,3 +421,57 @@ func _on_reset_defaults() -> void:
 
 func _on_settings_back() -> void:
 	show_panel(previous_panel_mode)
+
+func _on_credits() -> void:
+	previous_panel_mode = panel_mode
+	show_panel("credits")
+
+func _on_credits_back() -> void:
+	show_panel(previous_panel_mode)
+
+func _build_credits_ui() -> void:
+	credits_box = VBoxContainer.new()
+	credits_box.add_theme_constant_override("separation", 8)
+	panel.add_child(credits_box)
+	credits_box.hide()
+
+	_container_label(credits_box, "ATTRIBUTION & LICENSING", 14, MUTED, HORIZONTAL_ALIGNMENT_CENTER)
+	_container_label(credits_box, "Credits & Licenses", 26, INK, HORIZONTAL_ALIGNMENT_CENTER)
+
+	var scroll: ScrollContainer = ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0, 360)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	credits_box.add_child(scroll)
+
+	var content_box: VBoxContainer = VBoxContainer.new()
+	content_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content_box.add_theme_constant_override("separation", 8)
+	scroll.add_child(content_box)
+
+	_credit_section(content_box, "PROJECT & GAME DESIGN", "VÒNG VÂY (AI Starter Arena Survival) — v0.1.0\nCreated & Designed by Project Owner\nPair Programming: Antigravity AI Pair Programmer\nLicense: MIT License")
+	_credit_section(content_box, "GAME ENGINE ATTRIBUTION", "Godot Engine (v4.6.3)\nCopyright (c) 2014-present Godot Engine contributors\nCopyright (c) 2007-2014 Juan Linietsky, Ariel Manzur\nLicense: MIT License (https://godotengine.org/license)")
+	_credit_section(content_box, "GRAPHICS & AUDIO ASSETS", "• Visuals: Procedural 2D Vector Geometry via GDScript Draw API\n• Audio: Procedural 16-bit PCM AudioStreamWAV Synthesizer\nStatus: 0 external proprietary assets, 100% royalty-free MIT / CC0.")
+	_credit_section(content_box, "THIRD-PARTY OPEN SOURCE LIBRARIES", "Godot Engine incorporates code and libraries from third parties:\nFreeType, MbedTLS, Libpng, Zlib, ENet, WebP.\nFull license texts preserved in engine binary and repository.")
+
+	credits_back_button = _button("BACK", true)
+	credits_back_button.pressed.connect(_on_credits_back)
+	credits_box.add_child(credits_back_button)
+
+func _credit_section(parent: Control, section_title: String, section_body: String) -> void:
+	var title: Label = Label.new()
+	title.text = section_title
+	title.add_theme_font_size_override("font_size", 13)
+	title.add_theme_color_override("font_color", Color("64b7ff"))
+	parent.add_child(title)
+
+	var body: Label = Label.new()
+	body.text = section_body
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_theme_font_size_override("font_size", 13)
+	body.add_theme_color_override("font_color", MUTED)
+	parent.add_child(body)
+
+	var spacer: Control = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 4)
+	parent.add_child(spacer)

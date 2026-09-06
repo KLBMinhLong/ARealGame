@@ -241,6 +241,18 @@ func _run() -> void:
 	expect(game.hud.settings_box.visible == false, "Settings box is hidden after returning")
 	expect(game.hud.main_box.visible == true, "Main box is restored")
 
+	# Test Credits panel navigation in HUD (T340)
+	expect(game.hud.credits_button != null, "HUD has credits button")
+	game.hud._on_credits()
+	expect(game.hud.panel_mode == "credits", "HUD switches to credits panel mode")
+	expect(game.hud.credits_box.visible == true, "Credits box is visible")
+	expect(game.hud.main_box.visible == false, "Main box is hidden while credits open")
+	expect(game.hud.credits_back_button != null, "Credits back button exists")
+	game.hud._on_credits_back()
+	expect(game.hud.panel_mode == "menu", "Credits back returns to previous menu mode")
+	expect(game.hud.credits_box.visible == false, "Credits box is hidden after returning")
+	expect(game.hud.main_box.visible == true, "Main box is restored")
+
 	# AudioManager & Audio Buses test suite (T330)
 	expect(AudioServer.get_bus_index("Master") >= 0, "Master audio bus exists")
 	expect(AudioServer.get_bus_index("Music") >= 0, "Music audio bus exists")

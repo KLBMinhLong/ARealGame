@@ -46,7 +46,7 @@ func _notification(what: int) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause_game") or (event is InputEventKey and event.pressed and not event.echo and (event.physical_keycode == KEY_ESCAPE or event.keycode == KEY_ESCAPE)):
-		if hud.panel_mode == "tutorial" or hud.panel_mode == "settings":
+		if hud.panel_mode == "tutorial" or hud.panel_mode == "settings" or hud.panel_mode == "credits":
 			hud.show_panel(hud.previous_panel_mode)
 			get_viewport().set_input_as_handled()
 			return
@@ -57,7 +57,7 @@ func _input(event: InputEvent) -> void:
 			resume_run()
 			get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("restart_game") or (event is InputEventKey and event.pressed and not event.echo and (event.physical_keycode == KEY_R or event.keycode == KEY_R)):
-		if hud.panel_mode == "tutorial" or hud.panel_mode == "settings":
+		if hud.panel_mode == "tutorial" or hud.panel_mode == "settings" or hud.panel_mode == "credits":
 			return
 		start_run()
 		get_viewport().set_input_as_handled()
