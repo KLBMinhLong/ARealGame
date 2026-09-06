@@ -10,28 +10,30 @@
 
 ## Việc tiếp theo
 
-Chủ project mở Godot bấm F5 kiểm thử tay quái Sprinter (T230) với cơ chế lao xuyên qua người chơi đến tận viền màn hình:
-1. Quái Sprinter xuất hiện sau giây thứ 30: hình tam giác mũi tên màu đỏ `#e85050`.
-2. Tia ngắm laser chiếu dài xuyên suốt màn hình qua người chơi tới tận tường đối diện (0.6s).
-3. Sprinter lao vút qua vị trí người chơi với tốc độ cao (480 px/s), đâm thẳng đến mép tường sân đấu.
-4. Đụng mép tường sân đấu: dừng lại nghỉ (0.8s) trước khi quay đầu rình rập tiếp.
-5. Thử né tránh sang bên khi thấy tia laser: quái sẽ lao xuyên qua khoảng trống đập vào tường.
-6. Thử xả xung Space: ngắt cú lao của Sprinter, thổi lùi 80px + khựng lại.
+Chuyển sang nhiệm vụ **T240 — Cập nhật Tutorial và Màn hình kết quả dễ hiểu**:
+1. Bổ sung bảng hướng dẫn chơi chi tiết (phím điều khiển, cơ chế Xung đẩy Space, cách đối phó 2 loại quái Chaser và Sprinter).
+2. Thêm nút "TUTORIAL" / "HOW TO PLAY" tại Menu để người chơi có thể xem lại bất kỳ lúc nào.
+3. Cải tiến màn hình Kết quả (Won / Lost):
+   - Thống kê thời gian sống sót, tỷ lệ hoàn thành trận đấu (%).
+   - Số lượng Drone trên sân khi kết thúc.
+   - Lời khuyên chiến thuật ngắn phù hợp theo thời điểm thua.
+4. Đảm bảo phím Restart (`R` và nút bấm) mượt mà, không kẹt phím hay rò rỉ bộ đếm.
 
 ## Cập nhật phiên
 
 ```text
 Ngày: 06/09/2026
-Task: T230 — Sprinter có cảnh báo trước (Telegraph) & lao chạm tường màn hình
-Commit gần nhất: 682df54 feat: implement Sprinter enemy with telegraph aiming ray (T230)
-Thay đổi chưa commit: scripts/core/game_config.gd, scripts/actors/enemy.gd, tests/smoke_test.gd, docs/SESSION_HANDOFF.md
-Files/wiring vừa đổi: game_config.gd (SPRINTER_DASH_SPEED 480, max time 1.8s), enemy.gd (hit_wall check to REST, 1200px telegraph ray), smoke_test.gd (wall hit test)
-Test đã chạy và log: tools/verify_structure.py (68/68 PASS)
-Test chưa chạy: Kiểm thử tay trên Godot bởi chủ project
+Task: T230 — Sprinter có cảnh báo trước (DONE)
+Commit gần nhất: aa45395 fix(enemy): make Sprinter dash penetrate through player to arena boundary
+Thay đổi chưa commit: docs/TASKS.md, docs/SESSION_HANDOFF.md
+Files/wiring vừa đổi: docs/TASKS.md, docs/SESSION_HANDOFF.md
+Test đã chạy và log: tools/verify_structure.py (68/68 PASS), test manual bởi chủ project: hoạt động chuẩn xác
+Test chưa chạy: Kiểm thử T240 (chưa code)
 Bug còn: Không
-Quyết định đang chờ chủ project: Kiểm thử trải nghiệm cú lao xuyên màn hình của Sprinter
-Task tiếp theo (chỉ một): T240 — Cập nhật Tutorial & màn hình kết quả dễ hiểu
+Quyết định đang chờ chủ project: Duyệt thiết kế Tutorial và Result Screen (T240)
+Task tiếp theo (chỉ một): T240 — Tutorial và kết quả dễ hiểu
 ```
+
 
 
 
