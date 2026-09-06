@@ -10,26 +10,26 @@
 
 ## Việc tiếp theo
 
-Chủ project mở Godot bấm F5 kiểm thử tay giao diện và feedback hồi chiêu xung Space (T210):
-1. Khi vào game: nhãn `PULSE READY` hiển thị màu xanh lam trên HUD (dưới HULL), quanh Player có vòng tròn mờ báo sẵn sàng.
-2. Khi bấm Space: nhãn HUD đếm lùi `PULSE 4.0s` (màu dịu), quanh Player vòng sạc khép kín dần từ 0° đến 360°.
-3. Khi hết hồi chiêu: nhãn HUD đổi về `PULSE READY`, vòng quanh Player báo sẵn sàng.
-4. Bấm Esc pause: nhãn đếm lùi và vòng sạc quanh Player dừng lại chính xác.
+Thực hiện nhiệm vụ **T220 & T230**:
+1. T220: Đánh giá gameplay xung đẩy Space (xác nhận giữ nguyên thông số bán kính 120px, lực đẩy 80px, hồi chiêu 4s hay cần điều chỉnh).
+2. T230: Triển khai loại quái thứ 2 — **Sprinter** có cảnh báo trước (Telegraph):
+   - Quái di chuyển chậm thăm dò → Dừng lại báo trước 0.6s (đổi màu cảnh báo / vẽ đường báo hướng) → Lao nhanh một đoạn theo hướng đã khóa → Nghỉ khựng một nhịp.
 
 ## Cập nhật phiên
 
 ```text
 Ngày: 06/09/2026
-Task: T210 — UI hồi chiêu + feedback xung
-Commit gần nhất: 306abd0 docs: mark T200 shockwave pulse mechanic as verified and DONE
-Thay đổi chưa commit: scripts/ui/hud.gd, scripts/actors/player.gd, scripts/main.gd, tests/smoke_test.gd, docs/TASKS.md, docs/SESSION_HANDOFF.md
-Files/wiring vừa đổi: hud.gd (pulse_label, update_run), player.gd (recharge arc _draw), main.gd (pass pulse_cooldown to update_run), smoke_test.gd (test pulse_label)
-Test đã chạy và log: tools/verify_structure.py (68/68 PASS)
-Test chưa chạy: Kiểm thử tay trên Godot bởi chủ project
+Task: T210 — UI hồi chiêu + feedback xung (DONE)
+Commit gần nhất: 456e774 feat: add pulse cooldown UI and in-world recharge feedback (T210)
+Thay đổi chưa commit: docs/TASKS.md, docs/SESSION_HANDOFF.md
+Files/wiring vừa đổi: docs/TASKS.md, docs/SESSION_HANDOFF.md
+Test đã chạy và log: tools/verify_structure.py (68/68 PASS), test manual bởi chủ project: hoạt động chuẩn xác
+Test chưa chạy: Kiểm thử quái Sprinter (T230)
 Bug còn: Không
-Quyết định đang chờ chủ project: Kiểm thử trực quan UI hồi chiêu trên máy
-Task tiếp theo (chỉ một): T220 — Test đánh giá trải nghiệm gameplay của xung đẩy
+Quyết định đang chờ chủ project: Chốt đánh giá T220 và duyệt thông số quái Sprinter T230
+Task tiếp theo (chỉ một): T230 — Thêm loại quái Sprinter có cảnh báo trước
 ```
+
 
 
 
