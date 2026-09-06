@@ -1,3 +1,0 @@
-v4.6.3.stable.official [7d41c59c4]
-Source: version supplied by the project owner, 2026-09-05.
-Do not silently upgrade or downgrade. Check the installed executable with --version.
