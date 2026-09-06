@@ -36,43 +36,43 @@ Main (Node2D)                         scripts/main.gd
 | `scripts/world/arena.gd` | Nền, lưới, biên sân | Va chạm physics |
 | `scripts/ui/hud.gd` | Nhãn/nút/modal, phát signal từ thao tác UI | Đổi state trực tiếp |
 
-## Wiring bắt buộc
+## Wiring hiện tại và Cổng G2
 
 ```text
-project.godot Input Map
-   ↓ Input.get_vector(...) trong Player.tick(delta)
-Main._physics_process(delta)
+project.godot Input Map (move_*, pause_game, restart_game, pulse)
+   ↓
+Main._physics_process(delta) [khi state == RUNNING]
    ├─ Player.tick → move_by → clamp_inside
-   ├─ elapsed → kiểm tra thắng
-   ├─ spawn_one → enemy.tscn.instantiate → Enemies.add_child
-   ├─ Enemy.tick → kiểm tra khoảng cách → register_hit
-   │                                     └─ Player.take_hit → health_changed
-   └─ HUD.update_run                                  ↓
-                                               HUD.set_health
+   ├─ Player.tick_cooldowns (Pulse cooldown)
+   ├─ elapsed → kiểm tra thắng (180s)
+   ├─ spawn timer → spawn_one (Chaser & Sprinter)
+   ├─ Enemies.tick(delta, player_pos)
+   │     ├─ Chaser: Flocking bầy đàn + đuổi theo người chơi
+   │     └─ Sprinter: Stalk → Telegraph (laser) → Dash → Rest
+   ├─ Xử lý Xung Space Pulse:
+   │     ├─ Đẩy quái trong bán kính ra xa, áp dụng Stun
+   │     ├─ Va chạm quái vào tường (Wall Slam) → Sát thương va đập / Nổ sinh Scrap
+   │     └─ Va chạm quái với quái (Domino Collisions) → Truyền động lượng + Nổ lan
+   ├─ Thu thập Scrap từ tính:
+   │     ├─ Scraps hút về người chơi khi vào bán kính nam châm
+   │     └─ Đạt ngưỡng Scrap → Kích hoạt Upgrade Modal (3 lựa chọn tăng sức mạnh)
+   ├─ Va chạm quái - player → Player.take_hit (nếu không trong thời gian bất tử)
+   └─ HUD.update_run / update_pulse_cooldown / update_scrap_progress
 
-HUD.start_requested  → Main.start_run
-HUD.resume_requested → Main.resume_run
-HUD.menu_requested   → Main.return_to_menu
-HUD.quit_requested   → SceneTree.quit
+HUD.start_requested    → Main.start_run
+HUD.resume_requested   → Main.resume_run
+HUD.menu_requested     → Main.return_to_menu
+HUD.settings_requested → HUD.show_settings_panel
+HUD.credits_requested  → HUD.show_credits_panel
+HUD.upgrade_selected   → Main.apply_upgrade
 ```
-
-Signal được nối bằng code trong `_ready()`, không có bước nối tay còn thiếu trong editor. Node UI được tạo bằng code nên sẽ xuất hiện ở Remote scene tree khi chạy, không nằm sẵn dưới HUD trong scene tree local.
 
 ## State machine
 
-MENU → RUNNING → PAUSED → RUNNING. RUNNING → WON hoặc LOST. Màn kết quả có thể start_run lại hoặc về MENU. Không có active gameplay tick ngoài RUNNING.
-
-Không dùng `SceneTree.paused` ở starter; Main là chủ vòng tick và return ngay khi không RUNNING. Player/Enemy không có `_physics_process` riêng. Nếu thêm Timer/Tween/AnimationPlayer/audio về sau, phải kiểm tra pause của thành phần mới vì nó không tự được pause bởi state này.
-
-## Va chạm và tọa độ
-
-Player và Enemy đều là **Node2D**, không phải CharacterBody2D/Area2D. Chạm dựa trên khoảng cách tâm ≤ tổng bán kính; biên sân dùng clamp. Đây là quyết định đơn giản hóa cho sân trống, không phải collision engine tổng quát. Nếu thêm tường/chướng ngại cần ADR và chuyển sang physics có chủ đích, không pha trộn hai cách một cách vô thức.
-
-Actors dùng tọa độ local dưới `World`; World có transform identity. Arena dùng cùng hệ tọa độ. Đổi transform World phải cập nhật phép đo khoảng cách/spawn hoặc dùng global_position nhất quán.
-
-## Reset/retry
-
-`_clear_enemies` gỡ child khỏi container trước khi queue_free, vì vậy bộ đếm trở về 0 ngay. `start_run` reset HP, grace, thời gian và spawn delay. HUD không reload scene; signal không được nối lại mỗi lần retry.
+MENU → RUNNING → PAUSED → RUNNING.  
+RUNNING → UPGRADE_SELECT (làm chậm bullet-time/tạm dừng để chọn nâng cấp) → RUNNING.  
+RUNNING → WON hoặc LOST.  
+Màn kết quả có thể start_run lại (R) hoặc về MENU.
 
 ## Input contract
 
@@ -81,19 +81,16 @@ Actors dùng tọa độ local dưới `World`; World có transform identity. Ar
 - `move_up`: physical W + Up.
 - `move_down`: physical S + Down.
 - `pause_game`: Esc.
-- `restart_game`: R, chỉ màn kết quả.
-- Các action xung và remap phím ở v1 chưa được tạo; không nói đã có.
+- `restart_game`: R (màn kết quả hoặc retry nhanh).
+- `pulse`: Space (kích hoạt sóng xung kích từ trường).
 
-## Save/settings tương lai
+## Quản lý Dữ liệu & Lưu trữ (Save & Settings)
 
-Dùng `user://` và ConfigFile hoặc JSON có schema_version. Không ghi save vào `res://`. Validate kiểu/dải, fallback khi file mất/hỏng, cập nhật nguyên tử theo khả năng nền tảng, test không quyền ghi. Không lưu định danh cá nhân. Chưa có file save manager trong starter; T310/T320 sẽ thêm đúng nhu cầu.
-
-## Export
-
-`export_presets.cfg` có preset Windows Desktop x86_64. PCK chưa nhúng vào exe; khi export phải gửi cả `.exe` và `.pck` cùng các file bắt buộc được sinh ra. Không đổi tên exe một mình sau export. Tắt resource modification/signing ở starter để không phụ thuộc rcedit/chứng chỉ. Mã nguồn docs/tests/tools loại khỏi export qua filters; vẫn phải kiểm tra nội dung bản build trước phát hành.
-
-Export templates phải phù hợp engine thực tế. Không đính kèm engine/template vào ZIP này, không tự tải bản khác. Cách xác minh: `docs/RELEASE_CHECKLIST.md`.
+- `scripts/core/save_manager.gd`: Lưu trữ `best_survival_seconds`, `win_count`, `total_runs` (chuẩn bị mở rộng schema v2 lưu `core_chips` và nâng cấp vĩnh viễn) vào `user://save_data.json`.
+- `scripts/core/settings_manager.gd`: Lưu trữ `master_volume`, `sfx_volume`, `fullscreen`, `reduced_effects` (chuẩn bị thêm `music_volume`) vào `user://settings.cfg`.
+- Hỗ trợ Dependency Injection đường dẫn tùy biến (`custom_save_path`, `custom_settings_path`) để cô lập 100% môi trường test tự động, không can thiệp save thật của người chơi.
 
 ## Quy ước chỉnh sửa
 
 Tab trong GDScript, snake_case cho biến/hàm/file, tên node PascalCase. `.gd.uid` do Godot tạo cần lưu Git; `.godot/` là cache cần bỏ. Không tái tạo UID để che lỗi đường dẫn. Tách module khi có trách nhiệm thực sự, không chia hàng chục file rỗng.
+
