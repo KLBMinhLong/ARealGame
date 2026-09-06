@@ -37,6 +37,7 @@
 | Làm việc nào tiếp theo | [TASKS](docs/TASKS.md) |
 | Kiểm thử thế nào | [TEST_PLAN](docs/TEST_PLAN.md) |
 | Dùng AI từng phiên | [AI_WORKFLOW](docs/AI_WORKFLOW.md) |
+| Cẩm nang Mỹ thuật & Chuẩn thị giác | [ART_BIBLE](docs/ART_BIBLE.md) |
 | Hình ảnh, âm thanh | [ART_AUDIO](docs/ART_AUDIO.md) |
 | Kiểm chứng khả năng bán | [MARKET_VALIDATION](docs/MARKET_VALIDATION.md) |
 | Xuất game và phát hành | [RELEASE_CHECKLIST](docs/RELEASE_CHECKLIST.md) |

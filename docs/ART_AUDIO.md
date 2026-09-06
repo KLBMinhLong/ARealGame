@@ -5,6 +5,28 @@
 
 ---
 
+## 0. Quy trình Sản xuất Asset Tiêu chuẩn (6 Bước)
+
+Quy trình sản xuất tài nguyên mỹ thuật & nghe nhìn được thiết lập chặt chẽ theo thứ tự tối ưu hóa:
+
+```mermaid
+graph LR
+    S1["① Viết Art Bible v1"] --> S2["② Chốt camera + pixel resolution"]
+    S2 --> S3["③ Chốt player design"]
+    S3 --> S4["④ Chốt enemy"]
+    S4 --> S5["⑤ Prototype core loop trong Godot"]
+    S5 --> S6["⑥ Làm VFX quan trọng"]
+```
+
+1. **① Viết Art Bible v1:** Đóng đinh phong cách, triết lý tương phản (thế giới tối kim loại, neon chỉ làm tín hiệu), bảng màu (Color Palette) chuẩn.
+2. **② Chốt camera + pixel resolution:** Xác định độ phân giải gốc (native resolution), viewport scale, pixel snap, hành vi camera tĩnh/bám theo và chống rung méo hình.
+3. **③ Chốt player design:** Tạo hình hoàn chỉnh nhân vật chính (Scrappy Droid) với kích thước pixel, bảng biểu cảm chibi, anten, ống phản lực xả ion và các trạng thái animation.
+4. **④ Chốt enemy:** Hoàn thiện bộ đôi quái đối trọng (Chaser bánh xích mắt đỏ Cyclops & Sprinter tiêm kích delta cánh dơi tản nhiệt neon) cùng các tư thế báo hiệu hành vi.
+5. **⑤ Prototype core loop trong Godot:** Lắp ráp vào engine kiểm tra va chạm, lực đẩy xung, AI bầy đàn flocking, hút scrap và mở bảng nâng cấp để đảm bảo cảm giác điều khiển mượt mà.
+6. **⑥ Làm VFX quan trọng:** Bổ sung các hiệu ứng gia vị (Juice) tạo cảm giác sướng tay: Sóng xung kích Pulse, vụ nổ quái đập tường (Wall-slam explosion), tia lửa điện, vệt hút phế liệu, camera trauma shake và laser telegraph.
+
+---
+
 ## 1. Định hướng Mỹ thuật & Hoạt ảnh (Art & Animation Direction)
 
 Chuyển đổi từ đồ họa vector hình học thô sơ sang **Modern Pixel Art 2D**:
