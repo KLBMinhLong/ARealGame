@@ -10,24 +10,24 @@
 
 ## Việc tiếp theo
 
-Chủ project mở Godot bấm F5 kiểm thử tay cơ chế Xung đẩy (phím Space):
-1. Bấm Space khi quái đến gần: quái trong bán kính 120px bị đẩy lùi 80px và khựng 0.25s.
-2. Bấm Space liên tục: kiểm tra hồi chiêu 4 giây (không được xả liên tục).
-3. Bấm Esc pause: kiểm tra hồi chiêu đóng băng.
-4. Xác nhận kết quả test tay để chuyển T200 sang DONE và tiếp tục sang T210 (Thanh hiển thị hồi chiêu trên UI).
+Chuyển sang nhiệm vụ **T210 — UI hồi chiêu + feedback xung**:
+1. Thêm chỉ số/thanh hiển thị trực quan hồi chiêu xung Space trên HUD (PULSE READY / 4.0s).
+2. Thêm vòng hiển thị sạc hồi chiêu thanh mảnh quanh Player để người chơi nắm bắt mà không cần đảo mắt lên góc màn hình.
+3. Chạy static test, smoke test và kiểm thử tay.
 
 ## Cập nhật phiên
 
 ```text
 Ngày: 06/09/2026
-Task: T200 — Xung đẩy bằng phím Space
-Commit gần nhất: chore: add verified Godot starter baseline
-Thay đổi chưa commit: project.godot, game_config.gd, player.gd, enemy.gd, main.gd, hud.gd, smoke_test.gd, verify_structure.py, docs/
-Files/wiring vừa đổi: project.godot (action pulse), game_config.gd (PULSE_* consts), player.gd (signal pulse_triggered, cooldown, draw wave), enemy.gd (push_back, stun), main.gd (_on_player_pulse wiring), hud.gd (instruction label)
-Test đã chạy và log: tools/verify_structure.py (68/68 PASS)
-Test chưa chạy: Kiểm thử tay trên Godot bởi chủ project
+Task: T200 — Xung đẩy bằng phím Space (DONE)
+Commit gần nhất: 45a22ef feat: implement space shockwave pulse mechanic (T200)
+Thay đổi chưa commit: docs/TASKS.md, docs/SESSION_HANDOFF.md
+Files/wiring vừa đổi: docs/TASKS.md, docs/SESSION_HANDOFF.md
+Test đã chạy và log: tools/verify_structure.py (68/68 PASS), test manual bởi chủ project: hoạt động chuẩn xác
+Test chưa chạy: Kiểm thử T210 (chưa code)
 Bug còn: Không
-Quyết định đang chờ chủ project: Kiểm thử trải nghiệm xung Space trên máy
+Quyết định đang chờ chủ project: Duyệt phương án UI hồi chiêu T210
 Task tiếp theo (chỉ một): T210 — UI hồi chiêu + feedback xung
 ```
+
 

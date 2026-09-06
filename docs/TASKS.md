@@ -31,7 +31,7 @@ Gợi ý đã ghi trong brief: xung đẩy. Nếu đổi ý tưởng, cập nh�
 
 | ID | Việc | Dependency | Acceptance |
 |---|---|---|---|
-| T200 | Xung đẩy một loại quái (IMPLEMENTED_AWAITING_TEST) | T120 + duyệt xung | Space → một xung bán kính 120 px; đẩy 80 px/clamp; hồi 4s; không damage; cooldown pause đúng |
+| T200 | Xung đẩy một loại quái | T120 + duyệt xung | DONE | Chủ project kiểm thử tay: hoạt động chuẩn xác (Space đẩy 80px/120px bán kính, hồi 4s, khựng 0.25s, clamp biên) |
 | T210 | UI hồi chiêu + feedback xung | T200 | Người chơi biết khi nào dùng lại; không cần chỉ dựa màu/âm thanh; không flash mạnh |
 | T220 | Test xem xung làm game tốt hơn | T210 | Ghi hành vi người chơi; giữ/sửa/bỏ có lý do, không bịa cải thiện |
 | T230 | Sprinter có cảnh báo trước | T220 | Hành vi phân biệt; telegraph nhìn rõ; không spawn đè player; tốc độ/reset/pause được test |
