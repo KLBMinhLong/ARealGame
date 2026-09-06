@@ -13,14 +13,15 @@ var timer_label: Label
 var health_label: Label
 var pulse_label: Label
 var drones_label: Label
-var shade: ColorRect
-var panel: PanelContainer
+var kicker_label: Label
 var title_label: Label
 var body_label: Label
 var primary_button: Button
+var tutorial_button: Button
 var secondary_button: Button
 var quit_button: Button
 var panel_mode: String = "menu"
+var previous_panel_mode: String = "menu"
 
 func _ready() -> void:
 	var root: Control = Control.new()
@@ -42,36 +43,39 @@ func _ready() -> void:
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.add_child(shade)
 	panel = PanelContainer.new()
-	panel.position = Vector2(304, 140)
-	panel.size = Vector2(544, 370)
+	panel.position = Vector2(286, 96)
+	panel.size = Vector2(580, 456)
 	panel.add_theme_stylebox_override("panel", _style(Color("182a37"), Color("597789"), 24))
 	root.add_child(panel)
 	var box: VBoxContainer = VBoxContainer.new()
-	box.add_theme_constant_override("separation", 14)
+	box.add_theme_constant_override("separation", 10)
 	panel.add_child(box)
-	var kicker: Label = Label.new()
-	kicker.text = "ONE FIELD. ONE MORE TRY."
-	kicker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	kicker.add_theme_font_size_override("font_size", 14)
-	kicker.add_theme_color_override("font_color", MUTED)
-	box.add_child(kicker)
+	kicker_label = Label.new()
+	kicker_label.text = "ONE FIELD. ONE MORE TRY."
+	kicker_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	kicker_label.add_theme_font_size_override("font_size", 14)
+	kicker_label.add_theme_color_override("font_color", MUTED)
+	box.add_child(kicker_label)
 	title_label = Label.new()
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_font_size_override("font_size", 30)
+	title_label.add_theme_font_size_override("font_size", 28)
 	title_label.add_theme_color_override("font_color", INK)
 	box.add_child(title_label)
 	body_label = Label.new()
 	body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body_label.custom_minimum_size = Vector2(460, 70)
-	body_label.add_theme_font_size_override("font_size", 17)
+	body_label.custom_minimum_size = Vector2(500, 110)
+	body_label.add_theme_font_size_override("font_size", 15)
 	body_label.add_theme_color_override("font_color", MUTED)
 	box.add_child(body_label)
 	primary_button = _button("START RUN", true)
 	primary_button.pressed.connect(_on_primary)
 	box.add_child(primary_button)
+	tutorial_button = _button("HOW TO PLAY", false)
+	tutorial_button.pressed.connect(_on_tutorial)
+	box.add_child(tutorial_button)
 	secondary_button = _button("BACK TO MENU", false)
-	secondary_button.pressed.connect(func() -> void: menu_requested.emit())
+	secondary_button.pressed.connect(_on_secondary)
 	box.add_child(secondary_button)
 	quit_button = _button("QUIT", false)
 	quit_button.pressed.connect(func() -> void: quit_requested.emit())
@@ -135,37 +139,54 @@ func hide_panel() -> void:
 	panel.hide()
 	shade.hide()
 	primary_button.release_focus()
+	tutorial_button.release_focus()
 	secondary_button.release_focus()
 	quit_button.release_focus()
 
-func show_panel(mode: String, elapsed: float = 0.0) -> void:
+func show_panel(mode: String, elapsed: float = 0.0, enemy_count: int = 0) -> void:
 	panel_mode = mode
 	shade.show()
 	panel.show()
+	primary_button.visible = mode != "tutorial"
+	tutorial_button.visible = mode != "tutorial"
 	secondary_button.visible = mode != "menu"
 	quit_button.visible = mode == "menu"
 	match mode:
 		"menu":
-			title_label.text = "Dodge. Survive. Repeat."
-			body_label.text = "Move with WASD or arrow keys.
-Avoid the orange drones for 3 minutes.
-Press SPACE to pulse and push drones away."
+			kicker_label.text = "ONE FIELD. ONE MORE TRY."
+			title_label.text = "Vong Vay"
+			body_label.text = "Dodge the drones. Survive the 3-minute gauntlet.\nWASD / Arrows to Move • SPACE to Shockwave Pulse."
 			primary_button.text = "START RUN"
+			secondary_button.text = "MENU"
+		"tutorial":
+			kicker_label.text = "TACTICAL FIELD GUIDE"
+			title_label.text = "How to Play"
+			body_label.text = "• WASD / ARROWS: Move & steer your drone in arena.\n• SPACE: Shockwave Pulse (4s CD) pushes drones 80px.\n• ORANGE CHASER: Pursues your position relentlessly.\n• RED SPRINTER (after 00:30): Warns with red laser, then dashes across the field to the wall. Step aside to dodge!\n• SURVIVE 03:00 to win."
+			secondary_button.text = "BACK"
+			secondary_button.grab_focus()
+			return
 		"paused":
+			kicker_label.text = "GAME PAUSED"
 			title_label.text = "Take a breath."
-			body_label.text = "The timer and drones are frozen.
-Continue when you are ready."
+			body_label.text = "The timer, drones, and cooldowns are frozen.\nResume when you are ready."
 			primary_button.text = "CONTINUE"
+			secondary_button.text = "ABANDON RUN"
 		"won":
-			title_label.text = "Field cleared."
-			body_label.text = "You survived the full 3-minute run.
-This is a prototype, not the final game."
-			primary_button.text = "PLAY AGAIN"
+			kicker_label.text = "ARENA CLEARED"
+			title_label.text = "Victory!"
+			body_label.text = "You survived the full 03:00 run (100%)!\nFinal Drones Evaded: %02d\n\nOutstanding evasion and pulse mastery." % enemy_count
+			primary_button.text = "PLAY AGAIN (R)"
+			secondary_button.text = "BACK TO MENU"
 		_:
-			title_label.text = "One more try?"
-			body_label.text = "You survived %.1f seconds.
-Keep moving and watch the edges." % elapsed
-			primary_button.text = "TRY AGAIN"
+			kicker_label.text = "HULL BREACHED"
+			title_label.text = "Run Terminated"
+			var mins: int = int(elapsed / 60.0)
+			var secs: int = int(elapsed) % 60
+			var pct: float = clampf((elapsed / Config.RUN_SECONDS) * 100.0, 0.0, 100.0)
+			var tip: String = "Tip: Circle around arena edges to herd Chasers." if elapsed < 30.0 else "Tip: Watch for red laser lines — step aside before Sprinters dash!"
+			body_label.text = "Survived: %02d:%02d / 03:00 (%.0f%% completed)\nDrones Active: %02d\n\n%s" % [mins, secs, pct, enemy_count, tip]
+			primary_button.text = "TRY AGAIN (R)"
+			secondary_button.text = "BACK TO MENU"
 	primary_button.grab_focus()
 
 func _on_primary() -> void:
@@ -173,3 +194,13 @@ func _on_primary() -> void:
 		resume_requested.emit()
 	else:
 		start_requested.emit()
+
+func _on_tutorial() -> void:
+	previous_panel_mode = panel_mode
+	show_panel("tutorial")
+
+func _on_secondary() -> void:
+	if panel_mode == "tutorial":
+		show_panel(previous_panel_mode)
+	else:
+		menu_requested.emit()

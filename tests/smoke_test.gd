@@ -131,12 +131,21 @@ func _run() -> void:
 	game.player.grace_remaining = 0.0
 	game.register_hit()
 	expect(game.player.health == 0 and game.state == Game.State.LOST, "Zero health ends run as lost")
+	expect(game.hud.title_label.text == "Run Terminated", "Lost screen title is Run Terminated")
+	expect(game.hud.body_label.text.contains("Survived"), "Lost screen body contains survival stats")
 	game.start_run()
 	game.elapsed = Config.RUN_SECONDS - 0.01
 	game._physics_process(0.02)
 	expect(game.state == Game.State.WON, "Run duration ends run as won")
+	expect(game.hud.title_label.text == "Victory!", "Won screen title is Victory!")
+	expect(game.hud.body_label.text.contains("03:00"), "Won screen body contains 03:00 stats")
 	game.return_to_menu()
 	expect(game.state == Game.State.MENU and game.enemies.get_child_count() == 0, "Return to menu resets state")
+	game.hud._on_tutorial()
+	expect(game.hud.panel_mode == "tutorial", "Tutorial button switches HUD to tutorial mode")
+	expect(game.hud.title_label.text == "How to Play", "Tutorial title is correct")
+	game.hud._on_secondary()
+	expect(game.hud.panel_mode == "menu", "Secondary button returns from tutorial to menu")
 	game.queue_free()
 	await process_frame
 	if failures == 0:

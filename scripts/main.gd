@@ -125,7 +125,7 @@ func finish_run(won: bool) -> void:
 		return
 	state = State.WON if won else State.LOST
 	hud.update_run(elapsed, enemies.get_child_count(), player.pulse_cooldown_remaining)
-	hud.show_panel("won" if won else "lost", elapsed)
+	hud.show_panel("won" if won else "lost", elapsed, enemies.get_child_count())
 
 func _clear_enemies() -> void:
 	for enemy in enemies.get_children():

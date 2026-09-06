@@ -35,7 +35,7 @@ Gợi ý đã ghi trong brief: xung đẩy. Nếu đổi ý tưởng, cập nh�
 | T210 | UI hồi chiêu + feedback xung | T200 | DONE | Chủ project kiểm thử tay: hoạt động chuẩn xác (HUD PULSE READY/đếm lùi, vòng sạc quanh Drone khép kín mượt mà, pause đóng băng đúng) |
 | T220 | Test xem xung làm game tốt hơn | T210 | DONE | Chủ project xác nhận: cơ chế xung Space giúp thoát vây hiệu quả, giữ nguyên thông số |
 | T230 | Sprinter có cảnh báo trước | T220 | DONE | Chủ project kiểm thử tay: hoạt động chuẩn xác (quái đỏ tam giác, tia laser xuyên suốt, lao xuyên màn hình đến mép tường, ngắt bằng Space) |
-| T240 | Tutorial và kết quả dễ hiểu | T230 | Người mới tự hiểu mục tiêu/phím; có cách xem lại; restart không kẹt |
+| T240 | Tutorial và kết quả dễ hiểu (IMPLEMENTED_AWAITING_TEST) | T230 | Người mới tự hiểu mục tiêu/phím; có cách xem lại; restart không kẹt |
 
 Nếu xung không tạo giá trị sau test, dừng để sửa ý tưởng, không thêm sprinter che vấn đề. Sprinter mặc định gợi ý: theo dõi chậm → báo trước 0,6s → lao theo hướng đã khóa → nghỉ; các số còn lại đề xuất và duyệt trong T230, không âm thầm chốt khi code.
 
