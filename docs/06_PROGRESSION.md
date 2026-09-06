@@ -330,9 +330,9 @@ Center-top:   Wave indicator (only during transition)
 │                                                          │
 │  ┌─────────────────────────────────────────────────┐    │
 │  │                                                  │    │
-│  │        🔨                    📜                   │    │
-│  │     RUNE FORGE           MEMORY WALL             │    │
-│  │    (Upgrades)            (Story)                  │    │
+│  │        🔨                    👤                   │    │
+│  │     RUNE FORGE           NPC DIALOGUE            │    │
+│  │    (Upgrades)         (Story via Blacksmith)      │    │
 │  │                                                  │    │
 │  │               👤                                  │    │
 │  │          THE BLACKSMITH                          │    │

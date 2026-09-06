@@ -103,7 +103,7 @@ Shard:      Chấm vàng nhỏ
 
 ---
 
-## 4. M2 — BETA (Tuần 6-8, ~18 ngày)
+## 4. M2 — BETA (~23.5 ngày dev)
 
 > **Mục tiêu: Art, audio, meta-progression, polish. Game trông đẹp & nghe hay.**
 
@@ -126,7 +126,7 @@ Shard:      Chấm vàng nhỏ
 | **Narrative** | 3-4 memory fragments, trigger on clear | 0.5 | 🟡 |
 | **Settings** | Volume sliders, fullscreen, reduced effects | 1 | 🟡 |
 
-**Total: ~23.5 ngày (buffer → 18 days target)**
+**Total: 23.5 ngày** (con số thật, không nén)
 
 ### M2 Gate
 
@@ -173,25 +173,32 @@ Shard:      Chấm vàng nhỏ
 
 ## 6. Tổng Hợp Timeline
 
+> ⚠️ **Sửa lỗi F:** Đây là **giả định lập kế hoạch**, không phải cam kết phát hành.
+> AI có thể rút ngắn một số công việc code, nhưng thời gian sửa lỗi, tích hợp asset
+> và playtest không tự động giảm theo.
+
 ```
-Tuần 1-2:   M0 GREYBOX     │ Push feel + core loop
-Tuần 3-5:   M1 ALPHA       │ Full gameplay, 5 waves, boss
-Tuần 6-8:   M2 BETA        │ Art, audio, meta, polish
-Tuần 9:     M3 RC          │ Bug fix, balance, ship prep
-            ─────────────────────────────────
-            TOTAL: ~9 tuần (~2 tháng dev)
+Tuần 1-2:    M0 GREYBOX     │ Push feel + core loop         (11 ngày)
+Tuần 3-5:    M1 ALPHA       │ Full gameplay, 5 waves, boss  (15 ngày)
+Tuần 6-10:   M2 BETA        │ Art, audio, meta, polish      (23.5 ngày)
+Tuần 11:     M3 RC          │ Bug fix, balance, ship prep   (5 ngày)
+             ───────────────────────────────────────────
+             SUBTOTAL TASKS: 54.5 ngày
+             BUFFER (10%):   ~6 ngày
+             TOTAL:          ~61 ngày → ~12 tuần (giả định lập kế hoạch)
 ```
 
 ### Dev Days Breakdown
 
-| Milestone | Dev Days | Cumulative |
-|---|---|---|
-| M0 Greybox | 10 | 10 |
-| M1 Alpha | 15 | 25 |
-| M2 Beta | 18 | 43 |
-| M3 RC | 5 | 48 |
-| Buffer | 6 | **54** |
-| **Total** | **54 dev days** | |
+| Milestone | Task Days | Buffer | Total | Cumulative |
+|---|---|---|---|---|
+| M0 Greybox | 11 | — | 11 | 11 |
+| M1 Alpha | 15 | — | 15 | 26 |
+| M2 Beta | 23.5 | — | 23.5 | 49.5 |
+| M3 RC | 5 | — | 5 | 54.5 |
+| Buffer | — | 6 | 6 | **60.5** |
+| **Total** | **54.5** | **6** | **~61 dev days** | |
+
 
 ---
 

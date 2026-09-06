@@ -3,6 +3,9 @@
 **Trạng thái:** ĐÃ CHỐT
 **Mục tiêu:** Kế hoạch chi tiết cho 2 tuần đầu — kiểm chứng "Push có vui không?" trước khi đầu tư thêm
 
+> ⚠️ **Quyền ưu tiên:** Khi mâu thuẫn với tài liệu 01-08, file [`M0_CURRENT_SPEC.md`](file:///d:/HandMakeGame/ARealGame/docs/M0_CURRENT_SPEC.md) thắng.
+> AI phải đọc M0_CURRENT_SPEC.md TRƯỚC khi code bất kỳ thứ gì.
+
 ---
 
 ## 1. Mục Đích Greybox
@@ -109,23 +112,25 @@ Combo text: "x3!" popup trắng, tween scale up + fade out
 - [ ] Wall collision:
   - [ ] Enemy hit wall → stop + take 1 damage + dust particles
   - [ ] Enemy die (HP ≤ 0) → remove + drop shard
-- [ ] Entity collision:
-  - [ ] Enemy hit enemy → transfer 60% force + both take 1 damage
-  - [ ] Domino chain: cascading collisions
+- [ ] Entity collision (CHỈ khi enemy ở state PUSHED, velocity > 30 px/s):
+  - [ ] Enemy PUSHED + hit enemy → transfer 60% velocity + both take 1 damage
+  - [ ] Enemy bị va → chuyển sang PUSHED (propagation)
+  - [ ] Enemy chết (HP≤0) → DYING 0.15s (vẫn có collision body, xác bay tiếp) → xóa
+  - [ ] Domino chain: cascading collisions qua DYING state
 - [ ] Altar seal:
-  - [ ] Enemy enter altar zone → instant kill + flash VFX + bonus shards
+  - [ ] Enemy PUSHED vào altar zone → instant kill + flash VFX + bonus shards (+2)
 - [ ] Enemy death:
-  - [ ] Spawn 1-2 shard objects at death position
+  - [ ] Spawn 1 shard object at death position
 
-**Verify:** Push quái vào tường = chết. Push quái vào quái = cả 2 nhận damage. Push vào altar = instant seal.
+**Verify:** Push quái vào tường = chết. Push quái vào quái (CHỈ khi bị push) = cả 2 nhận damage, chain tiếp qua xác. Quái đi bầy KHÔNG tự giết nhau. Altar seal rõ ràng.
 
 **Ngày 4: Chain Reaction + Game Feel**
 
 **Tasks:**
 - [ ] `chain_system.gd`:
   - [ ] Track chain count khi collisions cascade
-  - [ ] Chain window: 0.5s
-  - [ ] Max depth: 5
+  - [ ] Chain window: 0.6s
+  - [ ] Max depth: 8
   - [ ] Chain counter display (popup text "x3!", "x5!")
 - [ ] Game feel basics:
   - [ ] Screen shake on push (intensity 0.3)
@@ -186,57 +191,61 @@ Combo text: "x3!" popup trắng, tween scale up + fade out
 
 **Tasks:**
 - [ ] Complete state machine in `main.gd`:
-  - [ ] States: MENU → RUNNING → PAUSED → WON → LOST
+  - [ ] States: MENU → RUNNING → PAUSED → DEAD
   - [ ] Transitions, input handling per state
+  - [ ] KHÔNG CÓ WON state trong M0 (infinite spawn mode)
 - [ ] Basic Main Menu:
-  - [ ] "Press SPACE to Start" text
+  - [ ] "Stone Knight — Press SPACE" text
 - [ ] Basic Pause:
   - [ ] ESC toggle, game freezes
-- [ ] Basic Results:
-  - [ ] "You survived X seconds" / "You died"
+- [ ] Basic Results (DEAD):
+  - [ ] "You died" + hiện shard count + best chain
   - [ ] "Press R to restart"
-- [ ] Timer:
-  - [ ] 120s test timer (shortened for testing)
-  - [ ] Display on HUD
 
-**Verify:** Full game loop: Menu → Play → Die/Win → Results → Restart.
+**Verify:** Full game loop: Menu → Play → Die → Results → Restart. Không có win state.
 
 ---
 
-### Ngày 8-9: Multiple Enemies + Arena Tuning
+### Ngày 8-9: Push Tuning + Altar & Shard Polish
 
-**Ngày 8: Skeleton + Wraith**
+> ⚠️ **Sửa lỗi D:** M0 CHỈ CÓ SLIME. Skeleton/Wraith/Spike/Pit/Pillar là M1.
+> 2 ngày này dành cho TINH CHỈNH push feel — phần quan trọng nhất.
+
+**Ngày 8: Push Feel Deep Tuning**
 
 **Tasks:**
-- [ ] `enemy_base.gd`:
+- [ ] `enemy_base.gd` (chuẩn bị cho M1 — chỉ Slime kế thừa):
   - [ ] Base class: HP, speed, push_weight, shard_drop
   - [ ] Common: take_damage(), die(), be_pushed()
-- [ ] `skeleton.gd` extends enemy_base:
-  - [ ] Flocking behavior (separation + cohesion toward player)
-  - [ ] Speed: 80 px/s
-  - [ ] Diamond shape (draw)
-- [ ] `wraith.gd` extends enemy_base:
-  - [ ] Fast (120 px/s), zig-zag movement
-  - [ ] Passes through pillar (not walls)
-  - [ ] Triangle shape (draw)
+  - [ ] PUSHED state machine: NORMAL → PUSHED → DYING
+- [ ] Tuning session (chỉnh `game_config.gd`):
+  - [ ] Push velocity: 400 px/s có đủ thỏa mãn? Thử 300, 400, 500
+  - [ ] Push radius: 50 px đủ? Thử 40, 50, 60
+  - [ ] Deceleration: 800 px/s² đúng feel? Thử 600, 800, 1000
+  - [ ] Cooldown: 3.5s có quá lâu? Thử 2.5, 3.0, 3.5, 4.0
+  - [ ] Chain window: 0.6s? Thử 0.4, 0.6, 0.8
+  - [ ] DYING duration: 0.15s? Thử 0.1, 0.15, 0.2
+- [ ] Ghi lại combo/setting nào FUN NHẤT
 
-**Verify:** 3 enemy types with distinct behavior. Push feels different per type (slime flies far, golem barely moves, wraith slides fast).
+**Verify:** Tìm được sweet spot cho MỌI tham số push. Ghi vào game_config.
 
-**Ngày 9: Arena Elements + Layout**
+**Ngày 9: Altar & Shard Polish + Second Altar Position**
 
 **Tasks:**
-- [ ] Spike wall:
-  - [ ] Like wall but deals 2x damage on slam
-  - [ ] Visual: wall + red stripe
-- [ ] Rune Pillar:
-  - [ ] Blocks enemy movement (not wraith)
-  - [ ] Player can pass through
-  - [ ] Visual: small yellow square
-- [ ] Test arena layout (Wave 3 style):
-  - [ ] Place altar, pit, pillars, spike walls
-  - [ ] Play 5-10 runs, adjust positioning
+- [ ] Altar polish:
+  - [ ] VFX rõ hơn khi seal (particle burst + flash)
+  - [ ] Thử vị trí altar khác nhau (giữa, góc, rìa)
+  - [ ] Chọn vị trí tạo positioning play hay nhất
+- [ ] Shard feel:
+  - [ ] Magnet lerp speed đúng? Không quá nhanh, không quá chậm
+  - [ ] Pickup SFX placeholder (sfxr chime)
+  - [ ] Shard lifetime 8s có đủ?
+- [ ] Thử 2 layout altar:
+  - [ ] Layout A: 1 altar giữa
+  - [ ] Layout B: 1 altar góc trên-phải
+  - [ ] Chọn layout nào tạo gameplay thú vị hơn
 
-**Verify:** All arena elements work with push physics. Interesting positioning choices emerge.
+**Verify:** Altar seal thỏa mãn. Shard collection smooth. Layout tạo positioning choices.
 
 ---
 

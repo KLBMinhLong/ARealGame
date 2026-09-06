@@ -71,8 +71,10 @@ Stone Knight là game **Fantasy Arena Action Roguelite** với cơ chế chiến
 
 | Param | Base Value | Upgrade Range | Ghi chú |
 |---|---|---|---|
-| Radius | 100 px | → 200 px max | Push ảnh hưởng mọi entity trong vòng |
-| Force | 200 px distance | → 400 px max | Khoảng cách quái bị đẩy |
+| Radius | 50 px | Upgrade → 100 px max (trong hệ 480×270) | Bán kính ảnh hưởng |
+| Push Velocity | 400 px/s | Upgrade → 600 px/s max | Tốc độ khởi tạo khi bị đẩy |
+| Push Deceleration | 800 px/s² | Cố định | Giảm tốc tuyến tính |
+| Push Travel (lý thuyết) | ~100 px | Thay đổi theo velocity | Khoảng cách quái bị đẩy |
 | Cooldown | 3.5 s | → 1.8 s min | Thời gian chờ giữa 2 push |
 | Hit-stop | 50 ms | Tăng theo chain | Freeze frame khi push |
 | Stun on target | 0.3 s | — | Quái bị choáng sau bị đẩy |
@@ -81,13 +83,20 @@ Stone Knight là game **Fantasy Arena Action Roguelite** với cơ chế chiến
 
 ```
 1. DIRECTION: Quái bị đẩy THEO HƯỚNG từ Player → Enemy (radial outward)
-2. FORCE DECAY: Quái gần hơn → bị đẩy mạnh hơn (linear decay with distance)
-3. WALL COLLISION: Quái chạm tường → dừng lại + nhận Wall Damage
-4. ENTITY COLLISION: Quái chạm quái khác → truyền 60% lực + cả 2 nhận Domino Damage
-5. ALTAR COLLISION: Quái chạm Altar → Phong ấn tức thì (instant kill) + bonus loot
-6. PIT COLLISION: Quái chạm Vực → Rơi xuống (instant kill) + KHÔNG rơi loot
-7. CHAIN WINDOW: 0.5s sau va chạm, nếu quái tiếp tục va → chain tiếp
-8. CHAIN LIMIT: Max chain depth = 5 (tránh infinite loop)
+2. VELOCITY DECAY: Quái gần player hơn → nhận 100% velocity. Tại rìa radius → 50%. Linear decay.
+3. PUSHED STATE: Quái nhận velocity > 0 → chuyển sang state PUSHED. 
+   PUSHED tắt khi velocity < 30 px/s HOẶC sau 0.8s (safety timeout).
+   CHỈ enemy ở state PUSHED mới gây/nhận collision damage.
+4. WALL COLLISION: Enemy PUSHED + chạm tường → dừng + nhận Wall Damage
+5. ENTITY COLLISION: Enemy PUSHED + chạm enemy khác → truyền 60% velocity + CẢ HAI nhận Domino Damage.
+   Enemy bị va cũng chuyển sang PUSHED (propagation).
+6. DYING STATE: Enemy chết (HP≤0) → DYING 0.15s. Trong DYING vẫn có collision body,
+   vẫn truyền lực nếu va chạm tiếp. Sau 0.15s → xóa khỏi scene.
+   Mục đích: giữ chain sống (A→B chết→B xác bay tiếp→va C).
+7. ALTAR COLLISION: Enemy PUSHED + chạm Altar → Phong ấn tức thì (instant kill) + bonus loot
+8. PIT COLLISION: Enemy PUSHED + chạm Vực → Rơi xuống (instant kill) + KHÔNG rơi loot
+9. CHAIN WINDOW: 0.6s sau va chạm cuối, nếu tiếp tục va → chain tiếp
+10. CHAIN LIMIT: Max chain depth = 8 (safety limit, tránh infinite loop)
 ```
 
 ### 5.3. Damage System
@@ -128,7 +137,8 @@ Stone Knight là game **Fantasy Arena Action Roguelite** với cơ chế chiến
 | Spawn location | Rìa arena, cách player ≥ 150px |
 | Max concurrent enemies | 30 |
 | Spawn interval | Start: 1.5s → End: 0.5s (mỗi wave tuyến tính) |
-| Wave end | Timer hết → quái còn lại biến mất (fade out 1s) |
+| Wave 1-4 end | Timer hết → quái còn lại biến mất (fade out 1s) → wave clear |
+| Wave 5 end | **Boss HP = 0 → WIN.** Timer hết + boss sống → **LOST** (thất bại, không đủ mạnh). Quái thường vẫn fade khi timer hết, chỉ boss ở lại. |
 
 ### 6.3. Wave Transition
 

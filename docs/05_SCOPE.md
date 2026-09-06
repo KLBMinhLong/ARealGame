@@ -310,12 +310,14 @@ Chỉ giữ **6 upgrades** cho v1.0 — đủ variety, ít balance work:
 
 | ID | Name | Category | Effect/tier | Max |
 |---|---|---|---|---|
-| UPG_FORCE | Heavy Push | Offensive | Push force +30% | 3 |
+| UPG_FORCE | Heavy Push | Offensive | Push velocity +30% | 3 |
 | UPG_RADIUS | Wider Reach | Offensive | Push radius +40% | 3 |
+| UPG_ECHO | Echo Pulse | **Offensive (Behavior)** | **Pulse lặp lại yếu hơn sau 0.4s delay (40% velocity, 60% radius). Tier 2: delay 0.3s. Tier 3: 60% velocity.** | 3 |
 | UPG_HP | Stone Heart | Defensive | Max HP +1 | 2 |
 | UPG_SPEED | Swift Stone | Defensive | Move speed +15% | 3 |
-| UPG_MAGNET | Soul Magnet | Utility | Shard pickup radius +60% | 3 |
 | UPG_CD | Quick Charge | Utility | Push cooldown -20% | 3 |
+
+> ⚠️ **Sửa lỗi E:** UPG_MAGNET (Soul Magnet) bị thay bằng **UPG_ECHO (Echo Pulse)** — upgrade đổi HÀNH VI chơi, không chỉ tăng chỉ số. Echo Pulse tạo cơ hội chain mới (double push = positioning khác) thay vì chỉ hút shard xa hơn.
 
 ## 5. V1.0 Permanent Upgrades (Sau Khi Cắt)
 
@@ -330,8 +332,10 @@ Chỉ giữ **6 permanents** — đơn giản, rõ ràng:
 | PERM_MAGNET | Soul Attunement | 30 | Base shard radius +30% |
 | PERM_WAVE_BONUS | Dungeon Insight | 45 | +20% Rune Stones earned |
 
-**Tổng RS cần cho 100% v1:** ~410 RS
-**Runs trung bình:** ~35-45 runs (~5-7 giờ chơi)
+**Tổng RS cần cho 100% v1:** 350 RS (10+25+60 + 15+40 + 15+40 + 20+50 + 30 + 45)
+**Runs trung bình:** ~30-35 runs (~4-6 giờ chơi, ~12 RS/run trung bình)
+
+> ⚠️ **Sửa lỗi F:** Trước đó ghi ~410 RS — sai phép cộng. Đúng là **350 RS**.
 
 ---
 

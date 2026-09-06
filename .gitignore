@@ -1,26 +1,23 @@
-# Generated Godot cache. Keep .gd.uid and asset .import metadata in Git.
+# Godot 4.x
 .godot/
 
-# Build products and local logs
-builds/*
-!builds/.gitkeep
-logs/*
-!logs/.gitkeep
-
-# Local-only configuration and secrets
-.env
-.env.*
-!.env.example
-*.keystore
-*.pfx
-*.p12
-*.pem
-*.key
-*.log
-*.tmp
+# OS generated
 .DS_Store
 Thumbs.db
-.idea/
+desktop.ini
+
+# IDE
+*.swp
+*.swo
+*~
 .vscode/
-__pycache__/
-*.pyc
+.idea/
+
+# Builds
+builds/
+export/
+*.exe
+*.pck
+
+# Logs
+*.log

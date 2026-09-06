@@ -1,134 +1,157 @@
+## player.gd — Stone Knight M0
+## Di chuyển 8 hướng + Arcane Pulse + HP/damage.
+## Placeholder: cyan square 12×12 px.
 extends Node2D
-## Intentional simple geometry: no physics body and no obstacle collisions.
-## Main calls tick(); one owner controls pause, update order, and game state.
 
-signal health_changed(value: int)
-signal pulse_triggered
+signal pulse_fired(position: Vector2, radius: float)
+signal player_hit(hp_remaining: int)
+signal player_died
 
-const Config = preload("res://scripts/core/game_config.gd")
-const PULSE_VISUAL_DURATION: float = 0.25
-var max_health: int = Config.MAX_HEALTH
-var health: int = Config.MAX_HEALTH
-var grace_remaining: float = 0.0
-var pulse_cooldown_remaining: float = 0.0
-var pulse_cooldown_max: float = Config.PULSE_COOLDOWN_SECONDS
-var pulse_radius: float = Config.PULSE_RADIUS
-var pulse_push_force: float = 1.0
-var magnet_radius: float = 120.0
-var magnet_speed: float = 280.0
-var tesla_arc_level: int = 0
-var aegis_shield_duration: float = 0.0
+# ─── State ───────────────────────────────────────────────
+var hp: int = Config.PLAYER_MAX_HP
+var max_hp: int = Config.PLAYER_MAX_HP
+var pulse_cooldown_left: float = 0.0
+var grace_timer: float = 0.0  # Bất tử sau nhận damage
+var is_invulnerable: bool = false
 
-var pulse_visual_timer: float = 0.0
-var facing: Vector2 = Vector2.UP
-var reduced_effects: bool = false
+# ─── Pulse VFX ───────────────────────────────────────────
+var pulse_vfx_timer: float = 0.0
+var pulse_vfx_radius: float = 0.0
+
+
+func _ready() -> void:
+	reset()
+
 
 func reset() -> void:
-	position = Config.PLAYFIELD.get_center()
-	health = max_health
-	grace_remaining = 0.0
-	pulse_cooldown_remaining = 0.0
-	pulse_visual_timer = 0.0
-	facing = Vector2.UP
-	pulse_radius = Config.PULSE_RADIUS
-	pulse_push_force = 1.0
-	pulse_cooldown_max = Config.PULSE_COOLDOWN_SECONDS
-	magnet_radius = 120.0
-	magnet_speed = 280.0
-	tesla_arc_level = 0
-	aegis_shield_duration = 0.0
-	health_changed.emit(health)
+	hp = Config.PLAYER_MAX_HP
+	max_hp = Config.PLAYER_MAX_HP
+	position = Config.PLAYER_START
+	pulse_cooldown_left = 0.0
+	grace_timer = 0.0
+	is_invulnerable = false
+	pulse_vfx_timer = 0.0
+
+
+func _process(delta: float) -> void:
+	_handle_movement(delta)
+	_handle_pulse_cooldown(delta)
+	_handle_grace_period(delta)
+	_handle_pulse_vfx(delta)
 	queue_redraw()
 
-func tick(delta: float) -> void:
-	grace_remaining = maxf(0.0, grace_remaining - delta)
-	pulse_cooldown_remaining = maxf(0.0, pulse_cooldown_remaining - delta)
-	pulse_visual_timer = maxf(0.0, pulse_visual_timer - delta)
-	if Input.is_action_just_pressed("pulse") and pulse_cooldown_remaining <= 0.0:
-		trigger_pulse()
-	var direction: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	move_by(direction, delta)
-	queue_redraw()
 
-func trigger_pulse() -> bool:
-	if pulse_cooldown_remaining > 0.0:
-		return false
-	pulse_cooldown_remaining = pulse_cooldown_max
-	pulse_visual_timer = PULSE_VISUAL_DURATION
-	if aegis_shield_duration > 0.0:
-		grace_remaining = maxf(grace_remaining, aegis_shield_duration)
-	pulse_triggered.emit()
-	queue_redraw()
-	return true
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("pulse") and _can_pulse():
+		_fire_pulse()
 
-func move_by(direction: Vector2, delta: float) -> void:
-	var normalized_input: Vector2 = direction.limit_length(1.0)
-	if normalized_input.length_squared() > 0.001:
-		facing = normalized_input.normalized()
-	position = Config.clamp_inside(position + normalized_input * Config.PLAYER_SPEED * delta, Config.PLAYER_RADIUS)
 
-func take_hit() -> bool:
-	if health <= 0 or grace_remaining > 0.0:
-		return false
-	health = maxi(0, health - 1)
-	grace_remaining = Config.HIT_GRACE_SECONDS
-	health_changed.emit(health)
-	queue_redraw()
-	return true
+# ═══════════════════════════════════════════════════════════
+# MOVEMENT
+# ═══════════════════════════════════════════════════════════
+
+func _handle_movement(delta: float) -> void:
+	var input_dir := Vector2.ZERO
+	input_dir.x = Input.get_axis("move_left", "move_right")
+	input_dir.y = Input.get_axis("move_up", "move_down")
+
+	if input_dir.length() > 0:
+		input_dir = input_dir.normalized()
+
+	var velocity := input_dir * Config.PLAYER_SPEED
+	position += velocity * delta
+
+	# Clamp inside playable area
+	position.x = clampf(position.x, Config.ARENA_ORIGIN.x + Config.PLAYER_HALF,
+						Config.ARENA_END.x - Config.PLAYER_HALF)
+	position.y = clampf(position.y, Config.ARENA_ORIGIN.y + Config.PLAYER_HALF,
+						Config.ARENA_END.y - Config.PLAYER_HALF)
+
+
+# ═══════════════════════════════════════════════════════════
+# ARCANE PULSE
+# ═══════════════════════════════════════════════════════════
+
+func _can_pulse() -> bool:
+	return pulse_cooldown_left <= 0.0
+
+
+func _fire_pulse() -> void:
+	pulse_cooldown_left = Config.PULSE_COOLDOWN
+	pulse_vfx_timer = Config.PULSE_VFX_DURATION
+	pulse_vfx_radius = 0.0
+	pulse_fired.emit(position, Config.PULSE_RADIUS)
+
+
+func _handle_pulse_cooldown(delta: float) -> void:
+	if pulse_cooldown_left > 0.0:
+		pulse_cooldown_left = maxf(pulse_cooldown_left - delta, 0.0)
+
+
+# ═══════════════════════════════════════════════════════════
+# DAMAGE
+# ═══════════════════════════════════════════════════════════
+
+func take_damage(amount: int) -> void:
+	if is_invulnerable:
+		return
+
+	hp -= amount
+	is_invulnerable = true
+	grace_timer = Config.PLAYER_GRACE_PERIOD
+	player_hit.emit(hp)
+
+	if hp <= 0:
+		player_died.emit()
+
+
+func _handle_grace_period(delta: float) -> void:
+	if is_invulnerable:
+		grace_timer -= delta
+		if grace_timer <= 0.0:
+			is_invulnerable = false
+			grace_timer = 0.0
+
+
+# ═══════════════════════════════════════════════════════════
+# PULSE VFX (Expanding ring)
+# ═══════════════════════════════════════════════════════════
+
+func _handle_pulse_vfx(delta: float) -> void:
+	if pulse_vfx_timer > 0.0:
+		pulse_vfx_timer -= delta
+		var progress := 1.0 - (pulse_vfx_timer / Config.PULSE_VFX_DURATION)
+		pulse_vfx_radius = Config.PULSE_RADIUS * progress
+
+
+# ═══════════════════════════════════════════════════════════
+# DRAW (Placeholder visuals)
+# ═══════════════════════════════════════════════════════════
 
 func _draw() -> void:
-	var r: float = Config.PLAYER_RADIUS
-	var ortho: Vector2 = facing.orthogonal()
+	# Player body — cyan square
+	var color := Config.COLOR_PLAYER
+	if is_invulnerable:
+		# Flash effect: toggle visibility every 0.1s
+		if fmod(grace_timer, 0.2) < 0.1:
+			color = Config.COLOR_PLAYER_HIT
+		else:
+			color.a = 0.5
 
-	# 1. Rear Thruster Flare (when moving)
-	var thruster_pos: Vector2 = -facing * (r - 2.0)
-	var thruster_flare: Vector2 = -facing * (r + 7.0 + randf_range(-1.5, 2.0))
-	draw_colored_polygon(PackedVector2Array([
-		thruster_pos + ortho * 4.0,
-		thruster_pos - ortho * 4.0,
-		thruster_flare
-	]), Color("00f0ff") * Color(1, 1, 1, 0.85))
-	draw_circle(thruster_pos, 2.5, Color("38bdf8"))
+	var rect := Rect2(-Config.PLAYER_HALF, -Config.PLAYER_HALF,
+					  Config.PLAYER_SIZE, Config.PLAYER_SIZE)
+	draw_rect(rect, color)
 
-	# 2. Side Stabilizer Fins / Antennas
-	var fin_left: Vector2 = -facing * 4.0 - ortho * (r + 4.0)
-	var fin_right: Vector2 = -facing * 4.0 + ortho * (r + 4.0)
-	draw_line(Vector2.ZERO - ortho * 8.0, fin_left, Color("52708b"), 2.0)
-	draw_line(Vector2.ZERO + ortho * 8.0, fin_right, Color("52708b"), 2.0)
-	draw_circle(fin_left, 2.0, Color("00f0ff"))
-	draw_circle(fin_right, 2.0, Color("00f0ff"))
+	# Pulse cooldown indicator — small arc at bottom
+	if pulse_cooldown_left > 0.0:
+		var cd_progress := 1.0 - (pulse_cooldown_left / Config.PULSE_COOLDOWN)
+		var arc_angle := cd_progress * TAU
+		draw_arc(Vector2(0, Config.PLAYER_HALF + 3), 3.0, -PI / 2, -PI / 2 + arc_angle, 
+				 12, Config.COLOR_PLAYER, 1.0)
 
-	# 3. Main Spherical Metal Hull
-	draw_circle(Vector2.ZERO, r + 2.0, Color(0.0, 0.9, 1.0, 0.15)) # Ambient glow
-	draw_circle(Vector2.ZERO, r, Color("222f3e")) # Dark steel plate
-	draw_arc(Vector2.ZERO, r, 0.0, TAU, 32, Color("576574"), 1.5, true) # Rim plating seam
-
-	# 4. Cute Chibi Visor & Cyan LED Eye
-	var eye_center: Vector2 = facing * 4.5
-	var eye_width: float = 6.0
-	draw_circle(eye_center, eye_width, Color("0c141f")) # Dark visor background
-	draw_circle(eye_center, 3.8, Color("00f0ff")) # Glowing cyan iris
-	draw_circle(eye_center + Vector2(-1.0, -1.0), 1.4, Color.WHITE) # Sparkle highlight
-
-	# 5. Invulnerability Shield (Electric Bubble)
-	if grace_remaining > 0.0:
-		var shield_alpha: float = clampf(grace_remaining / Config.HIT_GRACE_SECONDS, 0.2, 0.9)
-		draw_arc(Vector2.ZERO, r + 9.0, 0.0, TAU, 32, Color(0.95, 0.85, 0.40, shield_alpha * 0.8), 2.0, true)
-		draw_circle(Vector2.ZERO, r + 9.0, Color(1.0, 0.9, 0.4, 0.12 * shield_alpha))
-
-	# 6. Pulse Charging Indicator Arc
-	if pulse_cooldown_remaining > 0.0:
-		var recharge_ratio: float = 1.0 - clampf(pulse_cooldown_remaining / pulse_cooldown_max, 0.0, 1.0)
-		draw_arc(Vector2.ZERO, r + 5.0, -PI / 2.0, -PI / 2.0 + TAU * recharge_ratio, 32, Color("00f0ff") * Color(1, 1, 1, 0.6), 2.0, true)
-	else:
-		# Subtle ready ring
-		draw_arc(Vector2.ZERO, r + 5.0, 0.0, TAU, 32, Color(0.0, 0.94, 1.0, 0.35), 1.2, true)
-
-	# 7. Pulse Shockwave Expanding Ring
-	if pulse_visual_timer > 0.0:
-		var progress: float = 1.0 - (pulse_visual_timer / PULSE_VISUAL_DURATION)
-		var shock_radius: float = lerpf(r, pulse_radius, progress)
-		var base_alpha: float = 0.35 if reduced_effects else 0.75
-		var shock_alpha: float = (1.0 - progress) * base_alpha
-		draw_arc(Vector2.ZERO, shock_radius, 0.0, TAU, 48, Color("00f0ff") * Color(1, 1, 1, shock_alpha), 2.5, true)
-		draw_circle(Vector2.ZERO, shock_radius * 0.9, Color(0.0, 0.94, 1.0, shock_alpha * 0.08))
+	# Pulse VFX — expanding ring
+	if pulse_vfx_timer > 0.0:
+		var alpha := pulse_vfx_timer / Config.PULSE_VFX_DURATION
+		var ring_color := Color(Config.COLOR_PULSE_RING.r, Config.COLOR_PULSE_RING.g,
+								Config.COLOR_PULSE_RING.b, alpha)
+		draw_arc(Vector2.ZERO, pulse_vfx_radius, 0, TAU, 32, ring_color, 1.5)
