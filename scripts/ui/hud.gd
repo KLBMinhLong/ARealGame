@@ -34,7 +34,7 @@ func _ready() -> void:
 	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	drones_label = _label(root, "DRONES  00", Vector2(906, 67), Vector2(206, 24), 14, MUTED)
 	drones_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_label(root, "WASD / ARROWS   Move       ESC   Pause       R   Retry after a run", Vector2(40, 612), Vector2(930, 26), 16, MUTED)
+	_label(root, "WASD / ARROWS   Move       SPACE   Pulse (4s CD)       ESC   Pause       R   Retry", Vector2(40, 612), Vector2(930, 26), 16, MUTED)
 	shade = ColorRect.new()
 	shade.color = Color(0.025, 0.045, 0.065, 0.76)
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -140,7 +140,7 @@ func show_panel(mode: String, elapsed: float = 0.0) -> void:
 			title_label.text = "Dodge. Survive. Repeat."
 			body_label.text = "Move with WASD or arrow keys.
 Avoid the orange drones for 3 minutes.
-You have 3 hits. No attacks yet."
+Press SPACE to pulse and push drones away."
 			primary_button.text = "START RUN"
 		"paused":
 			title_label.text = "Take a breath."

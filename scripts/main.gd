@@ -24,6 +24,7 @@ func _ready() -> void:
 	hud.menu_requested.connect(return_to_menu)
 	hud.quit_requested.connect(func() -> void: get_tree().quit())
 	player.health_changed.connect(hud.set_health)
+	player.pulse_triggered.connect(_on_player_pulse)
 	return_to_menu()
 
 func _notification(what: int) -> void:
@@ -91,6 +92,16 @@ func _physics_process(delta: float) -> void:
 			if state != State.RUNNING:
 				break
 	hud.update_run(elapsed, enemies.get_child_count())
+
+func _on_player_pulse() -> void:
+	if state != State.RUNNING:
+		return
+	for child in enemies.get_children():
+		var enemy: EnemyActor = child as EnemyActor
+		if enemy == null:
+			continue
+		if enemy.position.distance_to(player.position) <= Config.PULSE_RADIUS:
+			enemy.push_back(player.position, Config.PULSE_PUSH_DISTANCE, Config.PULSE_STUN_SECONDS)
 
 func spawn_one() -> void:
 	if enemies.get_child_count() >= Config.MAX_ENEMIES:

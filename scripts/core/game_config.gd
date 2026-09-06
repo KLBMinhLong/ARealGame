@@ -15,6 +15,10 @@ const SPAWN_INTERVAL_START: float = 1.35
 const SPAWN_INTERVAL_END: float = 0.48
 const MAX_ENEMIES: int = 64
 const MIN_SPAWN_DISTANCE: float = 210.0
+const PULSE_RADIUS: float = 120.0
+const PULSE_PUSH_DISTANCE: float = 80.0
+const PULSE_COOLDOWN_SECONDS: float = 4.0
+const PULSE_STUN_SECONDS: float = 0.25
 
 static func clamp_inside(point: Vector2, radius: float) -> Vector2:
 	return Vector2(

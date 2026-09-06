@@ -42,7 +42,7 @@ for path in sorted(root.rglob('*')):
 project = (root / 'project.godot').read_text(encoding='utf-8')
 expect('renderer/rendering_method="gl_compatibility"' in project, 'Compatibility renderer configured')
 expect('run/main_scene="res://scenes/main.tscn"' in project, 'Main scene configured')
-for action in ['move_left', 'move_right', 'move_up', 'move_down', 'pause_game', 'restart_game']:
+for action in ['move_left', 'move_right', 'move_up', 'move_down', 'pause_game', 'restart_game', 'pulse']:
     expect(action + '={' in project, f'Input action configured: {action}')
 expect('4.6.3.stable.official [7d41c59c4]' in (root / 'ENGINE_VERSION.txt').read_text(), 'User-reported exact version recorded')
 for rule in (root / '.agents' / 'rules').glob('*.md'):

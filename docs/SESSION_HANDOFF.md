@@ -10,19 +10,24 @@
 
 ## Việc tiếp theo
 
-Chuyển sang Milestone M2: Triển khai nhiệm vụ **T200 — Xung đẩy bằng phím Space** (bán kính 120px, đẩy quái 80px, hồi chiêu 4s, khựng 0.25s).
+Chủ project mở Godot bấm F5 kiểm thử tay cơ chế Xung đẩy (phím Space):
+1. Bấm Space khi quái đến gần: quái trong bán kính 120px bị đẩy lùi 80px và khựng 0.25s.
+2. Bấm Space liên tục: kiểm tra hồi chiêu 4 giây (không được xả liên tục).
+3. Bấm Esc pause: kiểm tra hồi chiêu đóng băng.
+4. Xác nhận kết quả test tay để chuyển T200 sang DONE và tiếp tục sang T210 (Thanh hiển thị hồi chiêu trên UI).
 
 ## Cập nhật phiên
 
 ```text
 Ngày: 06/09/2026
-Task: T004 (Hoàn thành M0 baseline) & T100 (Duyệt brief cơ chế xung)
+Task: T200 — Xung đẩy bằng phím Space
 Commit gần nhất: chore: add verified Godot starter baseline
-Thay đổi chưa commit: Không (workspace sạch)
-Files/wiring vừa đổi: docs/TASKS.md, docs/SESSION_HANDOFF.md, .git/
-Test đã chạy và log: tools/verify_structure.py (66/66 PASS), kiểm thử runtime manual trên Godot bởi chủ project PASS
-Test chưa chạy: Kiểm thử xung đẩy T200 (chưa code)
+Thay đổi chưa commit: project.godot, game_config.gd, player.gd, enemy.gd, main.gd, hud.gd, smoke_test.gd, verify_structure.py, docs/
+Files/wiring vừa đổi: project.godot (action pulse), game_config.gd (PULSE_* consts), player.gd (signal pulse_triggered, cooldown, draw wave), enemy.gd (push_back, stun), main.gd (_on_player_pulse wiring), hud.gd (instruction label)
+Test đã chạy và log: tools/verify_structure.py (68/68 PASS)
+Test chưa chạy: Kiểm thử tay trên Godot bởi chủ project
 Bug còn: Không
-Quyết định đang chờ chủ project: Đã chốt duyệt cơ chế Xung đẩy (Space)
-Task tiếp theo (chỉ một): T200 — Triển khai cơ chế Xung đẩy (Space)
+Quyết định đang chờ chủ project: Kiểm thử trải nghiệm xung Space trên máy
+Task tiếp theo (chỉ một): T210 — UI hồi chiêu + feedback xung
 ```
+
