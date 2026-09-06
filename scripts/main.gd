@@ -49,14 +49,14 @@ func start_run() -> void:
 	player.reset()
 	state = State.RUNNING
 	hud.hide_panel()
-	hud.update_run(elapsed, 0)
+	hud.update_run(elapsed, 0, player.pulse_cooldown_remaining)
 
 func return_to_menu() -> void:
 	state = State.MENU
 	_clear_enemies()
 	elapsed = 0.0
 	player.reset()
-	hud.update_run(0.0, 0)
+	hud.update_run(0.0, 0, 0.0)
 	hud.show_panel("menu")
 
 func pause_run() -> void:
@@ -91,7 +91,7 @@ func _physics_process(delta: float) -> void:
 			register_hit()
 			if state != State.RUNNING:
 				break
-	hud.update_run(elapsed, enemies.get_child_count())
+	hud.update_run(elapsed, enemies.get_child_count(), player.pulse_cooldown_remaining)
 
 func _on_player_pulse() -> void:
 	if state != State.RUNNING:
@@ -120,7 +120,7 @@ func finish_run(won: bool) -> void:
 	if state != State.RUNNING:
 		return
 	state = State.WON if won else State.LOST
-	hud.update_run(elapsed, enemies.get_child_count())
+	hud.update_run(elapsed, enemies.get_child_count(), player.pulse_cooldown_remaining)
 	hud.show_panel("won" if won else "lost", elapsed)
 
 func _clear_enemies() -> void:

@@ -11,6 +11,7 @@ const INK: Color = Color("eef5fa")
 const MUTED: Color = Color("afc2d0")
 var timer_label: Label
 var health_label: Label
+var pulse_label: Label
 var drones_label: Label
 var shade: ColorRect
 var panel: PanelContainer
@@ -30,6 +31,7 @@ func _ready() -> void:
 	_label(root, "VONG VAY", Vector2(40, 24), Vector2(420, 34), 27, INK)
 	_label(root, "ARENA LAB  /  PLAYABLE STARTER 0.1", Vector2(41, 64), Vector2(500, 24), 14, MUTED)
 	health_label = _label(root, "HULL  3 / 3", Vector2(620, 31), Vector2(190, 30), 22, INK)
+	pulse_label = _label(root, "PULSE  READY", Vector2(620, 67), Vector2(220, 24), 14, Color("64b7ff"))
 	timer_label = _label(root, "00:00 / 03:00", Vector2(852, 29), Vector2(260, 34), 24, INK)
 	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	drones_label = _label(root, "DRONES  00", Vector2(906, 67), Vector2(206, 24), 14, MUTED)
@@ -117,10 +119,17 @@ func _button(text: String, primary: bool) -> Button:
 func set_health(value: int) -> void:
 	health_label.text = "HULL  %d / %d" % [value, Config.MAX_HEALTH]
 
-func update_run(elapsed: float, enemy_count: int) -> void:
+func update_run(elapsed: float, enemy_count: int, pulse_cooldown: float = 0.0) -> void:
 	var seconds: int = int(minf(elapsed, Config.RUN_SECONDS))
 	timer_label.text = "%02d:%02d / 03:00" % [int(seconds / 60.0), seconds % 60]
 	drones_label.text = "DRONES  %02d" % enemy_count
+	if pulse_label != null:
+		if pulse_cooldown <= 0.001:
+			pulse_label.text = "PULSE  READY"
+			pulse_label.add_theme_color_override("font_color", Color("64b7ff"))
+		else:
+			pulse_label.text = "PULSE  %.1fs" % pulse_cooldown
+			pulse_label.add_theme_color_override("font_color", MUTED)
 
 func hide_panel() -> void:
 	panel.hide()

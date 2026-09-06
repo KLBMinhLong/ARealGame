@@ -68,6 +68,13 @@ func _draw() -> void:
 	if grace_remaining > 0.0:
 		# Steady ring, not flashing. Pause freezes its remaining time.
 		draw_arc(Vector2.ZERO, 23.0, -PI / 2.0, -PI / 2.0 + TAU * grace_remaining / Config.HIT_GRACE_SECONDS, 40, Color("f2e5be"), 2.5, true)
+	if pulse_cooldown_remaining > 0.0:
+		# Recharging arc filling up clockwise
+		var recharge_ratio: float = 1.0 - clampf(pulse_cooldown_remaining / Config.PULSE_COOLDOWN_SECONDS, 0.0, 1.0)
+		draw_arc(Vector2.ZERO, 18.0, -PI / 2.0, -PI / 2.0 + TAU * recharge_ratio, 32, Color(0.39, 0.72, 1.0, 0.45), 1.5, true)
+	else:
+		# Subtle ring indicating pulse is ready
+		draw_arc(Vector2.ZERO, 18.0, 0.0, TAU, 32, Color(0.39, 0.72, 1.0, 0.22), 1.0, true)
 	if pulse_visual_timer > 0.0:
 		var progress: float = 1.0 - (pulse_visual_timer / PULSE_VISUAL_DURATION)
 		var shock_radius: float = lerpf(Config.PLAYER_RADIUS, Config.PULSE_RADIUS, progress)
