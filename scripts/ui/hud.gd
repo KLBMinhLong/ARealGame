@@ -67,7 +67,7 @@ func show_death(shards: int, best_chain: int) -> void:
 # HUD UPDATE (called every frame during RUNNING)
 # ═══════════════════════════════════════════════════════════
 
-func update_hud(hp: int, max_hp: int, cd_left: float, cd_max: float, shards: int, best_chain: int) -> void:
+func update_hud(hp: int, max_hp: int, cd_left: float, _cd_max: float, shards: int, best_chain: int) -> void:
 	if hud_state != HUDState.HUD:
 		return
 	
