@@ -23,6 +23,7 @@ var current_chain: int = 0
 @onready var spawn_timer: Timer = $SpawnTimer
 @onready var push_system: Node = $PushSystem
 @onready var hitstop: Node = $HitstopSystem  # F002
+@onready var combo_popup: Node = $HUD/ComboPopup  # F003
 
 
 func _ready() -> void:
@@ -41,6 +42,8 @@ func _ready() -> void:
 	# F002: Hit-stop wiring
 	push_system.pulse_hit.connect(hitstop.on_pulse_hit)
 	push_system.chain_updated.connect(hitstop.on_chain_hit)
+	# F003: Combo popup wiring
+	push_system.chain_updated.connect(combo_popup.on_chain_updated)
 	_enter_state(GameState.MENU)
 
 
@@ -117,7 +120,8 @@ func _start_run() -> void:
 	spawn_timer.start()
 	hud.show_hud()
 	camera.clear()  # F001
-	hitstop.clear()  # F002: restore time_scale
+	hitstop.clear()  # F002
+	combo_popup.clear()  # F003
 	_enter_state(GameState.RUNNING)
 
 
@@ -166,7 +170,8 @@ func _show_menu() -> void:
 	spawn_timer.stop()
 	hud.show_menu()
 	camera.clear()  # F001
-	hitstop.clear()  # F002: restore time_scale
+	hitstop.clear()  # F002
+	combo_popup.clear()  # F003
 
 
 # ═══════════════════════════════════════════════════════════
