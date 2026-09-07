@@ -5,6 +5,7 @@ class_name EnemyBase
 extends Node2D
 
 signal died(enemy_position: Vector2, shard_amount: int, is_altar_seal: bool)
+signal wall_slammed(at_position: Vector2)
 
 enum EnemyState { NORMAL, PUSHED, DYING }
 
@@ -170,7 +171,7 @@ func _check_wall_collision() -> void:
 	
 	if hit_wall:
 		take_damage(Config.DAMAGE_WALL_SLAM)
-		# Signal for VFX/SFX (wall dust, screen shake) sẽ thêm sau
+		wall_slammed.emit(position)
 
 
 func _check_altar_collision() -> void:

@@ -18,7 +18,7 @@ var current_chain: int = 0
 @onready var enemies_container: Node2D = $World/Enemies
 @onready var loot_container: Node2D = $World/Loot
 @onready var vfx: Node2D = $VFX
-@onready var camera: Camera2D = $Camera
+@onready var camera: Camera2D = $Camera  # Has camera_shake.gd script
 @onready var hud: CanvasLayer = $HUD
 @onready var spawn_timer: Timer = $SpawnTimer
 @onready var push_system: Node = $PushSystem
@@ -29,6 +29,9 @@ func _ready() -> void:
 	push_system.setup(player, enemies_container)
 	push_system.chain_updated.connect(on_chain_updated)
 	player.player_died.connect(on_player_died)
+	# F001: Camera shake wiring
+	player.pulse_fired.connect(_on_pulse_for_shake)
+	push_system.chain_updated.connect(camera.on_chain_updated)
 	_enter_state(GameState.MENU)
 
 
@@ -81,11 +84,13 @@ func _enter_state(new_state: GameState) -> void:
 
 		GameState.PAUSED:
 			get_tree().paused = true
+			camera.clear()  # F001: no residual shake offset during pause
 			hud.show_pause()
 
 		GameState.DEAD:
 			get_tree().paused = false
 			spawn_timer.stop()
+			camera.clear()  # F001: clear shake on death
 			hud.show_death(shard_count, best_chain)
 
 
@@ -100,6 +105,7 @@ func _start_run() -> void:
 	player.visible = true
 	spawn_timer.start()
 	hud.show_hud()
+	camera.clear()  # F001: reset shake on restart
 	_enter_state(GameState.RUNNING)
 
 
@@ -147,6 +153,7 @@ func _show_menu() -> void:
 	_clear_entities()
 	spawn_timer.stop()
 	hud.show_menu()
+	camera.clear()  # F001: reset shake on menu
 
 
 # ═══════════════════════════════════════════════════════════
@@ -170,12 +177,11 @@ func _on_spawn_timer_timeout() -> void:
 
 
 func _spawn_slime() -> void:
-	# Placeholder: tạo slime node trực tiếp
-	# Sẽ chuyển sang scene instantiate sau
 	var slime := preload("res://scenes/enemies/slime.tscn").instantiate()
 	slime.position = _get_spawn_position()
 	slime.target = player
 	slime.died.connect(_on_enemy_died)
+	slime.wall_slammed.connect(_on_wall_slam_for_shake)  # F001
 	enemies_container.add_child(slime)
 
 
@@ -235,3 +241,15 @@ func on_chain_updated(chain_count: int) -> void:
 	current_chain = chain_count
 	if chain_count > best_chain:
 		best_chain = chain_count
+
+
+# ═══════════════════════════════════════════════════════════
+# F001: CAMERA SHAKE EVENT ADAPTERS
+# ═══════════════════════════════════════════════════════════
+
+func _on_pulse_for_shake(_position: Vector2, _radius: float) -> void:
+	camera.request_shake(Config.SHAKE_PULSE)
+
+
+func _on_wall_slam_for_shake(_at_position: Vector2) -> void:
+	camera.request_shake(Config.SHAKE_WALL_SLAM)

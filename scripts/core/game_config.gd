@@ -62,11 +62,15 @@ const HITSTOP_PULSE := 0.04  # s (40ms) — freeze khi pulse
 const HITSTOP_CHAIN_ADD := 0.01  # s — thêm per chain level (cap 80ms total)
 const HITSTOP_MAX := 0.08  # s
 
-const SHAKE_PULSE := 0.2  # trauma intensity
-const SHAKE_WALL_SLAM := 0.15
-const SHAKE_CHAIN_3 := 0.3
-const SHAKE_CHAIN_5 := 0.5
-const SHAKE_DECAY := 0.8  # trauma decay per second
+const SHAKE_PULSE := 0.2  # trauma add — Pulse activation
+const SHAKE_WALL_SLAM := 0.15  # trauma add — enemy hits wall
+const SHAKE_CHAIN_3 := 0.3  # trauma add — chain reaches x3
+const SHAKE_CHAIN_5 := 0.4  # trauma add — chain reaches x5
+const SHAKE_CHAIN_10 := 0.5  # trauma add — chain reaches x10 (PROPOSED)
+const SHAKE_DECAY := 0.8  # trauma/second — decay rate
+const SHAKE_MAX_OFFSET := 3.0  # logical px — max camera displacement (PROPOSED)
+const SHAKE_NOISE_SPEED := 12.0  # Hz — noise sample rate for smooth shake (PROPOSED)
+const SHAKE_STRENGTH := 1.0  # multiplier [0,1] — 0 disables shake entirely (PROPOSED)
 
 const PULSE_VFX_DURATION := 0.15  # s — expanding ring
 const WALL_DUST_LIFETIME := 0.3  # s
