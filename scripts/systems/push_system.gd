@@ -7,7 +7,6 @@ extends Node
 signal chain_updated(chain_count: int)
 signal wall_slam_occurred(at_position: Vector2)
 signal altar_seal_occurred(at_position: Vector2)
-signal pulse_hit(enemy_count: int)  # F002: khi pulse trúng quái
 
 # ─── References ──────────────────────────────────────────
 var enemies_container: Node2D
@@ -61,8 +60,6 @@ func _on_pulse_fired(pulse_position: Vector2, radius: float) -> void:
 		
 		var push_vel := direction * push_speed
 		enemy.receive_push(push_vel)
-
-	pulse_hit.emit(enemies.size())  # F002: hit-stop
 
 
 func _get_enemies_in_radius(center: Vector2, radius: float) -> Array:
