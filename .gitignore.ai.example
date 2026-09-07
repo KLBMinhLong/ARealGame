@@ -1,0 +1,6 @@
+# Merge only the needed entries into the existing .gitignore; do not replace it.
+.artifacts/ai/
+__pycache__/
+*.pyc
+.godot/
+CLAUDE.local.md
