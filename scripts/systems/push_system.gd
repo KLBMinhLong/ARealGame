@@ -8,6 +8,7 @@ signal chain_updated(chain_count: int)
 signal wall_slam_occurred(at_position: Vector2)
 signal altar_seal_occurred(at_position: Vector2)
 signal pulse_hit(enemy_count: int)  # F002: khi pulse trúng quái
+signal chain_hit_visual(at_position: Vector2, chain_count: int)  # F003: combo popup
 
 # ─── References ──────────────────────────────────────────
 var enemies_container: Node2D
@@ -129,6 +130,9 @@ func _resolve_domino(a: EnemyBase, b: EnemyBase) -> void:
 	
 	# Update chain
 	_increment_chain()
+	# F003: visual event tại trung điểm va chạm
+	var midpoint := (a.position + b.position) / 2.0
+	chain_hit_visual.emit(midpoint, chain_count)
 
 
 # ═══════════════════════════════════════════════════════════

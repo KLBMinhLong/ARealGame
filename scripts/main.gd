@@ -42,8 +42,8 @@ func _ready() -> void:
 	# F002: Hit-stop wiring
 	push_system.pulse_hit.connect(hitstop.on_pulse_hit)
 	push_system.chain_updated.connect(hitstop.on_chain_hit)
-	# F003: Combo popup wiring
-	push_system.chain_updated.connect(combo_popup.on_chain_updated)
+	# F003: Combo popup wiring (dùng chain_hit_visual có vị trí)
+	push_system.chain_hit_visual.connect(combo_popup.on_chain_hit_visual)
 	_enter_state(GameState.MENU)
 
 
