@@ -22,6 +22,7 @@ var current_chain: int = 0
 @onready var hud: CanvasLayer = $HUD
 @onready var spawn_timer: Timer = $SpawnTimer
 @onready var push_system: Node = $PushSystem
+@onready var hitstop: Node = $HitstopSystem  # F002
 
 
 func _ready() -> void:
@@ -37,6 +38,9 @@ func _ready() -> void:
 	# F001: Camera shake wiring
 	player.pulse_fired.connect(_on_pulse_for_shake)
 	push_system.chain_updated.connect(camera.on_chain_updated)
+	# F002: Hit-stop wiring
+	push_system.pulse_hit.connect(hitstop.on_pulse_hit)
+	push_system.chain_updated.connect(hitstop.on_chain_hit)
 	_enter_state(GameState.MENU)
 
 
@@ -90,12 +94,14 @@ func _enter_state(new_state: GameState) -> void:
 		GameState.PAUSED:
 			get_tree().paused = true
 			camera.clear()  # F001: no residual shake offset during pause
+			hitstop.clear()  # F002: restore time_scale
 			hud.show_pause()
 
 		GameState.DEAD:
 			get_tree().paused = false
 			spawn_timer.stop()
 			camera.clear()  # F001: clear shake on death
+			hitstop.clear()  # F002: restore time_scale
 			hud.show_death(shard_count, best_chain)
 
 
@@ -111,6 +117,7 @@ func _start_run() -> void:
 	spawn_timer.start()
 	hud.show_hud()
 	camera.clear()  # F001: reset shake on restart
+	hitstop.clear()  # F002: restore time_scale
 	_enter_state(GameState.RUNNING)
 
 
@@ -159,6 +166,7 @@ func _show_menu() -> void:
 	spawn_timer.stop()
 	hud.show_menu()
 	camera.clear()  # F001: reset shake on menu
+	hitstop.clear()  # F002: restore time_scale
 
 
 # ═══════════════════════════════════════════════════════════
