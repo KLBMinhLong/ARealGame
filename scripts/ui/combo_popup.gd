@@ -82,10 +82,7 @@ func _spawn_popup(chain_count: int, world_pos: Vector2) -> void:
 	# Drift lên top — linear, nhẹ nhàng
 	tween.set_parallel(true)
 	tween.tween_property(popup, "position:y", target_y, drift_duration).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
-	# Mờ dần trong nửa sau
 	tween.tween_property(popup, "modulate:a", 0.0, drift_duration * 0.5).set_delay(drift_duration * 0.5)
-	# Nhẹ lắc ngang như bóng bay
-	tween.tween_property(popup, "position:x", popup.position.x + randf_range(-8, 8), drift_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 	tween.set_parallel(false)
 
 	tween.tween_callback(func() -> void:
