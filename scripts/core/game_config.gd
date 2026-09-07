@@ -58,9 +58,10 @@ const DAMAGE_ALTAR_SEAL := 999  # Instant kill
 const DAMAGE_PIT_FALL := 999  # Instant kill, no shard drop
 
 # ─── GAME FEEL ───────────────────────────────────────────
-const HITSTOP_PULSE := 0.02  # s (20ms) — freeze khi pulse
-const HITSTOP_CHAIN_ADD := 0.005  # s — thêm per chain level (cap 40ms total)
-const HITSTOP_MAX := 0.04  # s
+const HITSTOP_PULSE := 0.03  # s (30ms) — slow-mo khi pulse
+const HITSTOP_CHAIN_ADD := 0.005  # s — thêm per chain level
+const HITSTOP_MAX := 0.05  # s (50ms cap)
+const HITSTOP_TIMESCALE := 0.05  # slow-motion speed (5% = gần freeze nhưng mượt)
 
 const SHAKE_PULSE := 0.2  # trauma add — Pulse activation
 const SHAKE_WALL_SLAM := 0.15  # trauma add — enemy hits wall

@@ -52,7 +52,7 @@ func freeze(duration: float) -> void:
 	_is_frozen = true
 	_freeze_start_usec = Time.get_ticks_usec()
 	_freeze_duration = duration
-	Engine.time_scale = 0.0
+	Engine.time_scale = Config.HITSTOP_TIMESCALE  # Slow-motion, không full freeze
 
 
 func _unfreeze() -> void:
