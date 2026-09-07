@@ -25,7 +25,11 @@ var current_chain: int = 0
 
 
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS  # Nhận input khi tree paused
+	process_mode = Node.PROCESS_MODE_ALWAYS  # Main nhận input khi tree paused
+	# Gameplay nodes phải dừng khi pause (không kế thừa ALWAYS từ Main)
+	$World.process_mode = Node.PROCESS_MODE_PAUSABLE
+	$PushSystem.process_mode = Node.PROCESS_MODE_PAUSABLE
+	$SpawnTimer.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_setup_spawn_timer()
 	push_system.setup(player, enemies_container)
 	push_system.chain_updated.connect(on_chain_updated)
