@@ -75,6 +75,7 @@ const SHAKE_WALL_SLAM := 0.15  # trauma add — enemy hits wall
 const SHAKE_CHAIN_3 := 0.3  # trauma add — chain reaches x3
 const SHAKE_CHAIN_5 := 0.4  # trauma add — chain reaches x5
 const SHAKE_CHAIN_10 := 0.5  # trauma add — chain reaches x10 (PROPOSED)
+const SHAKE_ALTAR_SEAL := 0.25  # trauma add — altar void seal (F015)
 const SHAKE_DECAY := 0.8  # trauma/second — decay rate
 const SHAKE_MAX_OFFSET := 3.0  # logical px — max camera displacement (PROPOSED)
 const SHAKE_NOISE_SPEED := 12.0  # Hz — noise sample rate for smooth shake (PROPOSED)
@@ -83,6 +84,7 @@ const SHAKE_STRENGTH := 1.0  # multiplier [0,1] — 0 disables shake entirely (P
 const PULSE_VFX_DURATION := 0.2  # s — expanding ring (F005: 0.15→0.2)
 const WALL_DUST_LIFETIME := 0.3  # s
 const ALTAR_FLASH_DURATION := 0.2  # s
+const ALTAR_SEAL_DURATION := 0.25  # s — quái bị hút và thu nhỏ vào hư không (F015)
 
 # ─── ENEMIES ─────────────────────────────────────────────
 const SLIME_HP := 1

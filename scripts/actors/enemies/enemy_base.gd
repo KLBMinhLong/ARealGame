@@ -7,7 +7,7 @@ extends Node2D
 signal died(enemy_position: Vector2, shard_amount: int, is_altar_seal: bool, enemy_color: Color)
 signal wall_slammed(at_position: Vector2)
 
-enum EnemyState { NORMAL, PUSHED, DYING }
+enum EnemyState { NORMAL, PUSHED, DYING, SEALING }
 
 # ─── Config (override ở subclass) ────────────────────────
 var max_hp: int = 1
@@ -23,6 +23,7 @@ var enemy_state: EnemyState = EnemyState.NORMAL
 var velocity: Vector2 = Vector2.ZERO
 var pushed_timer: float = 0.0
 var dying_timer: float = 0.0
+var sealing_timer: float = 0.0  # F015: Altar seal
 
 # ─── References ──────────────────────────────────────────
 var target: Node2D = null  # Player reference
@@ -40,6 +41,8 @@ func _process(delta: float) -> void:
 			_process_pushed(delta)
 		EnemyState.DYING:
 			_process_dying(delta)
+		EnemyState.SEALING:
+			_process_sealing(delta)
 	
 	queue_redraw()
 
@@ -119,6 +122,8 @@ func _process_dying(delta: float) -> void:
 # ═══════════════════════════════════════════════════════════
 
 func receive_push(push_velocity: Vector2) -> void:
+	if enemy_state == EnemyState.SEALING:
+		return
 	velocity = push_velocity / push_weight
 	enemy_state = EnemyState.PUSHED
 	pushed_timer = 0.0
@@ -129,8 +134,8 @@ func receive_push(push_velocity: Vector2) -> void:
 # ═══════════════════════════════════════════════════════════
 
 func take_damage(amount: int, is_altar: bool = false) -> void:
-	if enemy_state == EnemyState.DYING:
-		return  # Already dying
+	if enemy_state == EnemyState.DYING or enemy_state == EnemyState.SEALING:
+		return  # Already dying or sealing
 	
 	hp -= amount
 	
@@ -176,14 +181,44 @@ func _check_wall_collision() -> void:
 		velocity = Vector2.ZERO
 
 
+# ═══════════════════════════════════════════════════════════
+# STATE: SEALING — Bị hút vào tâm Altar, co nhỏ vào hư không (F015)
+# ═══════════════════════════════════════════════════════════
+
+func _process_sealing(delta: float) -> void:
+	sealing_timer += delta
+	var progress := clampf(sealing_timer / Config.ALTAR_SEAL_DURATION, 0.0, 1.0)
+
+	# Hút nhanh dần về tâm Altar
+	position = position.lerp(Config.ALTAR_POSITION, delta * 16.0)
+
+	# Thu nhỏ dần về zero (scale co nhỏ)
+	var s := lerpf(1.0, 0.0, progress)
+	scale = Vector2(s, s)
+
+	if sealing_timer >= Config.ALTAR_SEAL_DURATION:
+		died.emit(Config.ALTAR_POSITION, Config.SHARD_ALTAR_BONUS, true, enemy_color)
+		queue_free()
+
+
 func _check_altar_collision() -> void:
+	if enemy_state == EnemyState.SEALING or enemy_state == EnemyState.DYING:
+		return
+
 	var altar_pos := Config.ALTAR_POSITION
 	var altar_half := Config.ALTAR_SIZE / 2.0
 	var my_half := enemy_size / 2.0
-	
+
 	if abs(position.x - altar_pos.x) < (altar_half + my_half) and \
 	   abs(position.y - altar_pos.y) < (altar_half + my_half):
-		take_damage(Config.DAMAGE_ALTAR_SEAL, true)
+		_start_altar_seal()
+
+
+func _start_altar_seal() -> void:
+	enemy_state = EnemyState.SEALING
+	sealing_timer = 0.0
+	velocity = Vector2.ZERO
+	hp = 0
 
 
 func _clamp_to_arena() -> void:

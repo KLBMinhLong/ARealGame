@@ -32,6 +32,15 @@ func _draw() -> void:
 				lerpf(1.0, Config.COLOR_SPEEDER.b, minf(progress * 3.0, 1.0)),
 				alpha,
 			)
+		EnemyState.SEALING:
+			var progress := sealing_timer / Config.ALTAR_SEAL_DURATION
+			var alpha := 1.0 - progress
+			color = Color(
+				lerpf(Config.COLOR_SPEEDER.r, Config.COLOR_ALTAR.r, progress),
+				lerpf(Config.COLOR_SPEEDER.g, Config.COLOR_ALTAR.g, progress),
+				lerpf(Config.COLOR_SPEEDER.b, Config.COLOR_ALTAR.b, progress),
+				alpha,
+			)
 
 	# Triangle shape (khác circle slime)
 	var points := PackedVector2Array([

@@ -148,6 +148,64 @@ func spawn_pickup_burst(at_position: Vector2) -> void:
 	)
 
 
+## F015: Void vortex particles khi quái bị phong ấn vào Altar.
+func spawn_altar_seal_vfx(at_position: Vector2) -> void:
+	var particles := CPUParticles2D.new()
+	particles.position = at_position
+	particles.emitting = false
+
+	particles.one_shot = true
+	particles.explosiveness = 1.0
+	particles.amount = 14
+	particles.lifetime = 0.35
+
+	particles.direction = Vector2(0, -1)
+	particles.spread = 180.0
+
+	particles.initial_velocity_min = 20.0
+	particles.initial_velocity_max = 50.0
+	particles.gravity = Vector2.ZERO
+
+	particles.scale_amount_min = 0.8
+	particles.scale_amount_max = 2.0
+
+	var color_ramp := Gradient.new()
+	color_ramp.set_color(0, Color(Config.COLOR_ALTAR_FLASH.r, Config.COLOR_ALTAR_FLASH.g, Config.COLOR_ALTAR_FLASH.b, 1.0))
+	color_ramp.set_color(1, Color(Config.COLOR_ALTAR.r, Config.COLOR_ALTAR.g, Config.COLOR_ALTAR.b, 0.0))
+	particles.color_ramp = color_ramp
+
+	add_child(particles)
+	particles.emitting = true
+
+	var timer := get_tree().create_timer(0.5)
+	timer.timeout.connect(func() -> void:
+		if is_instance_valid(particles):
+			particles.queue_free()
+	)
+
+
+## F015: Floating text hiển thị số tiền cộng thẳng (ví dụ +2).
+func spawn_floating_text(at_position: Vector2, text: String, text_color: Color) -> void:
+	var label := Label.new()
+	label.text = text
+	label.position = at_position - Vector2(16, 8)
+	label.size = Vector2(32, 16)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_color_override("font_color", text_color)
+	label.add_theme_font_size_override("font_size", 9)
+	add_child(label)
+
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 14.0, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(label, "modulate:a", 0.0, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.chain().tween_callback(func() -> void:
+		if is_instance_valid(label):
+			label.queue_free()
+	)
+
+
 ## Clear tất cả particles — restart/menu.
 func clear() -> void:
 	for child in get_children():

@@ -34,6 +34,16 @@ func _draw() -> void:
 				lerpf(1.0, Config.COLOR_SLIME.b, minf(progress * 3.0, 1.0)),
 				alpha,
 			)
+		EnemyState.SEALING:
+			# F015: Hòa vào tím hư không, mờ dần
+			var progress := sealing_timer / Config.ALTAR_SEAL_DURATION
+			var alpha := 1.0 - progress
+			color = Color(
+				lerpf(Config.COLOR_SLIME.r, Config.COLOR_ALTAR.r, progress),
+				lerpf(Config.COLOR_SLIME.g, Config.COLOR_ALTAR.g, progress),
+				lerpf(Config.COLOR_SLIME.b, Config.COLOR_ALTAR.b, progress),
+				alpha,
+			)
 	
 	# Draw circle (slime = blob)
 	draw_circle(Vector2.ZERO, half, color)

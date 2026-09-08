@@ -31,6 +31,18 @@ func _draw() -> void:
 			draw_rect(rect, color)
 			return
 
+		EnemyState.SEALING:
+			var progress := sealing_timer / Config.ALTAR_SEAL_DURATION
+			var alpha := 1.0 - progress
+			var color := Color(
+				lerpf(Config.COLOR_BRUTE.r, Config.COLOR_ALTAR.r, progress),
+				lerpf(Config.COLOR_BRUTE.g, Config.COLOR_ALTAR.g, progress),
+				lerpf(Config.COLOR_BRUTE.b, Config.COLOR_ALTAR.b, progress),
+				alpha,
+			)
+			draw_rect(rect, color)
+			return
+
 		EnemyState.PUSHED:
 			var base_color := Config.COLOR_BRUTE_PUSHED if hp > 1 else Config.COLOR_BRUTE_DAMAGED
 			draw_rect(rect, base_color)

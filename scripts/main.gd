@@ -271,11 +271,19 @@ func _get_spawn_position() -> Vector2:
 # SIGNALS FROM GAMEPLAY
 # ═══════════════════════════════════════════════════════════
 
-func _on_enemy_died(enemy_position: Vector2, shard_amount: int, _is_altar_seal: bool, color: Color) -> void:
+func _on_enemy_died(enemy_position: Vector2, shard_amount: int, is_altar_seal: bool, color: Color) -> void:
 	enemies_killed += 1  # F013
-	for i in shard_amount:
-		_spawn_shard(enemy_position)
-	vfx.spawn_death_burst(enemy_position, color)  # F006 + F009: dùng enemy color
+	if is_altar_seal:
+		# F015: Altar Seal — tiền tự động cộng thẳng vào túi, không rơi ra đất
+		shard_count += shard_amount
+		vfx.spawn_altar_seal_vfx(Config.ALTAR_POSITION)
+		vfx.spawn_floating_text(Config.ALTAR_POSITION + Vector2(0, -14), "+%d" % shard_amount, Config.COLOR_SHARD)
+		arena.trigger_altar_flash()
+		camera.request_shake(Config.SHAKE_ALTAR_SEAL)
+	else:
+		for i in shard_amount:
+			_spawn_shard(enemy_position)
+		vfx.spawn_death_burst(enemy_position, color)  # F006 + F009: dùng enemy color
 
 
 func _spawn_shard(at_position: Vector2) -> void:
