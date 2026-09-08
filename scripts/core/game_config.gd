@@ -91,16 +91,25 @@ const SPEEDER_SIZE := 7  # px (nhỏ hơn)
 const SPEEDER_PUSH_WEIGHT := 0.6  # nhẹ → bay xa hơn
 const SPEEDER_SHARD_DROP := 1
 
+# F011: Brute — to, chậm, 2 HP, nặng
+const BRUTE_HP := 2
+const BRUTE_SPEED := 20.0  # px/s (chậm hơn slime)
+const BRUTE_SIZE := 14  # px (hình vuông to)
+const BRUTE_PUSH_WEIGHT := 1.8  # nặng → bay ít hơn
+const BRUTE_SHARD_DROP := 2
+
 # ─── SPAWN ───────────────────────────────────────────────
 const SPAWN_INTERVAL := 2.0  # s — 1 con / 2s (starting)
 const SPAWN_MAX_CONCURRENT := 15  # starting cap
 
-# F010: Difficulty scaling over time
+# F010 & F011: Difficulty scaling & spawn ratios over time (t=0 -> t=180s)
 const SCALE_DURATION := 180.0  # s — full ramp over 3 minutes
 const SPAWN_INTERVAL_MIN := 0.8  # s — fastest spawn rate
 const SPAWN_MAX_CAP := 25  # max concurrent at full ramp
-const SPEEDER_RATIO_START := 0.5  # 50% speeder at start
-const SPEEDER_RATIO_MAX := 0.75  # 75% speeder at full ramp
+const SPEEDER_RATIO_START := 0.35  # 35% speeder at start
+const SPEEDER_RATIO_MAX := 0.50  # 50% speeder at full ramp
+const BRUTE_RATIO_START := 0.15  # 15% brute at start
+const BRUTE_RATIO_MAX := 0.30  # 30% brute at full ramp
 const SPAWN_MIN_DISTANCE := 80.0  # px — khoảng cách tối thiểu từ player
 
 # ─── SHARDS ──────────────────────────────────────────────
@@ -126,6 +135,9 @@ const COLOR_SLIME := Color(0.176, 0.353, 0.153)  # #2d5a27
 const COLOR_SLIME_PUSHED := Color(0.3, 0.5, 0.2)
 const COLOR_SPEEDER := Color(0.953, 0.486, 0.125)  # #f37c20 cam
 const COLOR_SPEEDER_PUSHED := Color(1.0, 0.65, 0.3)
+const COLOR_BRUTE := Color(0.75, 0.15, 0.2)  # #bf2633 deep red
+const COLOR_BRUTE_PUSHED := Color(0.9, 0.35, 0.35)
+const COLOR_BRUTE_DAMAGED := Color(0.95, 0.45, 0.45)  # Lighter red with crack (1 HP)
 
 const COLOR_ALTAR := Color(0.659, 0.545, 0.980)  # #a78bfa
 const COLOR_ALTAR_FLASH := Color(0.8, 0.7, 1.0, 0.8)

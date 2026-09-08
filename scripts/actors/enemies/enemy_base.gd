@@ -152,20 +152,20 @@ func _check_wall_collision() -> void:
 	var half := enemy_size / 2.0
 	var hit_wall := false
 	
-	if position.x - half <= Config.ARENA_ORIGIN.x:
+	if velocity.x < 0 and position.x - half <= Config.ARENA_ORIGIN.x:
 		position.x = Config.ARENA_ORIGIN.x + half
 		velocity.x = 0
 		hit_wall = true
-	elif position.x + half >= Config.ARENA_END.x:
+	elif velocity.x > 0 and position.x + half >= Config.ARENA_END.x:
 		position.x = Config.ARENA_END.x - half
 		velocity.x = 0
 		hit_wall = true
 	
-	if position.y - half <= Config.ARENA_ORIGIN.y:
+	if velocity.y < 0 and position.y - half <= Config.ARENA_ORIGIN.y:
 		position.y = Config.ARENA_ORIGIN.y + half
 		velocity.y = 0
 		hit_wall = true
-	elif position.y + half >= Config.ARENA_END.y:
+	elif velocity.y > 0 and position.y + half >= Config.ARENA_END.y:
 		position.y = Config.ARENA_END.y - half
 		velocity.y = 0
 		hit_wall = true
@@ -173,6 +173,7 @@ func _check_wall_collision() -> void:
 	if hit_wall:
 		take_damage(Config.DAMAGE_WALL_SLAM)
 		wall_slammed.emit(position)
+		velocity = Vector2.ZERO
 
 
 func _check_altar_collision() -> void:

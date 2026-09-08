@@ -206,13 +206,19 @@ func _on_spawn_timer_timeout() -> void:
 
 func _spawn_enemy() -> void:
 	var enemy: Node2D
-	# F010: speeder ratio scales with time
+	# F010 & F011: dynamic ratios over time (Slime, Speeder, Brute)
 	var scale_t := clampf(run_time / Config.SCALE_DURATION, 0.0, 1.0)
 	var speeder_chance := lerpf(Config.SPEEDER_RATIO_START, Config.SPEEDER_RATIO_MAX, scale_t)
-	if randf() < speeder_chance:
+	var brute_chance := lerpf(Config.BRUTE_RATIO_START, Config.BRUTE_RATIO_MAX, scale_t)
+
+	var roll := randf()
+	if roll < brute_chance:
+		enemy = preload("res://scenes/enemies/brute.tscn").instantiate()
+	elif roll < brute_chance + speeder_chance:
 		enemy = preload("res://scenes/enemies/speeder.tscn").instantiate()
 	else:
 		enemy = preload("res://scenes/enemies/slime.tscn").instantiate()
+
 	enemy.position = _get_spawn_position()
 	enemy.target = player
 	enemy.died.connect(_on_enemy_died)
