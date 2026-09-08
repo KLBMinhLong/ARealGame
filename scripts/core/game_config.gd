@@ -28,6 +28,13 @@ const PLAYER_MAX_HP := 3
 const PLAYER_GRACE_PERIOD := 1.2  # s — bất tử sau nhận damage
 const PLAYER_CONTACT_DAMAGE := 1
 
+# ─── PLAYER DASH ─────────────────────────────────────────
+const DASH_SPEED := 360.0  # px/s (3× player speed)
+const DASH_DURATION := 0.15  # s — khoảng cách lướt ~54 px
+const DASH_COOLDOWN := 2.0  # s — thử nghiệm ban đầu (F014)
+const DASH_GHOST_INTERVAL := 0.03  # s — tần suất tạo bóng mờ
+const DASH_GHOST_LIFETIME := 0.2  # s — thời gian tồn tại bóng mờ
+
 # ─── ARCANE PULSE ────────────────────────────────────────
 const PULSE_RADIUS := 50.0  # px — bán kính ảnh hưởng
 const PULSE_VELOCITY := 400.0  # px/s — tốc độ quái bị bắn ra

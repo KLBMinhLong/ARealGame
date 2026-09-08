@@ -97,7 +97,7 @@ func show_death(time_survived: float, enemies_killed: int, shards: int, best_cha
 # HUD UPDATE (called every frame during RUNNING)
 # ═══════════════════════════════════════════════════════════
 
-func update_hud(hp: int, max_hp: int, cd_left: float, _cd_max: float, shards: int, best_chain: int) -> void:
+func update_hud(hp: int, max_hp: int, cd_left: float, _cd_max: float, shards: int, best_chain: int, dash_cd: float = 0.0) -> void:
 	if hud_state != HUDState.HUD:
 		return
 	
@@ -109,11 +109,18 @@ func update_hud(hp: int, max_hp: int, cd_left: float, _cd_max: float, shards: in
 		else:
 			hearts += "♡"
 	
-	# Cooldown
-	var cd_text := ""
+	# Pulse Cooldown
+	var pulse_text := ""
 	if cd_left > 0:
-		cd_text = "CD: %.1fs" % cd_left
+		pulse_text = "Pulse: %.1fs" % cd_left
 	else:
-		cd_text = "READY!"
+		pulse_text = "Pulse: READY"
 	
-	label.text = "%s     %s\n\nShards: %d   Chain Best: x%d" % [hearts, cd_text, shards, best_chain]
+	# Dash Cooldown
+	var dash_text := ""
+	if dash_cd > 0:
+		dash_text = "Dash: %.1fs" % dash_cd
+	else:
+		dash_text = "Dash: READY"
+
+	label.text = "%s     %s   %s\n\nShards: %d   Chain Best: x%d" % [hearts, pulse_text, dash_text, shards, best_chain]

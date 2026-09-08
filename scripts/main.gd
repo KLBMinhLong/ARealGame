@@ -154,7 +154,7 @@ func _clear_entities() -> void:
 func _process_running(delta: float) -> void:
 	run_time += delta  # F010: difficulty scaling
 	hud.update_hud(player.hp, player.max_hp, player.pulse_cooldown_left, 
-					Config.PULSE_COOLDOWN, shard_count, best_chain)
+					Config.PULSE_COOLDOWN, shard_count, best_chain, player.dash_cooldown_left)
 
 
 func _process_menu() -> void:
