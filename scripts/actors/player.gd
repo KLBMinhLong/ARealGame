@@ -142,12 +142,13 @@ func _draw() -> void:
 					  Config.PLAYER_SIZE, Config.PLAYER_SIZE)
 	draw_rect(rect, color)
 
-	# Pulse cooldown indicator — small arc at bottom
-	if pulse_cooldown_left > 0.0:
-		var cd_progress := 1.0 - (pulse_cooldown_left / Config.PULSE_COOLDOWN)
-		var arc_angle := cd_progress * TAU
-		draw_arc(Vector2(0, Config.PLAYER_HALF + 3), 3.0, -PI / 2, -PI / 2 + arc_angle, 
-				 12, Config.COLOR_PLAYER, 1.0)
+	# F008: Pulse ready indicator — glow ring khi CD=0
+	if pulse_cooldown_left <= 0.0:
+		var t := Time.get_ticks_msec() / 1000.0
+		var glow_alpha := lerpf(0.15, 0.4, (sin(t * 4.0) + 1.0) / 2.0)
+		var glow_color := Color(Config.COLOR_PLAYER.r, Config.COLOR_PLAYER.g,
+								Config.COLOR_PLAYER.b, glow_alpha)
+		draw_arc(Vector2.ZERO, Config.PLAYER_HALF + 3.0, 0, TAU, 24, glow_color, 1.5)
 
 	# Pulse VFX — expanding shockwave (F005: multi-layer)
 	if pulse_vfx_timer > 0.0:
