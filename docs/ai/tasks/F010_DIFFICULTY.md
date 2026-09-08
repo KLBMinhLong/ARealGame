@@ -1,8 +1,8 @@
 # F010 — Difficulty Scaling
 
-**Status:** IMPLEMENTING
+**Status:** DONE
 **Owner approval:** GRANTED (2026-09-08)
-**Evidence:** NOT_RUN
+**Evidence:** HUMAN_PLAYTEST_PASSED (2026-09-08)
 
 ## 1. Kết quả người chơi nhận được
 
@@ -52,11 +52,11 @@ Game càng lâu càng khó: spawn nhanh hơn, nhiều quái hơn, tỷ lệ spee
 
 | ID | Observable behavior | Check | Expected | Status |
 |---|---|---|---|---|
-| AC01 | Game khó dần | Runtime | Quái spawn nhanh hơn theo thời gian | NOT_RUN |
-| AC02 | Nhiều speeder hơn | Runtime | Tỷ lệ cam tăng | NOT_RUN |
-| AC03 | Restart reset | Runtime | Run mới bắt đầu dễ lại | NOT_RUN |
-| AC04 | Scope | Diff | Không đụng enemy/player stats | NOT_RUN |
+| AC01 | Game khó dần | Runtime | Quái spawn nhanh hơn theo thời gian | PASS |
+| AC02 | Nhiều speeder hơn | Runtime | Tỷ lệ cam tăng | PASS |
+| AC03 | Restart reset | Runtime | Run mới bắt đầu dễ lại | PASS |
+| AC04 | Scope | Diff | Không đụng enemy/player stats | PASS |
 
 ## 7. Approval
 
-- Chờ duyệt.
+- Đã duyệt và playtest đạt bởi chủ dự án (2026-09-08).
