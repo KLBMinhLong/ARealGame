@@ -111,6 +111,42 @@ func spawn_death_burst(at_position: Vector2, enemy_color: Color) -> void:
 			particles.queue_free()
 	)
 
+## F007: Burst particles khi nhặt shard.
+func spawn_pickup_burst(at_position: Vector2) -> void:
+	var particles := CPUParticles2D.new()
+	particles.position = at_position
+	particles.emitting = false
+
+	particles.one_shot = true
+	particles.explosiveness = 1.0
+	particles.amount = 6
+	particles.lifetime = 0.25
+
+	particles.direction = Vector2(0, -1)
+	particles.spread = 180.0
+
+	particles.initial_velocity_min = 15.0
+	particles.initial_velocity_max = 40.0
+
+	particles.gravity = Vector2(0, 20)
+
+	particles.scale_amount_min = 0.5
+	particles.scale_amount_max = 1.2
+
+	var color_ramp := Gradient.new()
+	color_ramp.set_color(0, Color(Config.COLOR_SHARD.r, Config.COLOR_SHARD.g, Config.COLOR_SHARD.b, 0.9))
+	color_ramp.set_color(1, Color(1.0, 1.0, 0.8, 0.0))
+	particles.color_ramp = color_ramp
+
+	add_child(particles)
+	particles.emitting = true
+
+	var timer := get_tree().create_timer(0.45)
+	timer.timeout.connect(func() -> void:
+		if is_instance_valid(particles):
+			particles.queue_free()
+	)
+
 
 ## Clear tất cả particles — restart/menu.
 func clear() -> void:

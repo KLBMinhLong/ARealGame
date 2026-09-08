@@ -250,8 +250,9 @@ func _spawn_shard(at_position: Vector2) -> void:
 	loot_container.add_child(shard)
 
 
-func _on_shard_collected() -> void:
+func _on_shard_collected(at_position: Vector2) -> void:
 	shard_count += 1
+	vfx.spawn_pickup_burst(at_position)  # F007
 
 
 func on_player_died() -> void:

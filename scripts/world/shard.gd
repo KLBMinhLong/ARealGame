@@ -3,7 +3,7 @@
 ## Placeholder: yellow dot 4×4 px.
 extends Node2D
 
-signal collected
+signal collected(at_position: Vector2)  # F007: thêm position
 
 var player_ref: Node2D = null
 var lifetime: float = Config.SHARD_LIFETIME
@@ -31,7 +31,7 @@ func _process(delta: float) -> void:
 		
 		# Pickup
 		if position.distance_to(player_ref.position) < 6.0:
-			collected.emit()
+			collected.emit(position)  # F007: emit position
 			queue_free()
 	
 	queue_redraw()
