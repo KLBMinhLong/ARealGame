@@ -1,8 +1,8 @@
 # F014 — Player Dash (Tactical Dodge)
 
-**Status:** IMPLEMENTING
+**Status:** DONE
 **Owner approval:** GRANTED (2026-09-08)
-**Evidence:** NOT_RUN
+**Evidence:** HUMAN_PLAYTEST_PASSED (2026-09-08)
 
 ## 1. Kết quả người chơi nhận được
 
@@ -103,19 +103,19 @@ Người chơi có thêm kỹ năng lướt cơ động: **Dash (Lướt né)**:
 
 | ID | Observable behavior | Check | Expected | Status |
 |---|---|---|---|---|
-| AC01 | Kích hoạt Dash | Runtime | Nhấn Shift hoặc Click phải phóng nhanh 360 px/s trong 0.15s (~54px) | NOT_RUN |
-| AC02 | Hướng nhất quán | Runtime | Lướt ngang/chéo cùng tốc độ; không bẻ lái giữa chừng; đứng yên Shift theo hướng nhìn gần nhất; đứng yên Click phải theo chuột | NOT_RUN |
-| AC03 | Input an toàn | Runtime | Giữ Shift không tự dash lại; bấm Shift + Right Click đồng thời chỉ tạo 1 Dash | NOT_RUN |
-| AC04 | Lướt qua quái an toàn | Runtime | Lướt xuyên qua quái không mất máu trong lúc đang dash | NOT_RUN |
-| AC05 | Kết thúc trong quái nhận damage | Runtime | Dash dừng lại ngay trên quái sẽ nhận damage ở frame kế tiếp | NOT_RUN |
-| AC06 | Chạm tường dừng sớm | Runtime | Dash đâm thẳng vào tường ngoài bị chặn lại, dừng dash ngay, không lọt ra ngoài | NOT_RUN |
-| AC07 | Lướt dọc/ra xa biên | Runtime | Đang đứng sát tường nhưng lướt song song mép tường hoặc hướng ra xa tường không bị hủy Dash sớm | NOT_RUN |
-| AC08 | Tách biệt bất tử | Runtime | Bị đánh rồi Dash ngay: hết Dash vẫn còn nhấp nháy bất tử của Grace period; hết Grace period trong lúc Dash không làm mất bảo vệ của Dash | NOT_RUN |
-| AC09 | Pulse trong lúc Dash | Runtime | Đang Dash bấm Space vẫn nổ Pulse từ vị trí hiện tại của player | NOT_RUN |
-| AC10 | Ghost trail cố định world | Runtime | Vệt bóng mờ cyan nằm lại phía sau tại đúng vị trí đã đi qua, mờ dần rồi mất | NOT_RUN |
-| AC11 | Cooldown 2.0s & HUD | Runtime | Cooldown 2 giây đếm ngược trên HUD, không thể spam | NOT_RUN |
-| AC12 | Lifecycle & Reset | Runtime | Chết/Restart/Pause giữa lúc Dash không gây kẹt trạng thái hay sót bóng mờ | NOT_RUN |
+| AC01 | Kích hoạt Dash | Runtime | Nhấn Shift hoặc Click phải phóng nhanh 360 px/s trong 0.15s (~54px) | PASS |
+| AC02 | Hướng nhất quán | Runtime | Lướt ngang/chéo cùng tốc độ; không bẻ lái giữa chừng; đứng yên Shift theo hướng nhìn gần nhất; đứng yên Click phải theo chuột | PASS |
+| AC03 | Input an toàn | Runtime | Giữ Shift không tự dash lại; bấm Shift + Right Click đồng thời chỉ tạo 1 Dash | PASS |
+| AC04 | Lướt qua quái an toàn | Runtime | Lướt xuyên qua quái không mất máu trong lúc đang dash | PASS |
+| AC05 | Kết thúc trong quái nhận damage | Runtime | Dash dừng lại ngay trên quái sẽ nhận damage ở frame kế tiếp | PASS |
+| AC06 | Chạm tường dừng sớm | Runtime | Dash đâm thẳng vào tường ngoài bị chặn lại, dừng dash ngay, không lọt ra ngoài | PASS |
+| AC07 | Lướt dọc/ra xa biên | Runtime | Đang đứng sát tường nhưng lướt song song mép tường hoặc hướng ra xa tường không bị hủy Dash sớm | PASS |
+| AC08 | Tách biệt bất tử | Runtime | Bị đánh rồi Dash ngay: hết Dash vẫn còn nhấp nháy bất tử của Grace period; hết Grace period trong lúc Dash không làm mất bảo vệ của Dash | PASS |
+| AC09 | Pulse trong lúc Dash | Runtime | Đang Dash bấm Space vẫn nổ Pulse từ vị trí hiện tại của player | PASS |
+| AC10 | Ghost trail cố định world | Runtime | Vệt bóng mờ cyan nằm lại phía sau tại đúng vị trí đã đi qua, mờ dần rồi mất | PASS |
+| AC11 | Cooldown 2.0s & HUD | Runtime | Cooldown 2 giây đếm ngược trên HUD, không thể spam | PASS |
+| AC12 | Lifecycle & Reset | Runtime | Chết/Restart/Pause giữa lúc Dash không gây kẹt trạng thái hay sót bóng mờ | PASS |
 
 ## 7. Approval
 
-- Chờ chủ dự án duyệt bản brief chi tiết.
+- Đã duyệt và playtest đạt bởi chủ dự án (2026-09-08).
