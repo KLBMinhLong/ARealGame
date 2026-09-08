@@ -149,9 +149,25 @@ func _draw() -> void:
 		draw_arc(Vector2(0, Config.PLAYER_HALF + 3), 3.0, -PI / 2, -PI / 2 + arc_angle, 
 				 12, Config.COLOR_PLAYER, 1.0)
 
-	# Pulse VFX — expanding ring
+	# Pulse VFX — expanding shockwave (F005: multi-layer)
 	if pulse_vfx_timer > 0.0:
+		var progress := 1.0 - (pulse_vfx_timer / Config.PULSE_VFX_DURATION)
 		var alpha := pulse_vfx_timer / Config.PULSE_VFX_DURATION
-		var ring_color := Color(Config.COLOR_PULSE_RING.r, Config.COLOR_PULSE_RING.g,
-								Config.COLOR_PULSE_RING.b, alpha)
-		draw_arc(Vector2.ZERO, pulse_vfx_radius, 0, TAU, 32, ring_color, 1.5)
+		var base_color := Config.COLOR_PULSE_RING
+
+		# Layer 1: Inner glow fill — circle mờ co lại
+		var fill_alpha := alpha * 0.12
+		var fill_color := Color(base_color.r, base_color.g, base_color.b, fill_alpha)
+		draw_circle(Vector2.ZERO, pulse_vfx_radius, fill_color)
+
+		# Layer 2: Main ring — dày lúc đầu, mỏng khi expand
+		var ring_width := lerpf(3.5, 1.0, progress)
+		var ring_alpha := alpha * base_color.a
+		var ring_color := Color(base_color.r, base_color.g, base_color.b, ring_alpha)
+		draw_arc(Vector2.ZERO, pulse_vfx_radius, 0, TAU, 48, ring_color, ring_width)
+
+		# Layer 3: Outer halo — ring mờ bên ngoài
+		var halo_radius := pulse_vfx_radius + 4.0
+		var halo_alpha := alpha * 0.25
+		var halo_color := Color(base_color.r, base_color.g, base_color.b, halo_alpha)
+		draw_arc(Vector2.ZERO, halo_radius, 0, TAU, 48, halo_color, 1.0)

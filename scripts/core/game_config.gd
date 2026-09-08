@@ -73,7 +73,7 @@ const SHAKE_MAX_OFFSET := 3.0  # logical px — max camera displacement (PROPOSE
 const SHAKE_NOISE_SPEED := 12.0  # Hz — noise sample rate for smooth shake (PROPOSED)
 const SHAKE_STRENGTH := 1.0  # multiplier [0,1] — 0 disables shake entirely (PROPOSED)
 
-const PULSE_VFX_DURATION := 0.15  # s — expanding ring
+const PULSE_VFX_DURATION := 0.2  # s — expanding ring (F005: 0.15→0.2)
 const WALL_DUST_LIFETIME := 0.3  # s
 const ALTAR_FLASH_DURATION := 0.2  # s
 
@@ -116,5 +116,5 @@ const COLOR_ALTAR := Color(0.659, 0.545, 0.980)  # #a78bfa
 const COLOR_ALTAR_FLASH := Color(0.8, 0.7, 1.0, 0.8)
 
 const COLOR_SHARD := Color(0.980, 0.800, 0.082)  # #facc15
-const COLOR_PULSE_RING := Color(1.0, 1.0, 1.0, 0.8)  # White, semi-transparent
+const COLOR_PULSE_RING := Color(0.0, 0.898, 1.0, 0.9)  # Cyan, match player (F005)
 const COLOR_COMBO_TEXT := Color(1.0, 1.0, 1.0)  # White
