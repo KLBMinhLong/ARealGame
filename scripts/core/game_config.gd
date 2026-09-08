@@ -78,12 +78,18 @@ const WALL_DUST_LIFETIME := 0.3  # s
 const ALTAR_FLASH_DURATION := 0.2  # s
 
 # ─── ENEMIES ─────────────────────────────────────────────
-# M0: Chỉ có Slime
 const SLIME_HP := 1
-const SLIME_SPEED := 30.0  # px/s — chậm vì sân nhỏ (420×210)
+const SLIME_SPEED := 30.0  # px/s
 const SLIME_SIZE := 10  # px
-const SLIME_PUSH_WEIGHT := 1.0  # Standard (nhận đầy đủ push velocity)
+const SLIME_PUSH_WEIGHT := 1.0
 const SLIME_SHARD_DROP := 1
+
+# F009: Speeder — nhanh, nhỏ, nhẹ
+const SPEEDER_HP := 1
+const SPEEDER_SPEED := 60.0  # px/s (2× slime)
+const SPEEDER_SIZE := 7  # px (nhỏ hơn)
+const SPEEDER_PUSH_WEIGHT := 0.6  # nhẹ → bay xa hơn
+const SPEEDER_SHARD_DROP := 1
 
 # ─── SPAWN ───────────────────────────────────────────────
 const SPAWN_INTERVAL := 2.0  # s — 1 con / 2s
@@ -110,7 +116,9 @@ const COLOR_PLAYER := Color(0.0, 0.898, 1.0)  # #00e5ff cyan
 const COLOR_PLAYER_HIT := Color(1.0, 0.3, 0.3)  # Red flash
 
 const COLOR_SLIME := Color(0.176, 0.353, 0.153)  # #2d5a27
-const COLOR_SLIME_PUSHED := Color(0.3, 0.5, 0.2)  # Lighter when pushed
+const COLOR_SLIME_PUSHED := Color(0.3, 0.5, 0.2)
+const COLOR_SPEEDER := Color(0.953, 0.486, 0.125)  # #f37c20 cam
+const COLOR_SPEEDER_PUSHED := Color(1.0, 0.65, 0.3)
 
 const COLOR_ALTAR := Color(0.659, 0.545, 0.980)  # #a78bfa
 const COLOR_ALTAR_FLASH := Color(0.8, 0.7, 1.0, 0.8)

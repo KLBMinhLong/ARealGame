@@ -4,7 +4,7 @@
 class_name EnemyBase
 extends Node2D
 
-signal died(enemy_position: Vector2, shard_amount: int, is_altar_seal: bool)
+signal died(enemy_position: Vector2, shard_amount: int, is_altar_seal: bool, enemy_color: Color)
 signal wall_slammed(at_position: Vector2)
 
 enum EnemyState { NORMAL, PUSHED, DYING }
@@ -15,6 +15,7 @@ var speed: float = 30.0
 var push_weight: float = 1.0
 var shard_drop: int = 1
 var enemy_size: float = 10.0
+var enemy_color: Color = Color.WHITE  # F009: override in subclass
 
 # ─── State ───────────────────────────────────────────────
 var hp: int = 1
@@ -140,7 +141,7 @@ func take_damage(amount: int, is_altar: bool = false) -> void:
 func _die(is_altar_seal: bool = false) -> void:
 	enemy_state = EnemyState.DYING
 	dying_timer = 0.0
-	died.emit(position, shard_drop if not is_altar_seal else Config.SHARD_ALTAR_BONUS, is_altar_seal)
+	died.emit(position, shard_drop if not is_altar_seal else Config.SHARD_ALTAR_BONUS, is_altar_seal, enemy_color)
 
 
 # ═══════════════════════════════════════════════════════════

@@ -193,16 +193,20 @@ func _on_spawn_timer_timeout() -> void:
 		return
 	if enemies_container.get_child_count() >= Config.SPAWN_MAX_CONCURRENT:
 		return
-	_spawn_slime()
+	_spawn_enemy()
 
 
-func _spawn_slime() -> void:
-	var slime := preload("res://scenes/enemies/slime.tscn").instantiate()
-	slime.position = _get_spawn_position()
-	slime.target = player
-	slime.died.connect(_on_enemy_died)
-	slime.wall_slammed.connect(_on_wall_slam)  # F001 + F004
-	enemies_container.add_child(slime)
+func _spawn_enemy() -> void:
+	var enemy: Node2D
+	if randf() < 0.5:
+		enemy = preload("res://scenes/enemies/slime.tscn").instantiate()
+	else:
+		enemy = preload("res://scenes/enemies/speeder.tscn").instantiate()
+	enemy.position = _get_spawn_position()
+	enemy.target = player
+	enemy.died.connect(_on_enemy_died)
+	enemy.wall_slammed.connect(_on_wall_slam)
+	enemies_container.add_child(enemy)
 
 
 func _get_spawn_position() -> Vector2:
@@ -234,12 +238,10 @@ func _get_spawn_position() -> Vector2:
 # SIGNALS FROM GAMEPLAY
 # ═══════════════════════════════════════════════════════════
 
-func _on_enemy_died(enemy_position: Vector2, shard_amount: int, _is_altar_seal: bool) -> void:
-	# Spawn shards
+func _on_enemy_died(enemy_position: Vector2, shard_amount: int, _is_altar_seal: bool, color: Color) -> void:
 	for i in shard_amount:
 		_spawn_shard(enemy_position)
-	# F006: Death burst particles
-	vfx.spawn_death_burst(enemy_position, Config.COLOR_SLIME)
+	vfx.spawn_death_burst(enemy_position, color)  # F006 + F009: dùng enemy color
 
 
 func _spawn_shard(at_position: Vector2) -> void:

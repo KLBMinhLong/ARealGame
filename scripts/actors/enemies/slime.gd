@@ -10,6 +10,7 @@ func _ready() -> void:
 	push_weight = Config.SLIME_PUSH_WEIGHT
 	shard_drop = Config.SLIME_SHARD_DROP
 	enemy_size = Config.SLIME_SIZE
+	enemy_color = Config.COLOR_SLIME  # F009: for death VFX
 	super._ready()
 
 
