@@ -1,0 +1,428 @@
+{
+  "$schema": "./sound_design_config.schema.json",
+  "global": {
+    "sample_rate": 44100,
+    "bit_depth": 16,
+    "channels": 1,
+    "normalization_headroom_db": -0.5,
+    "output_directory": "../../assets/audio/sfx/"
+  },
+  "sounds": {
+    "pulse": {
+      "duration_ms": 320,
+      "category": "low_impact",
+      "layers": [
+        {
+          "name": "sub_bass",
+          "type": "sine_wave",
+          "frequency_hz": 80.0,
+          "freq_start_hz": 135.0,
+          "freq_end_hz": 62.0,
+          "drop_rate": 5.5,
+          "amplitude": 0.95
+        },
+        {
+          "name": "body",
+          "type": "sine_wave",
+          "frequency_hz": 125.0,
+          "freq_start_hz": 155.0,
+          "freq_end_hz": 82.0,
+          "drop_rate": 4.8,
+          "freq_low_hz": 180.0,
+          "freq_high_hz": 600.0,
+          "amplitude": 0.75
+        },
+        {
+          "name": "warmth",
+          "type": "sine_wave",
+          "frequency_hz": 250.0,
+          "amplitude": 0.25
+        },
+        {
+          "name": "shimmer",
+          "type": "filtered_noise",
+          "filter_type": "bandpass",
+          "freq_low_hz": 2200.0,
+          "freq_high_hz": 5000.0,
+          "amplitude": 0.015
+        }
+      ],
+      "adsr": {
+        "attack_ms": 4.0,
+        "decay_ms": 90.0,
+        "sustain_level": 0.65,
+        "release_ms": 180.0
+      },
+      "filters": [
+        {
+          "type": "lowpass",
+          "cutoff_hz": 850.0,
+          "order": 4
+        }
+      ],
+      "reverb": {
+        "enabled": true,
+        "tail_ms": 200.0,
+        "room_size": 0.60,
+        "damping": 0.65,
+        "wet_mix": 0.25,
+        "character": "warm_bloom"
+      },
+      "compression": {
+        "threshold_db": -13.0,
+        "ratio": 3.0
+      },
+      "comments": "Deep, punchy, and warm bass shockwave pulse with prolonged sustain and rich low harmonics"
+    },
+    "dash": {
+      "duration_ms": 150,
+      "category": "high_clarity",
+      "layers": [
+        {
+          "name": "whoosh_sweep",
+          "type": "whoosh",
+          "start_freq": 420.0,
+          "peak_freq": 1750.0,
+          "end_freq": 260.0,
+          "resonance_q": 2.4,
+          "peak_ratio": 0.25,
+          "freq_low_hz": 260.0,
+          "freq_high_hz": 5200.0,
+          "amplitude": 0.90
+        },
+        {
+          "name": "wind_texture",
+          "type": "filtered_noise",
+          "filter_type": "bandpass",
+          "freq_low_hz": 1200.0,
+          "freq_high_hz": 5500.0,
+          "amplitude": 0.10
+        }
+      ],
+      "pitch_sweep": {
+        "start_pitch": 1.10,
+        "end_pitch": 0.95,
+        "duration_ms": 85.0
+      },
+      "reverb": {
+        "enabled": false
+      },
+      "comments": "Aerodynamic Doppler whoosh ('vù, vụt qua') with smooth swell and non-harsh wind dissipation"
+    },
+    "wall_slam": {
+      "duration_ms": 300,
+      "category": "low_impact",
+      "layers": [
+        {
+          "name": "impact_low",
+          "type": "sine_wave",
+          "frequency_hz": 60.0,
+          "amplitude": 0.85
+        },
+        {
+          "name": "transient_burst",
+          "type": "filtered_noise",
+          "filter_type": "bandpass",
+          "freq_low_hz": 500.0,
+          "freq_high_hz": 2000.0,
+          "amplitude": 0.45,
+          "adsr": {
+            "attack_ms": 1.0,
+            "decay_ms": 20.0,
+            "sustain_level": 0.0,
+            "release_ms": 15.0
+          }
+        },
+        {
+          "name": "stone_texture",
+          "type": "pink_noise",
+          "amplitude": 0.4
+        }
+      ],
+      "adsr": {
+        "attack_ms": 2.0,
+        "decay_ms": 40.0,
+        "sustain_level": 0.45,
+        "release_ms": 125.0
+      },
+      "reverb": {
+        "enabled": true,
+        "tail_ms": 250.0,
+        "room_size": 0.6,
+        "damping": 0.4,
+        "wet_mix": 0.25,
+        "character": "stone_room"
+      },
+      "compression": {
+        "threshold_db": -15.0,
+        "ratio": 3.0
+      },
+      "comments": "Heavy low impact 60Hz + noise burst + pink noise texture with stone reverb 250ms (Requirement 3)"
+    },
+    "domino": {
+      "duration_ms": 60,
+      "category": "mid_percussive",
+      "layers": [
+        {
+          "name": "click_tone",
+          "type": "sine_wave",
+          "frequency_hz": 1200.0,
+          "amplitude": 0.7
+        },
+        {
+          "name": "tap_noise",
+          "type": "filtered_noise",
+          "filter_type": "bandpass",
+          "freq_low_hz": 800.0,
+          "freq_high_hz": 4000.0,
+          "amplitude": 0.35
+        }
+      ],
+      "adsr": {
+        "attack_ms": 3.0,
+        "decay_ms": 35.0,
+        "sustain_level": 0.0,
+        "release_ms": 22.0
+      },
+      "reverb": {
+        "enabled": true,
+        "tail_ms": 60.0,
+        "room_size": 0.2,
+        "damping": 0.7,
+        "wet_mix": 0.08,
+        "character": "wood_tap"
+      },
+      "character": "wood_tap",
+      "comments": "Light percussive 1.2kHz + short noise, minimal reverb 60ms (Requirement 4)"
+    },
+    "altar_seal": {
+      "duration_ms": 500,
+      "category": "magical_emotional",
+      "layers": [
+        {
+          "name": "detuned_fundamental",
+          "type": "sine_wave",
+          "frequency_hz": 280.0,
+          "amplitude": 0.6
+        },
+        {
+          "name": "perfect_fifth",
+          "type": "sine_wave",
+          "frequency_hz": 420.0,
+          "amplitude": 0.45
+        },
+        {
+          "name": "octave",
+          "type": "sine_wave",
+          "frequency_hz": 560.0,
+          "amplitude": 0.35
+        },
+        {
+          "name": "sparkle",
+          "type": "filtered_noise",
+          "filter_type": "bandpass",
+          "freq_low_hz": 3500.0,
+          "freq_high_hz": 6500.0,
+          "amplitude": 0.2
+        }
+      ],
+      "adsr": {
+        "attack_ms": 30.0,
+        "decay_ms": 250.0,
+        "sustain_level": 0.3,
+        "release_ms": 220.0
+      },
+      "reverb": {
+        "enabled": true,
+        "tail_ms": 750.0,
+        "room_size": 0.8,
+        "damping": 0.4,
+        "wet_mix": 0.35,
+        "character": "void_space"
+      },
+      "comments": "Mystical void magic: detuned harmonics 280/420/560Hz + 4kHz sparkle, deep reverb 750ms (Requirement 5)"
+    },
+    "shard": {
+      "duration_ms": 200,
+      "category": "high_clarity",
+      "root_note": "E6",
+      "root_freq": 1319.0,
+      "layers": [
+        {
+          "name": "fundamental",
+          "type": "sine_wave",
+          "frequency_hz": 1319.0,
+          "amplitude": 0.65
+        },
+        {
+          "name": "harmonic_2",
+          "type": "sine_wave",
+          "frequency_hz": 2638.0,
+          "amplitude": 0.3
+        },
+        {
+          "name": "harmonic_3",
+          "type": "sine_wave",
+          "frequency_hz": 3957.0,
+          "amplitude": 0.15
+        }
+      ],
+      "adsr": {
+        "attack_ms": 4.0,
+        "decay_ms": 150.0,
+        "sustain_level": 0.0,
+        "release_ms": 46.0
+      },
+      "reverb": {
+        "enabled": true,
+        "tail_ms": 70.0,
+        "room_size": 0.3,
+        "damping": 0.3,
+        "wet_mix": 0.2,
+        "character": "crystal_sparkle"
+      },
+      "comments": "Crystal chime: pure harmonic series 1319Hz + overtones, exponential decay 150ms, sparkle reverb 70ms (Requirement 6)"
+    },
+    "player_hurt": {
+      "duration_ms": 140,
+      "category": "mid_percussive",
+      "layers": [
+        {
+          "name": "alert_sine",
+          "type": "sine_wave",
+          "frequency_hz": 1800.0,
+          "amplitude": 0.65
+        },
+        {
+          "name": "alert_square",
+          "type": "square_wave",
+          "frequency_hz": 1200.0,
+          "amplitude": 0.3
+        }
+      ],
+      "adsr": {
+        "attack_ms": 2.0,
+        "decay_ms": 60.0,
+        "sustain_level": 0.25,
+        "release_ms": 78.0
+      },
+      "reverb": {
+        "enabled": false
+      },
+      "character": "synthetic_alert",
+      "comments": "Warning alert: 1.8kHz sine + 1.2kHz square, dry processing for instant urgency (Requirement 7)"
+    },
+    "combo": {
+      "duration_ms": 180,
+      "category": "mid_percussive",
+      "base_freq": 440.0,
+      "scale": "major",
+      "intervals": ["unison", "major_third", "perfect_fifth", "octave"],
+      "layers": [
+        {
+          "name": "note_root",
+          "type": "sine_wave",
+          "frequency_hz": 440.0,
+          "amplitude": 0.55
+        },
+        {
+          "name": "note_third",
+          "type": "sine_wave",
+          "frequency_hz": 554.37,
+          "amplitude": 0.35
+        },
+        {
+          "name": "note_fifth",
+          "type": "sine_wave",
+          "frequency_hz": 659.25,
+          "amplitude": 0.25
+        },
+        {
+          "name": "note_octave",
+          "type": "sine_wave",
+          "frequency_hz": 880.0,
+          "amplitude": 0.2
+        }
+      ],
+      "adsr": {
+        "attack_ms": 7.0,
+        "decay_ms": 100.0,
+        "sustain_level": 0.2,
+        "release_ms": 43.0
+      },
+      "reverb": {
+        "enabled": true,
+        "tail_ms": 100.0,
+        "room_size": 0.35,
+        "damping": 0.5,
+        "wet_mix": 0.15,
+        "character": "achievement_shine"
+      },
+      "comments": "Ascending musical pattern with major scale intervals, subtle reverb 100ms (Requirement 8)"
+    },
+    "game_over": {
+      "duration_ms": 950,
+      "category": "magical_emotional",
+      "chord_progression": ["E_minor", "C_major_resolution"],
+      "layers": [
+        {
+          "name": "melody_phrase",
+          "type": "melody",
+          "amplitude": 0.85,
+          "notes": [
+            { "freq_hz": 329.63, "start_ms": 0.0, "duration_ms": 190.0, "amplitude": 0.65 },
+            { "freq_hz": 392.00, "start_ms": 150.0, "duration_ms": 200.0, "amplitude": 0.78 },
+            { "freq_hz": 369.99, "start_ms": 320.0, "duration_ms": 200.0, "amplitude": 0.72 },
+            { "freq_hz": 293.66, "start_ms": 480.0, "duration_ms": 220.0, "amplitude": 0.75 },
+            { "freq_hz": 261.63, "start_ms": 660.0, "duration_ms": 290.0, "amplitude": 0.80 },
+            { "freq_hz": 196.00, "start_ms": 660.0, "duration_ms": 290.0, "amplitude": 0.55 }
+          ]
+        },
+        {
+          "name": "harmonic_phrase",
+          "type": "sine_wave",
+          "frequency_hz": 523.25,
+          "amplitude": 0.15
+        },
+        {
+          "name": "warm_bed",
+          "type": "filtered_noise",
+          "filter_type": "bandpass",
+          "freq_low_hz": 200.0,
+          "freq_high_hz": 1000.0,
+          "amplitude": 0.08
+        }
+      ],
+      "adsr": {
+        "attack_ms": 15.0,
+        "decay_ms": 450.0,
+        "sustain_level": 0.4,
+        "release_ms": 300.0
+      },
+      "reverb": {
+        "enabled": true,
+        "tail_ms": 1000.0,
+        "room_size": 0.85,
+        "damping": 0.5,
+        "wet_mix": 0.4,
+        "character": "spacious"
+      },
+      "comments": "Melodic rising and falling defeat phrase (E4->G4->F#4->D4->C4/G3) with spacious reverb 1000ms (Requirement 9)"
+    }
+  },
+  "documentation": {
+    "description": "Sound design configuration for Stone Knight professional SFX redesign",
+    "requirements_mapping": {
+      "pulse": "Requirement 1 & Task 4.1",
+      "dash": "Requirement 2 & Task 4.3",
+      "wall_slam": "Requirement 3 & Task 4.1",
+      "domino": "Requirement 4 & Task 4.2",
+      "altar_seal": "Requirement 5 & Task 4.4",
+      "shard": "Requirement 6 & Task 4.3",
+      "player_hurt": "Requirement 7 & Task 4.2",
+      "combo": "Requirement 8 & Task 4.2",
+      "game_over": "Requirement 9 & Task 4.4"
+    },
+    "unified_aesthetic": "All sounds use consistent synthesis approach, frequency separation (Req 10.4), and cohesive reverb (Req 10.2)"
+  }
+}

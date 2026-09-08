@@ -1,0 +1,203 @@
+{
+  "timestamp": "2026-09-08T23:57:00Z",
+  "sample_rate": 44100,
+  "spectral_analysis": {
+    "pulse": {
+      "category": "low_impact",
+      "bands": {
+        "bass_pct": 98.96,
+        "low_mid_pct": 1.03,
+        "mid_pct": 0.0,
+        "high_pct": 0.0,
+        "dominant_freq_hz": 94.7
+      }
+    },
+    "wall_slam": {
+      "category": "low_impact",
+      "bands": {
+        "bass_pct": 98.03,
+        "low_mid_pct": 0.46,
+        "mid_pct": 0.46,
+        "high_pct": 0.47,
+        "dominant_freq_hz": 59.1
+      }
+    },
+    "domino": {
+      "category": "mid_percussive",
+      "bands": {
+        "bass_pct": 0.01,
+        "low_mid_pct": 0.12,
+        "mid_pct": 98.75,
+        "high_pct": 1.12,
+        "dominant_freq_hz": 1204.7
+      }
+    },
+    "player_hurt": {
+      "category": "mid_percussive",
+      "bands": {
+        "bass_pct": 0.0,
+        "low_mid_pct": 0.02,
+        "mid_pct": 94.47,
+        "high_pct": 5.33,
+        "dominant_freq_hz": 1800.6
+      }
+    },
+    "combo": {
+      "category": "mid_percussive",
+      "bands": {
+        "bass_pct": 0.0,
+        "low_mid_pct": 93.56,
+        "mid_pct": 6.44,
+        "high_pct": 0.0,
+        "dominant_freq_hz": 441.1
+      }
+    },
+    "dash": {
+      "category": "high_clarity",
+      "bands": {
+        "bass_pct": 0.56,
+        "low_mid_pct": 36.83,
+        "mid_pct": 61.09,
+        "high_pct": 1.52,
+        "dominant_freq_hz": 706.7
+      }
+    },
+    "shard": {
+      "category": "high_clarity",
+      "bands": {
+        "bass_pct": 0.0,
+        "low_mid_pct": 0.0,
+        "mid_pct": 97.24,
+        "high_pct": 2.76,
+        "dominant_freq_hz": 1321.3
+      }
+    },
+    "altar_seal": {
+      "category": "magical_emotional",
+      "bands": {
+        "bass_pct": 0.0,
+        "low_mid_pct": 99.56,
+        "mid_pct": 0.02,
+        "high_pct": 0.42,
+        "dominant_freq_hz": 279.6
+      }
+    },
+    "game_over": {
+      "category": "magical_emotional",
+      "bands": {
+        "bass_pct": 3.89,
+        "low_mid_pct": 95.83,
+        "mid_pct": 0.28,
+        "high_pct": 0.0,
+        "dominant_freq_hz": 523.3
+      }
+    }
+  },
+  "scenarios": [
+    {
+      "scenario": "Scenario A: Classic Combat Impact (Pulse + Wall Slam + Domino)",
+      "result": {
+        "sounds": [
+          "pulse",
+          "wall_slam",
+          "domino"
+        ],
+        "peak_db": -1.95,
+        "rms_db": -15.02,
+        "crest_factor": 4.5,
+        "gain_reduction_db": 0.0,
+        "per_sound_audibility": {
+          "pulse": {
+            "sound_rms_db": -17.63,
+            "relative_to_mix_db": -2.61,
+            "masked": false
+          },
+          "wall_slam": {
+            "sound_rms_db": -17.07,
+            "relative_to_mix_db": -2.05,
+            "masked": false
+          },
+          "domino": {
+            "sound_rms_db": -20.75,
+            "relative_to_mix_db": -5.73,
+            "masked": false
+          }
+        },
+        "mix_clean": true
+      }
+    },
+    {
+      "scenario": "Scenario B: Agile Harvesting (Dash + Shard + Combo)",
+      "result": {
+        "sounds": [
+          "dash",
+          "shard",
+          "combo"
+        ],
+        "peak_db": -0.13,
+        "rms_db": -16.72,
+        "crest_factor": 6.76,
+        "gain_reduction_db": 1.37,
+        "per_sound_audibility": {
+          "dash": {
+            "sound_rms_db": -20.18,
+            "relative_to_mix_db": -3.46,
+            "masked": false
+          },
+          "shard": {
+            "sound_rms_db": -20.61,
+            "relative_to_mix_db": -3.89,
+            "masked": false
+          },
+          "combo": {
+            "sound_rms_db": -18.83,
+            "relative_to_mix_db": -2.11,
+            "masked": false
+          }
+        },
+        "mix_clean": true
+      }
+    },
+    {
+      "scenario": "Scenario C: Chaotic Boss/Brawl (Player Hurt + Pulse + Wall Slam + Shard)",
+      "result": {
+        "sounds": [
+          "player_hurt",
+          "pulse",
+          "wall_slam",
+          "shard"
+        ],
+        "peak_db": 2.2,
+        "rms_db": -13.38,
+        "crest_factor": 6.01,
+        "gain_reduction_db": 3.7,
+        "per_sound_audibility": {
+          "player_hurt": {
+            "sound_rms_db": -14.03,
+            "relative_to_mix_db": -0.65,
+            "masked": false
+          },
+          "pulse": {
+            "sound_rms_db": -17.63,
+            "relative_to_mix_db": -4.25,
+            "masked": false
+          },
+          "wall_slam": {
+            "sound_rms_db": -17.07,
+            "relative_to_mix_db": -3.69,
+            "masked": false
+          },
+          "shard": {
+            "sound_rms_db": -20.61,
+            "relative_to_mix_db": -7.23,
+            "masked": false
+          }
+        },
+        "mix_clean": true
+      }
+    }
+  ],
+  "category_separation_passed": true,
+  "all_scenarios_passed": true,
+  "overall_status": "PASS"
+}

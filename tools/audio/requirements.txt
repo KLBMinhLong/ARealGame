@@ -1,0 +1,15 @@
+# Stone Knight - Professional SFX Generation Dependencies
+# Python 3.8+ required
+
+# Core audio processing
+numpy>=1.24.0,<2.0.0
+scipy>=1.10.0,<2.0.0
+
+# Audio file I/O and manipulation
+pydub>=0.25.0
+
+# Optional: Advanced audio analysis
+librosa>=0.10.0
+
+# Testing
+pytest>=7.0.0

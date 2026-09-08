@@ -1,0 +1,231 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "StoneKnightSoundDesignConfig",
+  "description": "Configuration schema for Stone Knight professional sound design synthesis",
+  "type": "object",
+  "required": ["global", "sounds"],
+  "properties": {
+    "global": {
+      "type": "object",
+      "required": ["sample_rate", "bit_depth", "channels", "normalization_headroom_db", "output_directory"],
+      "properties": {
+        "sample_rate": {
+          "type": "integer",
+          "enum": [44100]
+        },
+        "bit_depth": {
+          "type": "integer",
+          "enum": [16]
+        },
+        "channels": {
+          "type": "integer",
+          "enum": [1]
+        },
+        "normalization_headroom_db": {
+          "type": "number",
+          "minimum": -1.0,
+          "maximum": -0.3
+        },
+        "output_directory": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "sounds": {
+      "type": "object",
+      "required": [
+        "pulse",
+        "dash",
+        "wall_slam",
+        "domino",
+        "altar_seal",
+        "shard",
+        "player_hurt",
+        "combo",
+        "game_over"
+      ],
+      "properties": {
+        "pulse": { "$ref": "#/definitions/SoundConfig" },
+        "dash": { "$ref": "#/definitions/SoundConfig" },
+        "wall_slam": { "$ref": "#/definitions/SoundConfig" },
+        "domino": { "$ref": "#/definitions/SoundConfig" },
+        "altar_seal": { "$ref": "#/definitions/SoundConfig" },
+        "shard": { "$ref": "#/definitions/SoundConfig" },
+        "player_hurt": { "$ref": "#/definitions/SoundConfig" },
+        "combo": { "$ref": "#/definitions/SoundConfig" },
+        "game_over": { "$ref": "#/definitions/SoundConfig" }
+      },
+      "additionalProperties": false
+    },
+    "documentation": {
+      "type": "object"
+    }
+  },
+  "definitions": {
+    "ADSRConfig": {
+      "type": "object",
+      "required": ["attack_ms", "decay_ms", "sustain_level", "release_ms"],
+      "properties": {
+        "attack_ms": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 500
+        },
+        "decay_ms": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "sustain_level": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "release_ms": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000
+        }
+      },
+      "additionalProperties": false
+    },
+    "LayerConfig": {
+      "type": "object",
+      "required": ["name", "type", "amplitude"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["sine_wave", "square_wave", "sawtooth", "filtered_noise", "pink_noise", "melody", "whoosh"]
+        },
+        "amplitude": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "frequency_hz": {
+          "type": "number",
+          "minimum": 20,
+          "maximum": 20000
+        },
+        "freq_low_hz": {
+          "type": "number",
+          "minimum": 20,
+          "maximum": 20000
+        },
+        "freq_high_hz": {
+          "type": "number",
+          "minimum": 20,
+          "maximum": 20000
+        },
+        "filter_type": {
+          "type": "string",
+          "enum": ["bandpass", "lowpass", "highpass"]
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 1
+        },
+        "adsr": {
+          "$ref": "#/definitions/ADSRConfig"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ReverbConfig": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "room_size": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "damping": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "wet_mix": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "tail_ms": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2000
+        },
+        "character": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "PitchSweepConfig": {
+      "type": "object",
+      "required": ["start_pitch", "end_pitch"],
+      "properties": {
+        "start_pitch": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 4.0
+        },
+        "end_pitch": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 4.0
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "SoundConfig": {
+      "type": "object",
+      "required": ["duration_ms", "category", "layers"],
+      "properties": {
+        "duration_ms": {
+          "type": "number",
+          "minimum": 10,
+          "maximum": 3000
+        },
+        "category": {
+          "type": "string",
+          "enum": ["low_impact", "mid_percussive", "high_clarity", "magical_emotional"]
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LayerConfig"
+          },
+          "minItems": 1
+        },
+        "adsr": {
+          "$ref": "#/definitions/ADSRConfig"
+        },
+        "reverb": {
+          "$ref": "#/definitions/ReverbConfig"
+        },
+        "pitch_sweep": {
+          "$ref": "#/definitions/PitchSweepConfig"
+        },
+        "comments": {
+          "type": "string"
+        },
+        "character": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

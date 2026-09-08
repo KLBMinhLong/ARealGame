@@ -21,3 +21,10 @@ export/
 
 # Logs
 *.log
+
+# Python & Test Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.artifacts/
