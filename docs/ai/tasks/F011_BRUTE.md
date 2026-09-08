@@ -1,8 +1,8 @@
 # F011 — Enemy Type: Brute
 
-**Status:** IMPLEMENTING
+**Status:** DONE
 **Owner approval:** GRANTED (2026-09-08)
-**Evidence:** NOT_RUN
+**Evidence:** HUMAN_PLAYTEST_PASSED (2026-09-08)
 
 ## 1. Kết quả người chơi nhận được
 
@@ -73,14 +73,14 @@ Tạo thử thách chiến thuật mới: không thể 1-hit kill bằng 1 lần
 
 | ID | Observable behavior | Check | Expected | Status |
 |---|---|---|---|---|
-| AC01 | Brute xuất hiện | Runtime | Quái hình vuông to màu đỏ xuất hiện | NOT_RUN |
-| AC02 | Chuyển động chậm & nặng | Runtime | Đi chậm hơn Slime, khi bị Pulse đẩy bay ngắn hơn | NOT_RUN |
-| AC03 | Cần 2 đòn để chết | Runtime | Đập tường lần 1 không chết ngay; đập tường lần 2 hoặc domino mới chết | NOT_RUN |
-| AC04 | Phản hồi thị giác khi mất máu | Runtime | Còn 1 HP thấy vết nứt/đổi màu rõ rệt | NOT_RUN |
-| AC05 | Rơi 2 Shards | Runtime | Khi chết nhả ra 2 cục Shard vàng | NOT_RUN |
-| AC06 | Altar seal 1-hit | Runtime | Đẩy Brute vào Altar trung tâm tiêu diệt ngay lập tức | NOT_RUN |
-| AC07 | Không phá vỡ Slime/Speeder | Runtime | Slime và Speeder vẫn hoạt động đúng như cũ | NOT_RUN |
+| AC01 | Brute xuất hiện | Runtime | Quái hình vuông to màu đỏ xuất hiện | PASS |
+| AC02 | Chuyển động chậm & nặng | Runtime | Đi chậm hơn Slime, khi bị Pulse đẩy bay ngắn hơn | PASS |
+| AC03 | Cần 2 đòn để chết | Runtime | Đập tường lần 1 không chết ngay; đập tường lần 2 hoặc domino mới chết | PASS |
+| AC04 | Phản hồi thị giác khi mất máu | Runtime | Còn 1 HP thấy vết nứt/đổi màu rõ rệt | PASS |
+| AC05 | Rơi 2 Shards | Runtime | Khi chết nhả ra 2 cục Shard vàng | PASS |
+| AC06 | Altar seal 1-hit | Runtime | Đẩy Brute vào Altar trung tâm tiêu diệt ngay lập tức | PASS |
+| AC07 | Không phá vỡ Slime/Speeder | Runtime | Slime và Speeder vẫn hoạt động đúng như cũ | PASS |
 
 ## 7. Approval
 
-- Chờ chủ dự án duyệt brief trước khi triển khai.
+- Đã duyệt và playtest đạt bởi chủ dự án (2026-09-08).
