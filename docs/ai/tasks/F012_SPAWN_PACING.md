@@ -1,8 +1,8 @@
 # F012 — Spawn Pacing (Phased Enemy Introduction)
 
-**Status:** IMPLEMENTING
+**Status:** DONE
 **Owner approval:** GRANTED (2026-09-08)
-**Evidence:** NOT_RUN
+**Evidence:** HUMAN_PLAYTEST_PASSED (2026-09-08)
 
 ## 1. Kết quả người chơi nhận được
 
@@ -62,12 +62,12 @@ Nhịp độ xuất hiện của quái được phân tầng rõ rệt theo th�
 
 | ID | Observable behavior | Check | Expected | Status |
 |---|---|---|---|---|
-| AC01 | Phút đầu chỉ có Slime | Runtime | 0 – 60s chỉ thấy Slime xanh, không có Speeder/Brute | NOT_RUN |
-| AC02 | Phút thứ 1 Speeder mới ra | Runtime | Sau 60s Speeder cam bắt đầu xuất hiện | NOT_RUN |
-| AC03 | Phút 2.5 Brute mới ra | Runtime | Trước 150s không có Brute; sau 150s Brute đỏ bắt đầu xuất hiện | NOT_RUN |
-| AC04 | Restart reset chu kỳ | Runtime | Bấm R hoặc restart run mới: bắt đầu lại bằng 100% Slime | NOT_RUN |
-| AC05 | Quái không bị đổi stats | Diff | Không đổi HP, speed, push_weight của quái | NOT_RUN |
+| AC01 | Phút đầu chỉ có Slime | Runtime | 0 – 60s chỉ thấy Slime xanh, không có Speeder/Brute | PASS |
+| AC02 | Phút thứ 1 Speeder mới ra | Runtime | Sau 60s Speeder cam bắt đầu xuất hiện | PASS |
+| AC03 | Phút 2.5 Brute mới ra | Runtime | Trước 150s không có Brute; sau 150s Brute đỏ bắt đầu xuất hiện | PASS |
+| AC04 | Restart reset chu kỳ | Runtime | Bấm R hoặc restart run mới: bắt đầu lại bằng 100% Slime | PASS |
+| AC05 | Quái không bị đổi stats | Diff | Không đổi HP, speed, push_weight của quái | PASS |
 
 ## 7. Approval
 
-- Đã duyệt phương án bởi chủ dự án (2026-09-08).
+- Đã duyệt và playtest đạt bởi chủ dự án (2026-09-08).
