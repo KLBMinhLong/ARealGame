@@ -22,7 +22,7 @@ func spawn_dust(at_position: Vector2) -> void:
 
 	# Hướng bắn: ngược tường
 	var direction := _get_wall_direction(at_position)
-	particles.direction = Vector3(direction.x, direction.y, 0)
+	particles.direction = direction
 	particles.spread = 30.0  # ±30°
 
 	# Velocity
@@ -30,7 +30,7 @@ func spawn_dust(at_position: Vector2) -> void:
 	particles.initial_velocity_max = 35.0
 
 	# Gravity nhẹ
-	particles.gravity = Vector3(0, 40, 0)
+	particles.gravity = Vector2(0, 40)
 
 	# Size nhỏ (pixel art)
 	particles.scale_amount_min = 0.5
