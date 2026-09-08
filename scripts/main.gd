@@ -122,6 +122,7 @@ func _start_run() -> void:
 	camera.clear()  # F001
 	hitstop.clear()  # F002
 	combo_popup.clear()  # F003
+	vfx.clear()  # F004
 	_enter_state(GameState.RUNNING)
 
 
@@ -172,6 +173,7 @@ func _show_menu() -> void:
 	camera.clear()  # F001
 	hitstop.clear()  # F002
 	combo_popup.clear()  # F003
+	vfx.clear()  # F004
 
 
 # ═══════════════════════════════════════════════════════════
@@ -199,7 +201,7 @@ func _spawn_slime() -> void:
 	slime.position = _get_spawn_position()
 	slime.target = player
 	slime.died.connect(_on_enemy_died)
-	slime.wall_slammed.connect(_on_wall_slam_for_shake)  # F001
+	slime.wall_slammed.connect(_on_wall_slam)  # F001 + F004
 	enemies_container.add_child(slime)
 
 
@@ -269,5 +271,6 @@ func _on_pulse_for_shake(_position: Vector2, _radius: float) -> void:
 	camera.request_shake(Config.SHAKE_PULSE)
 
 
-func _on_wall_slam_for_shake(_at_position: Vector2) -> void:
-	camera.request_shake(Config.SHAKE_WALL_SLAM)
+func _on_wall_slam(at_position: Vector2) -> void:
+	camera.request_shake(Config.SHAKE_WALL_SLAM)  # F001
+	vfx.spawn_dust(at_position)  # F004
