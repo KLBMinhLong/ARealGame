@@ -12,6 +12,7 @@ var shard_count: int = 0
 var best_chain: int = 0
 var current_chain: int = 0
 var run_time: float = 0.0  # F010: difficulty scaling
+var enemies_killed: int = 0  # F013: run summary
 
 # ─── Node references ────────────────────────────────────
 @onready var arena: Node2D = $Arena
@@ -106,7 +107,7 @@ func _enter_state(new_state: GameState) -> void:
 			spawn_timer.stop()
 			camera.clear()  # F001
 			hitstop.clear()  # F002: restore time_scale
-			hud.show_death(shard_count, best_chain)
+			hud.show_death(run_time, enemies_killed, shard_count, best_chain)
 
 
 # ═══════════════════════════════════════════════════════════
@@ -136,6 +137,7 @@ func _reset_run_stats() -> void:
 	best_chain = 0
 	current_chain = 0
 	run_time = 0.0  # F010
+	enemies_killed = 0  # F013
 
 
 func _clear_entities() -> void:
@@ -270,6 +272,7 @@ func _get_spawn_position() -> Vector2:
 # ═══════════════════════════════════════════════════════════
 
 func _on_enemy_died(enemy_position: Vector2, shard_amount: int, _is_altar_seal: bool, color: Color) -> void:
+	enemies_killed += 1  # F013
 	for i in shard_amount:
 		_spawn_shard(enemy_position)
 	vfx.spawn_death_burst(enemy_position, color)  # F006 + F009: dùng enemy color

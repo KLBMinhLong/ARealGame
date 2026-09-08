@@ -9,9 +9,27 @@ enum HUDState { MENU, HUD, PAUSE, DEATH }
 var hud_state: HUDState = HUDState.MENU
 
 
+var dim_overlay: ColorRect
+
+
 func _ready() -> void:
+	_setup_dim_overlay()
 	_setup_label()
 	show_menu()
+
+
+func _setup_dim_overlay() -> void:
+	dim_overlay = ColorRect.new()
+	dim_overlay.name = "DimOverlay"
+	dim_overlay.color = Color(0.02, 0.03, 0.05, 0.7)
+	dim_overlay.anchor_left = 0
+	dim_overlay.anchor_top = 0
+	dim_overlay.anchor_right = 1
+	dim_overlay.anchor_bottom = 1
+	dim_overlay.visible = false
+	add_child(dim_overlay)
+	if label != null:
+		move_child(dim_overlay, 0)
 
 
 func _setup_label() -> void:
@@ -38,6 +56,8 @@ func _setup_label() -> void:
 
 func show_menu() -> void:
 	hud_state = HUDState.MENU
+	if dim_overlay != null:
+		dim_overlay.visible = false
 	label.text = "\n\n⚔  STONE KNIGHT  ⚔\n\nPress SPACE to start\n"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -45,20 +65,30 @@ func show_menu() -> void:
 
 func show_hud() -> void:
 	hud_state = HUDState.HUD
+	if dim_overlay != null:
+		dim_overlay.visible = false
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 
 
 func show_pause() -> void:
 	hud_state = HUDState.PAUSE
+	if dim_overlay != null:
+		dim_overlay.visible = true
 	label.text = "\n\n⏸  PAUSED  ⏸\n\nESC to resume\nR to restart\n"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 
-func show_death(shards: int, best_chain: int) -> void:
+func show_death(time_survived: float, enemies_killed: int, shards: int, best_chain: int) -> void:
 	hud_state = HUDState.DEATH
-	label.text = "\n\n💀  YOU DIED  💀\n\nShards: %d\nBest Chain: x%d\n\nPress R to restart\n" % [shards, best_chain]
+	if dim_overlay != null:
+		dim_overlay.visible = true
+	var minutes: int = int(time_survived) / 60
+	var seconds: int = int(time_survived) % 60
+	label.text = "\n💀  RUN OVER  💀\n\nSurvival Time: %02d:%02d\nEnemies Slain: %d\nBest Combo: x%d\nShards Collected: %d\n\nPress R to restart\n" % [
+		minutes, seconds, enemies_killed, best_chain, shards
+	]
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
