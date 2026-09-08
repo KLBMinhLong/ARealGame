@@ -206,10 +206,24 @@ func _on_spawn_timer_timeout() -> void:
 
 func _spawn_enemy() -> void:
 	var enemy: Node2D
-	# F010 & F011: dynamic ratios over time (Slime, Speeder, Brute)
-	var scale_t := clampf(run_time / Config.SCALE_DURATION, 0.0, 1.0)
-	var speeder_chance := lerpf(Config.SPEEDER_RATIO_START, Config.SPEEDER_RATIO_MAX, scale_t)
-	var brute_chance := lerpf(Config.BRUTE_RATIO_START, Config.BRUTE_RATIO_MAX, scale_t)
+	# F012: Phased enemy pacing based on run_time
+	var speeder_chance: float = 0.0
+	var brute_chance: float = 0.0
+
+	if run_time < Config.PHASE_SPEEDER_START:
+		# Giai đoạn 1 (0 – 60s): 100% Slime
+		speeder_chance = 0.0
+		brute_chance = 0.0
+	elif run_time < Config.PHASE_BRUTE_START:
+		# Giai đoạn 2 (60s – 150s): Speeder xuất hiện 0% -> 40%
+		var t2 := (run_time - Config.PHASE_SPEEDER_START) / (Config.PHASE_BRUTE_START - Config.PHASE_SPEEDER_START)
+		speeder_chance = lerpf(0.0, Config.PHASE2_SPEEDER_MAX, t2)
+		brute_chance = 0.0
+	else:
+		# Giai đoạn 3 (150s+): Brute xuất hiện 0% -> 25%, Speeder 40% -> 45%
+		var t3 := clampf((run_time - Config.PHASE_BRUTE_START) / (Config.PHASE_RAMP_END - Config.PHASE_BRUTE_START), 0.0, 1.0)
+		speeder_chance = lerpf(Config.PHASE2_SPEEDER_MAX, Config.PHASE3_SPEEDER_FINAL, t3)
+		brute_chance = lerpf(0.0, Config.PHASE3_BRUTE_FINAL, t3)
 
 	var roll := randf()
 	if roll < brute_chance:

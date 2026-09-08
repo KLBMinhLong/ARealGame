@@ -102,15 +102,21 @@ const BRUTE_SHARD_DROP := 2
 const SPAWN_INTERVAL := 2.0  # s — 1 con / 2s (starting)
 const SPAWN_MAX_CONCURRENT := 15  # starting cap
 
-# F010 & F011: Difficulty scaling & spawn ratios over time (t=0 -> t=180s)
+# F010: Difficulty scaling over time (t=0 -> t=180s)
 const SCALE_DURATION := 180.0  # s — full ramp over 3 minutes
 const SPAWN_INTERVAL_MIN := 0.8  # s — fastest spawn rate
 const SPAWN_MAX_CAP := 25  # max concurrent at full ramp
-const SPEEDER_RATIO_START := 0.35  # 35% speeder at start
-const SPEEDER_RATIO_MAX := 0.50  # 50% speeder at full ramp
-const BRUTE_RATIO_START := 0.15  # 15% brute at start
-const BRUTE_RATIO_MAX := 0.30  # 30% brute at full ramp
 const SPAWN_MIN_DISTANCE := 80.0  # px — khoảng cách tối thiểu từ player
+
+# F012: Phased enemy pacing
+const PHASE_SPEEDER_START := 60.0  # s (phút 1: speeder bắt đầu xuất hiện)
+const PHASE_BRUTE_START := 150.0  # s (phút 2.5: brute bắt đầu xuất hiện)
+const PHASE_RAMP_END := 180.0  # s (phút 3: đạt tỉ lệ tối đa)
+
+# Target ratios
+const PHASE2_SPEEDER_MAX := 0.40  # Speeder đạt 40% ở mốc 150s
+const PHASE3_SPEEDER_FINAL := 0.45  # Speeder ở mốc 180s+
+const PHASE3_BRUTE_FINAL := 0.25  # Brute ở mốc 180s+ (Slime còn lại 30%)
 
 # ─── SHARDS ──────────────────────────────────────────────
 const SHARD_SIZE := 4  # px
