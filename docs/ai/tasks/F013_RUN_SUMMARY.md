@@ -1,8 +1,8 @@
 # F013 — Score / Run Summary
 
-**Status:** IMPLEMENTING
+**Status:** DONE
 **Owner approval:** GRANTED (2026-09-08)
-**Evidence:** NOT_RUN
+**Evidence:** HUMAN_PLAYTEST_PASSED (2026-09-08)
 
 ## 1. Kết quả người chơi nhận được
 
@@ -75,11 +75,11 @@ Kèm lớp phủ mờ tối (dim overlay) giúp bảng tổng kết nổi bật,
 
 | ID | Observable behavior | Check | Expected | Status |
 |---|---|---|---|---|
-| AC01 | Bảng thống kê hiện đủ 4 chỉ số | Runtime | Chết thấy Time (MM:SS), Enemies Slain, Best Combo, Shards | NOT_RUN |
-| AC02 | Số liệu chính xác | Runtime | Giết quái, nhặt shard, tạo combo đều phản ánh đúng | NOT_RUN |
-| AC03 | Nền tối tương phản | Runtime | Có lớp phủ mờ đen phía sau chữ giúp dễ đọc | NOT_RUN |
-| AC04 | Restart reset về 0 | Runtime | Bấm R bắt đầu lại, stats reset về 0, lớp mờ biến mất | NOT_RUN |
+| AC01 | Bảng thống kê hiện đủ 4 chỉ số | Runtime | Chết thấy Time (MM:SS), Enemies Slain, Best Combo, Shards | PASS |
+| AC02 | Số liệu chính xác | Runtime | Giết quái, nhặt shard, tạo combo đều phản ánh đúng | PASS |
+| AC03 | Nền tối tương phản | Runtime | Có lớp phủ mờ đen phía sau chữ giúp dễ đọc | PASS |
+| AC04 | Restart reset về 0 | Runtime | Bấm R bắt đầu lại, stats reset về 0, lớp mờ biến mất | PASS |
 
 ## 7. Approval
 
-- Chờ chủ dự án duyệt brief.
+- Đã duyệt và playtest đạt bởi chủ dự án (2026-09-08).
