@@ -46,7 +46,7 @@ const THROTTLE_GAPS: Dictionary = {
 	"shard": 30,
 	"player_hurt": 200,
 	"combo": 100,
-	"game_over": 500,
+	"game_over": 1000,
 }
 
 const POLYPHONY_CAPS: Dictionary = {
@@ -62,8 +62,8 @@ const POLYPHONY_CAPS: Dictionary = {
 }
 
 const BASE_VOLUMES: Dictionary = {
-	"pulse": -2.0,
-	"dash": -4.0,
+	"pulse": -1.5,
+	"dash": -5.0,
 	"wall_slam": -1.0,
 	"domino": -6.0,
 	"altar_seal": -1.5,

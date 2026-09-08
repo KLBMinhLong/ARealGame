@@ -44,67 +44,74 @@ def write_wav(filename: str, samples: list[float], peak_db: float = 0.0) -> None
     print(f"Generated {filename}: {len(samples)} samples ({len(samples)/SAMPLE_RATE:.2f}s), {size_kb:.1f} KB, peak {peak_db} dB")
 
 
-# ─── 1. SFX PULSE (~0.24s) ──────────────────────────────────
-# Low-mid arcane blast sweep: expanding energy wave, distinct from hit
+# ─── 1. SFX PULSE (~0.30s) ──────────────────────────────────
+# Warm, deep bass energy bloom: subtle accumulation swell then deep, smooth bass release
 def gen_pulse() -> None:
-    duration = 0.24
+    duration = 0.30
     total_samples = int(duration * SAMPLE_RATE)
     samples = []
 
     phase = 0.0
-    noise_filter = 0.0
+    brown_noise = 0.0
 
     for i in range(total_samples):
         t = i / SAMPLE_RATE
-        # Frequency sweep from 260 Hz down to 55 Hz
-        freq = 55.0 + 205.0 * math.exp(-12.0 * t)
+
+        # Accumulation swell (0 to 0.06s), then deep bass release (0.06 to 0.30s)
+        if t < 0.06:
+            # Swell pitch: 65 Hz -> 95 Hz
+            freq = 65.0 + 30.0 * (t / 0.06)
+            env = math.sin((t / 0.06) * (math.pi * 0.5)) * 0.75
+        else:
+            rel_t = t - 0.06
+            # Deep release pitch: drops from 95 Hz down to 42 Hz smoothly
+            freq = 42.0 + 53.0 * math.exp(-12.0 * rel_t)
+            env = math.exp(-9.0 * rel_t)
+
         phase += 2.0 * math.pi * freq / SAMPLE_RATE
 
-        # Sine wave with warmth (second harmonic)
-        tone = 0.85 * math.sin(phase) + 0.15 * math.sin(phase * 2.0)
+        # Pure warm sine + subtle sub-octave & 2nd harmonic (warmth, no harshness)
+        tone = 0.80 * math.sin(phase) + 0.15 * math.sin(phase * 0.5) + 0.05 * math.sin(phase * 2.0)
 
-        # Low-pass filtered noise whoosh layer
+        # Very soft low-passed air puff (brownian-style filtered noise, cutoff ~180Hz)
         white = (random.random() * 2.0 - 1.0)
-        noise_filter += (white - noise_filter) * 0.12  # ~800 Hz lowpass
-        noise_hump = (t / 0.03) * math.exp(-14.0 * t) * 4.0 if t < 0.12 else 0.0
+        brown_noise += (white - brown_noise) * 0.035
+        noise_env = env * 0.16
 
-        # Amplitude envelope
-        attack = min(1.0, t / 0.012)
-        decay = math.exp(-9.0 * t)
-        env = attack * decay
-
-        sample = (tone * 0.75 + noise_filter * noise_hump * 0.35) * env
+        sample = (tone * 0.88 + brown_noise * noise_env) * env
         samples.append(sample)
 
-    write_wav("sfx_pulse.wav", samples, peak_db=-2.0)
+    write_wav("sfx_pulse.wav", samples, peak_db=-1.5)
 
 
-# ─── 2. SFX DASH (~0.10s) ───────────────────────────────────
-# Short, crisp wind slice / swoosh. Light, doesn't mask impact sounds.
+# ─── 2. SFX DASH (~0.12s) ───────────────────────────────────
+# Gentle, soft wind puff / breeze. Pure soft air displacement, no harsh tones.
 def gen_dash() -> None:
-    duration = 0.10
+    duration = 0.12
     total_samples = int(duration * SAMPLE_RATE)
     samples = []
 
-    phase = 0.0
-    noise_filter = 0.0
+    lp_state = 0.0
+    hp_state = 0.0
 
     for i in range(total_samples):
         t = i / SAMPLE_RATE
-        freq = 220.0 + 380.0 * math.exp(-22.0 * t)
-        phase += 2.0 * math.pi * freq / SAMPLE_RATE
 
         white = (random.random() * 2.0 - 1.0)
-        noise_filter += (white - noise_filter) * 0.25  # High-mid whoosh
+        # Low-pass filter around ~600 Hz
+        lp_state += (white - lp_state) * 0.08
+        # High-pass filter around ~160 Hz
+        hp_state += (lp_state - hp_state) * 0.02
+        wind = lp_state - hp_state
 
-        attack = min(1.0, t / 0.008)
-        decay = math.exp(-28.0 * t)
+        # Smooth bell-shaped envelope: gentle attack, soft breeze decay
+        attack = math.sin(min(1.0, t / 0.03) * math.pi * 0.5)
+        decay = math.exp(-22.0 * max(0.0, t - 0.02))
         env = attack * decay
 
-        sample = (math.sin(phase) * 0.35 + noise_filter * 0.65) * env
-        samples.append(sample)
+        samples.append(wind * env)
 
-    write_wav("sfx_dash.wav", samples, peak_db=-4.0)
+    write_wav("sfx_dash.wav", samples, peak_db=-5.0)
 
 
 # ─── 3. SFX WALL SLAM (~0.22s) ──────────────────────────────
@@ -295,41 +302,81 @@ def gen_combo() -> None:
     write_wav("sfx_combo.wav", samples, peak_db=-3.0)
 
 
-# ─── 9. SFX GAME OVER (~0.90s) ──────────────────────────────
-# Solemn descending minor cadence: A3 (220 Hz) -> F3 (174 Hz) -> D3 (146 Hz)
+# ─── 9. SFX GAME OVER (~1.30s) ──────────────────────────────
+# Rhythmic 3-phrase defeat motif: High cadence -> Mid cadence -> Low cadence
+# Exact same melody repeated in 3 octave tiers (A -> F -> D)
 def gen_game_over() -> None:
-    duration = 0.90
+    duration = 1.35
     total_samples = int(duration * SAMPLE_RATE)
-    samples = []
+    samples = [0.0] * total_samples
 
-    phase_main = 0.0
-    phase_sub = 0.0
+    # 3 sequential tiers: High (t=0.0s), Mid (t=0.36s), Low (t=0.72s)
+    # Melody: Note 1 (8th note) -> Note 2 (8th note) -> Note 3 (quarter note/sustained)
+    tiers = [
+        # 1. High tier (A4 -> F4 -> D4)
+        {
+            "start_t": 0.00,
+            "vol": 0.65,
+            "notes": [
+                (440.00, 0.00, 0.11),   # A4
+                (349.23, 0.11, 0.22),   # F4
+                (293.66, 0.22, 0.35),   # D4
+            ],
+        },
+        # 2. Mid tier (A3 -> F3 -> D3)
+        {
+            "start_t": 0.36,
+            "vol": 0.85,
+            "notes": [
+                (220.00, 0.00, 0.11),   # A3
+                (174.61, 0.11, 0.22),   # F3
+                (146.83, 0.22, 0.35),   # D3
+            ],
+        },
+        # 3. Low tier (A2 -> F2 -> D2 with deep ring-out)
+        {
+            "start_t": 0.72,
+            "vol": 1.00,
+            "notes": [
+                (110.00, 0.00, 0.14),   # A2
+                (87.31,  0.14, 0.28),   # F2
+                (73.42,  0.28, 0.62),   # D2 (long tail)
+            ],
+        },
+    ]
 
-    for i in range(total_samples):
-        t = i / SAMPLE_RATE
+    for tier in tiers:
+        t_base = tier["start_t"]
+        t_vol = tier["vol"]
+        for freq, n_start, n_end in tier["notes"]:
+            abs_start = t_base + n_start
+            abs_end = t_base + n_end
+            note_dur = abs_end - abs_start
 
-        if t < 0.25:
-            freq = 220.0  # A3
-            local_t = t
-        elif t < 0.50:
-            freq = 174.61  # F3
-            local_t = t - 0.25
-        else:
-            freq = 146.83  # D3
-            local_t = t - 0.50
+            start_idx = int(abs_start * SAMPLE_RATE)
+            end_idx = min(total_samples, int(abs_end * SAMPLE_RATE))
 
-        phase_main += 2.0 * math.pi * freq / SAMPLE_RATE
-        phase_sub += 2.0 * math.pi * (freq * 0.5) / SAMPLE_RATE
+            phase = 0.0
+            phase_sub = 0.0
+            for i in range(start_idx, end_idx):
+                local_t = (i - start_idx) / SAMPLE_RATE
+                phase += 2.0 * math.pi * freq / SAMPLE_RATE
+                phase_sub += 2.0 * math.pi * (freq * 0.5) / SAMPLE_RATE
 
-        tone = 0.70 * math.sin(phase_main) + 0.30 * math.sin(phase_sub)
+                # Warm mellow Rhodes/organ timbre: fundamental + subtle 2nd & 3rd harmonic
+                tone = (
+                    0.72 * math.sin(phase)
+                    + 0.18 * math.sin(phase * 2.0)
+                    + 0.06 * math.sin(phase * 3.0)
+                    + 0.12 * math.sin(phase_sub)
+                )
 
-        attack = min(1.0, local_t / 0.02)
-        if t < 0.50:
-            decay = math.exp(-5.0 * local_t)
-        else:
-            decay = math.exp(-3.2 * local_t)
+                attack = min(1.0, local_t / 0.012)
+                # Tail note decays slower
+                decay_rate = 3.5 if n_end > 0.5 else 6.5
+                decay = math.exp(-decay_rate * (local_t / note_dur))
 
-        samples.append(attack * decay * tone)
+                samples[i] += tone * attack * decay * t_vol
 
     write_wav("sfx_game_over.wav", samples, peak_db=0.0)
 
