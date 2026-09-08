@@ -26,6 +26,7 @@ var enemies_killed: int = 0  # F013: run summary
 @onready var push_system: Node = $PushSystem
 @onready var hitstop: Node = $HitstopSystem  # F002
 @onready var combo_popup: Node = $HUD/ComboPopup  # F003
+@onready var sound_manager: Node = $SoundManager  # F016
 
 
 func _ready() -> void:
@@ -46,6 +47,11 @@ func _ready() -> void:
 	push_system.chain_updated.connect(hitstop.on_chain_hit)
 	# F003: Combo popup wiring (dùng chain_hit_visual có vị trí)
 	push_system.chain_hit_visual.connect(combo_popup.on_chain_hit_visual)
+	# F016: Sound wiring
+	player.pulse_fired.connect(_on_pulse_for_sound)
+	player.dash_started.connect(sound_manager.play_dash)
+	player.player_hit.connect(_on_player_hit_for_sound)
+	push_system.chain_hit_visual.connect(_on_domino_for_sound)
 	_enter_state(GameState.MENU)
 
 
@@ -100,6 +106,7 @@ func _enter_state(new_state: GameState) -> void:
 			get_tree().paused = true
 			camera.clear()  # F001
 			hitstop.clear()  # F002: restore time_scale
+			sound_manager.stop_combat_sounds()  # F016
 			hud.show_pause()
 
 		GameState.DEAD:
@@ -107,6 +114,7 @@ func _enter_state(new_state: GameState) -> void:
 			spawn_timer.stop()
 			camera.clear()  # F001
 			hitstop.clear()  # F002: restore time_scale
+			sound_manager.play_game_over()  # F016: stops combat & plays game over
 			hud.show_death(run_time, enemies_killed, shard_count, best_chain)
 
 
@@ -125,6 +133,7 @@ func _start_run() -> void:
 	hitstop.clear()  # F002
 	combo_popup.clear()  # F003
 	vfx.clear()  # F004
+	sound_manager.clear()  # F016
 	_enter_state(GameState.RUNNING)
 
 
@@ -280,6 +289,7 @@ func _on_enemy_died(enemy_position: Vector2, shard_amount: int, is_altar_seal: b
 		vfx.spawn_floating_text(Config.ALTAR_POSITION + Vector2(0, -14), "+%d" % shard_amount, Config.COLOR_SHARD)
 		arena.trigger_altar_flash()
 		camera.request_shake(Config.SHAKE_ALTAR_SEAL)
+		sound_manager.play_altar_seal()  # F016
 	else:
 		for i in shard_amount:
 			_spawn_shard(enemy_position)
@@ -297,6 +307,7 @@ func _spawn_shard(at_position: Vector2) -> void:
 func _on_shard_collected(at_position: Vector2) -> void:
 	shard_count += 1
 	vfx.spawn_pickup_burst(at_position)  # F007
+	sound_manager.play_shard()  # F016
 
 
 func on_player_died() -> void:
@@ -307,6 +318,8 @@ func on_chain_updated(chain_count: int) -> void:
 	current_chain = chain_count
 	if chain_count > best_chain:
 		best_chain = chain_count
+	if chain_count >= 2:
+		sound_manager.play_combo(chain_count)  # F016
 
 
 # ═══════════════════════════════════════════════════════════
@@ -320,3 +333,20 @@ func _on_pulse_for_shake(_position: Vector2, _radius: float) -> void:
 func _on_wall_slam(at_position: Vector2) -> void:
 	camera.request_shake(Config.SHAKE_WALL_SLAM)  # F001
 	vfx.spawn_dust(at_position)  # F004
+	sound_manager.play_wall_slam()  # F016
+
+
+# ═══════════════════════════════════════════════════════════
+# F016: SOUND EVENT ADAPTERS
+# ═══════════════════════════════════════════════════════════
+
+func _on_pulse_for_sound(_position: Vector2, _radius: float) -> void:
+	sound_manager.play_pulse()
+
+
+func _on_player_hit_for_sound(_hp_remaining: int) -> void:
+	sound_manager.play_player_hurt()
+
+
+func _on_domino_for_sound(_at_position: Vector2, _chain_count: int) -> void:
+	sound_manager.play_domino()

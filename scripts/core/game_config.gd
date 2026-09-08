@@ -86,6 +86,10 @@ const WALL_DUST_LIFETIME := 0.3  # s
 const ALTAR_FLASH_DURATION := 0.2  # s
 const ALTAR_SEAL_DURATION := 0.25  # s — quái bị hút và thu nhỏ vào hư không (F015)
 
+# ─── AUDIO (F016) ────────────────────────────────────────
+const SFX_ENABLED := true
+const SFX_MASTER_VOLUME_DB := 0.0  # dB offset applied to all SFX
+
 # ─── ENEMIES ─────────────────────────────────────────────
 const SLIME_HP := 1
 const SLIME_SPEED := 30.0  # px/s

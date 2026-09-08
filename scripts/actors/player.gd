@@ -6,6 +6,7 @@ extends Node2D
 signal pulse_fired(position: Vector2, radius: float)
 signal player_hit(hp_remaining: int)
 signal player_died
+signal dash_started  # F016: audio feedback
 
 # ─── State ───────────────────────────────────────────────
 var hp: int = Config.PLAYER_MAX_HP
@@ -124,6 +125,7 @@ func _start_dash(event: InputEvent) -> void:
 	dash_cooldown_left = Config.DASH_COOLDOWN
 	ghost_timer = Config.DASH_GHOST_INTERVAL
 	ghost_trail.append({"world_pos": global_position, "alpha": 0.6})
+	dash_started.emit()  # F016: SFX feedback
 
 
 func _handle_dash(delta: float) -> void:
