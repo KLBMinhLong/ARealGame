@@ -92,8 +92,15 @@ const SPEEDER_PUSH_WEIGHT := 0.6  # nhẹ → bay xa hơn
 const SPEEDER_SHARD_DROP := 1
 
 # ─── SPAWN ───────────────────────────────────────────────
-const SPAWN_INTERVAL := 2.0  # s — 1 con / 2s
-const SPAWN_MAX_CONCURRENT := 15
+const SPAWN_INTERVAL := 2.0  # s — 1 con / 2s (starting)
+const SPAWN_MAX_CONCURRENT := 15  # starting cap
+
+# F010: Difficulty scaling over time
+const SCALE_DURATION := 180.0  # s — full ramp over 3 minutes
+const SPAWN_INTERVAL_MIN := 0.8  # s — fastest spawn rate
+const SPAWN_MAX_CAP := 25  # max concurrent at full ramp
+const SPEEDER_RATIO_START := 0.5  # 50% speeder at start
+const SPEEDER_RATIO_MAX := 0.75  # 75% speeder at full ramp
 const SPAWN_MIN_DISTANCE := 80.0  # px — khoảng cách tối thiểu từ player
 
 # ─── SHARDS ──────────────────────────────────────────────

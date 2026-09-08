@@ -11,6 +11,7 @@ var state: GameState = GameState.MENU
 var shard_count: int = 0
 var best_chain: int = 0
 var current_chain: int = 0
+var run_time: float = 0.0  # F010: difficulty scaling
 
 # ─── Node references ────────────────────────────────────
 @onready var arena: Node2D = $Arena
@@ -134,6 +135,7 @@ func _reset_run_stats() -> void:
 	shard_count = 0
 	best_chain = 0
 	current_chain = 0
+	run_time = 0.0  # F010
 
 
 func _clear_entities() -> void:
@@ -147,8 +149,8 @@ func _clear_entities() -> void:
 # PROCESS PER STATE
 # ═══════════════════════════════════════════════════════════
 
-func _process_running(_delta: float) -> void:
-	# Update HUD
+func _process_running(delta: float) -> void:
+	run_time += delta  # F010: difficulty scaling
 	hud.update_hud(player.hp, player.max_hp, player.pulse_cooldown_left, 
 					Config.PULSE_COOLDOWN, shard_count, best_chain)
 
@@ -191,17 +193,26 @@ func _setup_spawn_timer() -> void:
 func _on_spawn_timer_timeout() -> void:
 	if state != GameState.RUNNING:
 		return
-	if enemies_container.get_child_count() >= Config.SPAWN_MAX_CONCURRENT:
+	# F010: dynamic max concurrent
+	var scale_t := clampf(run_time / Config.SCALE_DURATION, 0.0, 1.0)
+	var max_enemies := int(lerpf(Config.SPAWN_MAX_CONCURRENT, Config.SPAWN_MAX_CAP, scale_t))
+	if enemies_container.get_child_count() >= max_enemies:
 		return
 	_spawn_enemy()
+	# F010: update interval for next tick
+	var new_interval := lerpf(Config.SPAWN_INTERVAL, Config.SPAWN_INTERVAL_MIN, scale_t)
+	spawn_timer.wait_time = new_interval
 
 
 func _spawn_enemy() -> void:
 	var enemy: Node2D
-	if randf() < 0.5:
-		enemy = preload("res://scenes/enemies/slime.tscn").instantiate()
-	else:
+	# F010: speeder ratio scales with time
+	var scale_t := clampf(run_time / Config.SCALE_DURATION, 0.0, 1.0)
+	var speeder_chance := lerpf(Config.SPEEDER_RATIO_START, Config.SPEEDER_RATIO_MAX, scale_t)
+	if randf() < speeder_chance:
 		enemy = preload("res://scenes/enemies/speeder.tscn").instantiate()
+	else:
+		enemy = preload("res://scenes/enemies/slime.tscn").instantiate()
 	enemy.position = _get_spawn_position()
 	enemy.target = player
 	enemy.died.connect(_on_enemy_died)
