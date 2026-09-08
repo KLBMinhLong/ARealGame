@@ -238,7 +238,8 @@ func _on_enemy_died(enemy_position: Vector2, shard_amount: int, _is_altar_seal: 
 	# Spawn shards
 	for i in shard_amount:
 		_spawn_shard(enemy_position)
-	# Chain tracking would go here
+	# F006: Death burst particles
+	vfx.spawn_death_burst(enemy_position, Config.COLOR_SLIME)
 
 
 func _spawn_shard(at_position: Vector2) -> void:

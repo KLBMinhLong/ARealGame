@@ -73,6 +73,45 @@ func _get_wall_direction(pos: Vector2) -> Vector2:
 		return Vector2(0, -1)  # Đập bottom → bắn lên
 
 
+## F006: Burst particles khi quái chết.
+func spawn_death_burst(at_position: Vector2, enemy_color: Color) -> void:
+	var particles := CPUParticles2D.new()
+	particles.position = at_position
+	particles.emitting = false
+
+	particles.one_shot = true
+	particles.explosiveness = 1.0
+	particles.amount = 10
+	particles.lifetime = 0.3
+
+	# 360° burst
+	particles.direction = Vector2(0, -1)
+	particles.spread = 180.0
+
+	particles.initial_velocity_min = 25.0
+	particles.initial_velocity_max = 60.0
+
+	particles.gravity = Vector2(0, 30)
+
+	particles.scale_amount_min = 0.8
+	particles.scale_amount_max = 2.0
+
+	# Màu quái → fade
+	var color_ramp := Gradient.new()
+	color_ramp.set_color(0, Color(1.0, 1.0, 1.0, 0.9))  # Flash trắng ban đầu
+	color_ramp.set_color(1, Color(enemy_color.r, enemy_color.g, enemy_color.b, 0.0))
+	particles.color_ramp = color_ramp
+
+	add_child(particles)
+	particles.emitting = true
+
+	var timer := get_tree().create_timer(0.5)
+	timer.timeout.connect(func() -> void:
+		if is_instance_valid(particles):
+			particles.queue_free()
+	)
+
+
 ## Clear tất cả particles — restart/menu.
 func clear() -> void:
 	for child in get_children():
