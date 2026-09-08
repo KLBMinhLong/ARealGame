@@ -58,7 +58,7 @@ func show_menu() -> void:
 	hud_state = HUDState.MENU
 	if dim_overlay != null:
 		dim_overlay.visible = false
-	label.text = "\n\n⚔  STONE KNIGHT  ⚔\n\nPress SPACE to start\n"
+	label.text = "\n\n⚔  STONE KNIGHT  ⚔\n\nPress SPACE or CLICK to start\n"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
