@@ -1,8 +1,8 @@
 # F016 — Audio & SFX Feedback (Asset-Based SFX System)
 
-**Status:** IMPLEMENTING
-**Owner approval:** GRANTED (2026-09-08)
-**Evidence:** NOT_RUN
+**Status:** DONE
+**Owner approval:** GRANTED (2026-09-09)
+**Evidence:** OWNER_PLAYTEST_PASS
 
 ## 1. Kết quả người chơi nhận được
 
@@ -110,17 +110,17 @@ Người chơi nhận được phản hồi âm thanh (SFX) rõ ràng, giòn gi�
 
 | ID | Observable behavior | Check | Expected | Status |
 |---|---|---|---|---|
-| AC01 | Tiếng Pulse khi kích hoạt thành công | Runtime | Phát tiếng whoosh sóng xung kích; KHÔNG phát khi đang cooldown | NOT_RUN |
-| AC02 | Tiếng Dash khi lướt thành công | Runtime | Phát tiếng gió lướt nhanh, nhẹ; KHÔNG phát khi đang cooldown | NOT_RUN |
-| AC03 | Tiếng Wall Slam | Runtime | Phát tiếng đập đá nặng, đanh; khác biệt rõ so với Domino | NOT_RUN |
-| AC04 | Tiếng Domino khi quái va chạm | Runtime | Phát tiếng cộc nhẹ; tối đa 2 âm đồng thời, không át tiếng khác | NOT_RUN |
-| AC05 | Tiếng Altar Seal | Runtime | Phát tiếng ngân ma thuật hư không dài ~0.5s đầy đặn | NOT_RUN |
-| AC06 | Tiếng Shard khi nhặt | Runtime | Phát tiếng ting trong trẻo nhẹ nhàng (-7dB), không chói tai khi nhặt nhiều | NOT_RUN |
-| AC07 | Tiếng Player Hurt | Runtime | Phát tiếng cảnh báo nguy hiểm sắc nét (0dB), nổi bật trên đám đông | NOT_RUN |
-| AC08 | Tiếng Combo Chain | Runtime | Phát âm điệu thăng hoa khi đạt mốc combo (x2, x3, x5...) | NOT_RUN |
-| AC09 | Tiếng Game Over | Runtime | Dừng âm combat, phát chuỗi âm điệu kết thúc (~0.9s) | NOT_RUN |
-| AC10 | Voice Priority & Chống rách tiếng | Runtime | Khi nhiều quái đập tường/shard cùng lúc, tiếng Player Hurt vẫn phát rõ ràng, không clipping | NOT_RUN |
-| AC11 | Pause & Restart Lifecycle | Runtime | Bấm Esc pause ngắt âm ngay lập tức; bấm R restart xóa toàn bộ âm dở | NOT_RUN |
+| AC01 | Tiếng Pulse khi kích hoạt thành công | Runtime | Phát tiếng whoosh sóng xung kích; KHÔNG phát khi đang cooldown | PASS |
+| AC02 | Tiếng Dash khi lướt thành công | Runtime | Phát tiếng gió lướt nhanh, nhẹ; KHÔNG phát khi đang cooldown | PASS |
+| AC03 | Tiếng Wall Slam | Runtime | Phát tiếng đập đá nặng, đanh; khác biệt rõ so với Domino | PASS |
+| AC04 | Tiếng Domino khi quái va chạm | Runtime | Phát tiếng cộc nhẹ; tối đa 2 âm đồng thời, không át tiếng khác | PASS |
+| AC05 | Tiếng Altar Seal | Runtime | Phát tiếng ngân ma thuật hư không dài ~0.5s đầy đặn | PASS |
+| AC06 | Tiếng Shard khi nhặt | Runtime | Phát tiếng ting trong trẻo nhẹ nhàng (-7dB), không chói tai khi nhặt nhiều | PASS |
+| AC07 | Tiếng Player Hurt | Runtime | Phát tiếng cảnh báo nguy hiểm sắc nét (0dB), nổi bật trên đám đông | PASS |
+| AC08 | Tiếng Combo Chain | Runtime | Phát âm điệu thăng hoa khi đạt mốc combo (x2, x3, x5...) | PASS |
+| AC09 | Tiếng Game Over | Runtime | Dừng âm combat, phát chuỗi âm điệu kết thúc (~0.9s) | PASS |
+| AC10 | Voice Priority & Chống rách tiếng | Runtime | Khi nhiều quái đập tường/shard cùng lúc, tiếng Player Hurt vẫn phát rõ ràng, không clipping | PASS |
+| AC11 | Pause & Restart Lifecycle | Runtime | Bấm Esc pause ngắt âm ngay lập tức; bấm R restart xóa toàn bộ âm dở | PASS |
 
 ## 7. Approval
 
