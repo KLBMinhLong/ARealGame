@@ -15,10 +15,14 @@ var run_time: float = 0.0  # F010: difficulty scaling
 var enemies_killed: int = 0  # F013: run summary
 
 # ─── Wave System (F017) ──────────────────────────────────
+enum WavePhase { PRE_WAVE, SPAWNING, CLEAR_REMAINING, INTERMISSION, COMPLETE }
+
 var current_wave: int = 1
+var wave_phase: WavePhase = WavePhase.PRE_WAVE
 var wave_time_left: float = 0.0
-var is_intermission: bool = false
-var intermission_time_left: float = 0.0
+var phase_timer: float = 0.0
+var wave_spawned_count: int = 0
+var guaranteed_spawns_queue: Array[String] = []
 
 # ─── Node references ────────────────────────────────────
 @onready var arena: Node2D = $Arena
@@ -81,7 +85,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_enter_state(GameState.RUNNING)
 
 	if event.is_action_pressed("restart_game"):
-		if state == GameState.DEAD or state == GameState.PAUSED or state == GameState.VICTORY:
+		if state == GameState.DEAD or state == GameState.PAUSED or state == GameState.VICTORY or state == GameState.RUNNING:
 			_restart_run()
 
 	if event.is_action_pressed("pulse"):
@@ -118,6 +122,7 @@ func _enter_state(new_state: GameState) -> void:
 		GameState.DEAD:
 			get_tree().paused = false
 			spawn_timer.stop()
+			player.is_invulnerable = true
 			camera.clear()  # F001
 			hitstop.clear()  # F002: restore time_scale
 			sound_manager.play_game_over()  # F016: stops combat & plays game over
@@ -126,6 +131,7 @@ func _enter_state(new_state: GameState) -> void:
 		GameState.VICTORY:
 			get_tree().paused = false
 			spawn_timer.stop()
+			player.is_invulnerable = true
 			camera.clear()
 			hitstop.clear()
 			sound_manager.stop_combat_sounds()
@@ -163,16 +169,31 @@ func _reset_run_stats() -> void:
 	run_time = 0.0  # F010
 	enemies_killed = 0  # F013
 	current_wave = 1
+	wave_phase = WavePhase.PRE_WAVE
 	wave_time_left = 0.0
-	is_intermission = false
-	intermission_time_left = 0.0
+	phase_timer = 0.0
+	wave_spawned_count = 0
+	guaranteed_spawns_queue.clear()
 
 
 func _clear_entities() -> void:
+	_despawn_all_entities("clear_entities")
+
+
+func _despawn_all_entities(_reason: String = "") -> void:
 	for child in enemies_container.get_children():
-		child.queue_free()
+		if is_instance_valid(child):
+			# Disconnect signals to prevent awarding kills, shards, or triggering SFX
+			if child.died.is_connected(_on_enemy_died):
+				child.died.disconnect(_on_enemy_died)
+			if child.wall_slammed.is_connected(_on_wall_slam):
+				child.wall_slammed.disconnect(_on_wall_slam)
+			child.queue_free()
 	for child in loot_container.get_children():
-		child.queue_free()
+		if is_instance_valid(child):
+			if child.collected.is_connected(_on_shard_collected):
+				child.collected.disconnect(_on_shard_collected)
+			child.queue_free()
 
 
 # ═══════════════════════════════════════════════════════════
@@ -182,24 +203,57 @@ func _clear_entities() -> void:
 func _process_running(delta: float) -> void:
 	run_time += delta  # F010: total run timer
 
-	# F017: Wave lifecycle progression
-	if is_intermission:
-		intermission_time_left -= delta
-		if intermission_time_left <= 0.0:
-			if current_wave >= Config.TOTAL_WAVES:
-				_enter_state(GameState.VICTORY)
-			else:
-				_start_wave(current_wave + 1)
-	else:
-		wave_time_left -= delta
-		if wave_time_left <= 0.0:
-			_on_wave_cleared()
+	# F017: Wave lifecycle state machine
+	match wave_phase:
+		WavePhase.PRE_WAVE:
+			phase_timer -= delta
+			if phase_timer <= 0.0:
+				wave_phase = WavePhase.SPAWNING
+				var wave_idx := clampi(current_wave - 1, 0, Config.WAVES_DATA.size() - 1)
+				var wave_data: Dictionary = Config.WAVES_DATA[wave_idx]
+				spawn_timer.wait_time = wave_data.get("interval_start", 2.2)
+				spawn_timer.start()
+				_try_spawn_enemy()
+
+		WavePhase.SPAWNING:
+			wave_time_left -= delta
+			var wave_idx := clampi(current_wave - 1, 0, Config.WAVES_DATA.size() - 1)
+			var wave_data: Dictionary = Config.WAVES_DATA[wave_idx]
+			var budget: int = wave_data.get("spawn_budget", 14)
+			if wave_time_left <= 0.0 or wave_spawned_count >= budget:
+				wave_time_left = 0.0
+				spawn_timer.stop()
+				wave_phase = WavePhase.CLEAR_REMAINING
+				if _get_active_enemy_count() == 0:
+					_on_wave_cleared()
+
+		WavePhase.CLEAR_REMAINING:
+			if _get_active_enemy_count() == 0:
+				_on_wave_cleared()
+
+		WavePhase.INTERMISSION:
+			phase_timer -= delta
+			if phase_timer <= 0.0:
+				if current_wave >= Config.TOTAL_WAVES:
+					wave_phase = WavePhase.COMPLETE
+					_enter_state(GameState.VICTORY)
+				else:
+					_start_wave(current_wave + 1)
+
+		WavePhase.COMPLETE:
+			pass
+
+	var is_interm := (wave_phase == WavePhase.INTERMISSION)
+	var is_clearing := (wave_phase == WavePhase.CLEAR_REMAINING)
+	var is_pre := (wave_phase == WavePhase.PRE_WAVE)
+	var active_enemies := _get_active_enemy_count()
 
 	hud.update_hud(
 		player.hp, player.max_hp, player.pulse_cooldown_left,
 		Config.PULSE_COOLDOWN, shard_count, best_chain,
 		player.dash_cooldown_left, current_wave, Config.TOTAL_WAVES,
-		wave_time_left, is_intermission, intermission_time_left
+		wave_time_left, is_interm, phase_timer,
+		is_clearing, active_enemies, is_pre
 	)
 
 
@@ -232,39 +286,47 @@ func _show_menu() -> void:
 
 func _start_wave(wave_num: int) -> void:
 	current_wave = wave_num
-	is_intermission = false
+	wave_spawned_count = 0
 	var wave_idx := clampi(current_wave - 1, 0, Config.WAVES_DATA.size() - 1)
 	var wave_data: Dictionary = Config.WAVES_DATA[wave_idx]
 	wave_time_left = wave_data.get("duration", 35.0)
-	spawn_timer.wait_time = wave_data.get("interval_start", 2.0)
-	spawn_timer.start()
+
+	# Guaranteed introductory spawns
+	guaranteed_spawns_queue.clear()
+	var guaranteed: Array = wave_data.get("guaranteed_spawns", [])
+	for item in guaranteed:
+		guaranteed_spawns_queue.append(str(item))
+
+	# PRE_WAVE phase: player positions, banner displayed, no spawn
+	wave_phase = WavePhase.PRE_WAVE
+	phase_timer = Config.WAVE_PRE_DURATION
+	spawn_timer.stop()
 	hud.show_banner("⚔  WAVE %d: %s  ⚔" % [current_wave, str(wave_data.get("name", "")).to_upper()], Config.WAVE_BANNER_DURATION)
 
 
 func _on_wave_cleared() -> void:
 	spawn_timer.stop()
-	_fade_out_remaining_enemies()
-	sound_manager.play_altar_seal()
-	is_intermission = true
+	wave_phase = WavePhase.INTERMISSION
+	sound_manager.play_altar_seal()  # Audio cue
 	if current_wave >= Config.TOTAL_WAVES:
-		intermission_time_left = 1.6  # Short pause before Victory screen
+		phase_timer = 1.6  # Short celebration pause before Victory
 		hud.show_banner("✨  FINAL WAVE CONQUERED!  ✨", Config.WAVE_BANNER_DURATION, Color(1.0, 0.9, 0.2))
 	else:
-		intermission_time_left = Config.WAVE_INTERMISSION_DURATION
+		phase_timer = Config.WAVE_INTERMISSION_DURATION
 		hud.show_banner("✨  WAVE %d CLEARED!  ✨" % current_wave, Config.WAVE_BANNER_DURATION, Color(0.4, 1.0, 0.6))
 
 
-func _fade_out_remaining_enemies() -> void:
-	for enemy in enemies_container.get_children():
-		if is_instance_valid(enemy):
-			if "hp" in enemy:
-				enemy.hp = 0  # Disarm contact damage immediately
-			var tween := create_tween()
-			tween.tween_property(enemy, "modulate:a", 0.0, 0.5)
-			tween.tween_callback(func() -> void:
-				if is_instance_valid(enemy):
-					enemy.queue_free()
-			)
+func _get_active_enemy_count() -> int:
+	var count := 0
+	for child in enemies_container.get_children():
+		if is_instance_valid(child) and not child.is_queued_for_deletion():
+			if "hp" in child and child.hp > 0:
+				# Safety watchdog: clamp or recover out-of-bounds enemies
+				if is_nan(child.position.x) or is_nan(child.position.y) or child.position.x < -50 or child.position.x > Config.VIEWPORT_W + 50 or child.position.y < -50 or child.position.y > Config.VIEWPORT_H + 50:
+					push_warning("[WATCHDOG] Enemy out of bounds at %s, repositioning to arena center" % str(child.position))
+					child.position = Config.ARENA_CENTER
+				count += 1
+	return count
 
 
 func _setup_spawn_timer() -> void:
@@ -275,36 +337,66 @@ func _setup_spawn_timer() -> void:
 
 
 func _on_spawn_timer_timeout() -> void:
-	if state != GameState.RUNNING or is_intermission:
+	if state != GameState.RUNNING or wave_phase != WavePhase.SPAWNING:
 		return
+	_try_spawn_enemy()
+
+
+func _try_spawn_enemy() -> void:
+	if state != GameState.RUNNING or wave_phase != WavePhase.SPAWNING:
+		return
+
 	var wave_idx := clampi(current_wave - 1, 0, Config.WAVES_DATA.size() - 1)
 	var wave_data: Dictionary = Config.WAVES_DATA[wave_idx]
-	var max_enemies: int = wave_data.get("max_enemies", 15)
-	if enemies_container.get_child_count() >= max_enemies:
+	var budget: int = wave_data.get("spawn_budget", 14)
+	if wave_spawned_count >= budget:
+		wave_phase = WavePhase.CLEAR_REMAINING
+		spawn_timer.stop()
 		return
-	_spawn_enemy()
+
+	var max_active: int = wave_data.get("max_active", 8)
+	if _get_active_enemy_count() >= max_active:
+		return
+
+	_spawn_enemy(wave_data)
+	wave_spawned_count += 1
+
+	if wave_spawned_count >= budget:
+		wave_phase = WavePhase.CLEAR_REMAINING
+		spawn_timer.stop()
+		return
+
 	# Dynamic interval scaling as wave progresses
 	var wave_dur: float = wave_data.get("duration", 35.0)
 	var progress := clampf(1.0 - (wave_time_left / wave_dur), 0.0, 1.0)
-	var interval_start: float = wave_data.get("interval_start", 2.0)
-	var interval_end: float = wave_data.get("interval_end", 1.0)
+	var interval_start: float = wave_data.get("interval_start", 2.2)
+	var interval_end: float = wave_data.get("interval_end", 1.5)
 	spawn_timer.wait_time = lerpf(interval_start, interval_end, progress)
 
 
-func _spawn_enemy() -> void:
-	var wave_idx := clampi(current_wave - 1, 0, Config.WAVES_DATA.size() - 1)
-	var wave_data: Dictionary = Config.WAVES_DATA[wave_idx]
-	var speeder_chance: float = wave_data.get("speeder_chance", 0.0)
-	var brute_chance: float = wave_data.get("brute_chance", 0.0)
-
-	var roll := randf()
-	var enemy: Node2D
-	if roll < brute_chance:
-		enemy = preload("res://scenes/enemies/brute.tscn").instantiate()
-	elif roll < brute_chance + speeder_chance:
-		enemy = preload("res://scenes/enemies/speeder.tscn").instantiate()
+func _spawn_enemy(wave_data: Dictionary) -> void:
+	var enemy_type := ""
+	if not guaranteed_spawns_queue.is_empty():
+		enemy_type = guaranteed_spawns_queue.pop_front()
 	else:
-		enemy = preload("res://scenes/enemies/slime.tscn").instantiate()
+		var speeder_chance: float = wave_data.get("speeder_chance", 0.0)
+		var brute_chance: float = wave_data.get("brute_chance", 0.0)
+		var roll := randf()
+		if roll < brute_chance:
+			enemy_type = "brute"
+		elif roll < brute_chance + speeder_chance:
+			enemy_type = "speeder"
+		else:
+			enemy_type = "slime"
+
+	var enemy: Node2D
+	match enemy_type:
+		"brute":
+			enemy = preload("res://scenes/enemies/brute.tscn").instantiate()
+		"speeder":
+			enemy = preload("res://scenes/enemies/speeder.tscn").instantiate()
+		_:
+			enemy = preload("res://scenes/enemies/slime.tscn").instantiate()
 
 	enemy.position = _get_spawn_position()
 	enemy.target = player
@@ -356,6 +448,10 @@ func _on_enemy_died(enemy_position: Vector2, shard_amount: int, is_altar_seal: b
 		for i in shard_amount:
 			_spawn_shard(enemy_position)
 		vfx.spawn_death_burst(enemy_position, color)  # F006 + F009: dùng enemy color
+
+	# If in cleanup phase, check if this was the last remaining enemy
+	if wave_phase == WavePhase.CLEAR_REMAINING and _get_active_enemy_count() == 0:
+		_on_wave_cleared()
 
 
 func _spawn_shard(at_position: Vector2) -> void:

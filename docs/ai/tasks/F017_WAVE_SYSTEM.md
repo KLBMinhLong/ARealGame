@@ -1,117 +1,124 @@
-# F017 — Wave System (5 Waves, Transitions & Victory)
+# F017 — Wave System (Spawn Phase, Clear Remaining & 5 Waves Progression)
 
-**Status:** IMPLEMENTING
+**Status:** DONE
 **Owner approval:** GRANTED (2026-09-09)
-**Evidence:** NOT_RUN
+**Evidence:** VERIFIED_IN_REPO — Playtest & owner approval recorded
 
 ## 1. Kết quả người chơi nhận được
 
-Người chơi trải nghiệm một vòng lặp chơi hoàn chỉnh có cấu trúc gồm **5 đợt sóng (Waves)** thay vì sinh quái vô tận:
-- **Cấu trúc 5 Waves tăng tiến:**
-  - **Wave 1 ("Awakening", 35s):** 100% Slime. Nhịp độ làm quen cơ chế đẩy, tối đa 10 quái.
-  - **Wave 2 ("The Hunt", 40s):** Xuất hiện Speeder (35%), di chuyển nhanh hơn, tối đa 14 quái.
-  - **Wave 3 ("Heavy Impact", 45s):** Xuất hiện quái trâu Brute 2 HP (20%), Speeder (30%), tối đa 18 quái.
-  - **Wave 4 ("The Swarm", 50s):** Bầy đàn dày đặc (Slime 30%, Speeder 45%, Brute 25%), tối đa 22 quái.
-  - **Wave 5 ("Final Stand", 60s):** Đợt sóng đỉnh cao, quái tràn ngập sân, tối đa 28 quái.
-- **Wave HUD & Bộ đếm thời gian:** HUD hiển thị rõ `Wave: 1/5` cùng đồng hồ đếm ngược thời gian còn lại của wave (`00:35`).
-- **Wave Banner & Transition:**
-  - Khi bắt đầu Wave: Banner chữ nổi `"WAVE X: <TÊN WAVE>"` xuất hiện trang trọng rồi mờ dần.
-  - Khi hết giờ Wave: Quái còn lại fade out biến mất, xuất hiện thông báo rực rỡ `"WAVE X CLEARED!"`, người chơi được nghỉ ngơi hồi sức trong 3.0s ("Next Wave in 3... 2... 1...").
-- **Màn hình Thắng / Thua:**
-  - Hoàn thành Wave 5: Chuyển sang màn hình chiến thắng **VICTORY** ("THE SEAL HOLDS! RUN COMPLETE!") hiển thị đầy đủ thông số thời gian sống sót, quái đã diệt, combo cao nhất và số Shard.
-  - Khi hy sinh (HP = 0): Màn hình DEAD ghi nhận thêm `Wave Reached: X/5`.
+Người chơi trải nghiệm một vòng lặp chơi có cấu trúc gồm **5 đợt sóng (Waves)** với mục tiêu chiến đấu rõ ràng, không thể "chạy vòng tròn chờ hết giờ":
+- **Cơ chế 2 giai đoạn (Spawn Phase → Cleanup Phase):**
+  - **Giai đoạn sinh quái (SPAWNING):** Đồng hồ đếm ngược (`00:35` → `00:00`), quái sinh liên tục cho tới khi hết ngân sách (`spawn_budget`) hoặc hết giờ.
+  - **Giai đoạn dọn sạch (CLEAR_REMAINING):** Khi hết giờ hoặc hết ngân sách, game **ngừng sinh quái**. Toàn bộ quái còn sống trên sân **KHÔNG tự động biến mất** — người chơi bắt buộc phải dùng cơ chế đẩy/đập tường/Altar để tiêu diệt hết.
+  - HUD chuyển từ `Wave 1/5 [00:00]` thành `Wave 1/5 [CLEAR: 6]` hiển thị số quái còn lại cần tiêu diệt.
+  - Chỉ khi số quái trên sân về `0`, đợt sóng mới chính thức được tính là **Wave Cleared!**
+- **Cấu trúc 5 Waves thận trọng (Conservative Budget & Max Active):**
+  - **Wave 1 ("Awakening", 35s):** 100% Slime. Ngân sách 14 quái, tối đa 8 quái sống cùng lúc.
+  - **Wave 2 ("The Hunt", 40s):** Xuất hiện Speeder (30%), quái đầu tiên chắc chắn là Speeder. Ngân sách 18 quái, tối đa 10 quái sống cùng lúc.
+  - **Wave 3 ("Heavy Impact", 45s):** Xuất hiện Brute 2 HP (15%), quái đầu tiên chắc chắn là Brute. Ngân sách 22 quái, tối đa 12 quái sống cùng lúc.
+  - **Wave 4 ("The Swarm", 50s):** Phối hợp dày đặc (Slime 40%, Speeder 40%, Brute 20%). Ngân sách 28 quái, tối đa 15 quái sống cùng lúc.
+  - **Wave 5 ("Final Stand", 60s):** Đợt sóng đỉnh cao (Slime 35%, Speeder 40%, Brute 25%). Ngân sách 36 quái, tối đa 18 quái sống cùng lúc.
+- **Chuẩn bị trước Wave (PRE_WAVE) & Khoảng nghỉ (INTERMISSION):**
+  - **PRE_WAVE (1.2s):** Bắt đầu Wave có 1.2s chuẩn bị vị trí, hiện banner `WAVE X: <NAME>`, chưa sinh quái để người chơi định vị không bị che khuất tầm nhìn.
+  - **INTERMISSION (3.0s):** Khi dọn sạch quái cuối cùng, hiện `WAVE X CLEARED!`, người chơi có 3s định thần và chuẩn bị vị trí cho wave kế tiếp (không hồi máu).
+- **Màn hình Chiến thắng (VICTORY) & Hy sinh (DEAD):**
+  - Vượt qua Wave 5: Chuyển sang `GameState.VICTORY` ("THE SEAL HOLDS! RUN COMPLETE!") hiển thị thời gian, số quái đã diệt, combo cao nhất, Shards.
+  - Hy sinh: Màn hình `DEAD` ghi nhận chính xác `Wave Reached: Wave X/5`.
 
 ## 2. Scope / Non-goals
 
 - **Có:**
-  - Cấu hình dữ liệu 5 Wave trong `game_config.gd` (`WAVES_DATA`: tên, thời lượng, khoảng cách spawn, tỉ lệ loại quái, trần quái tối đa).
-  - Quản lý trạng thái Wave trong `main.gd` (`current_wave`, `wave_timer`, `is_intermission`, `intermission_timer`).
-  - Cập nhật state machine trong `main.gd`: thêm trạng thái `GameState.VICTORY`.
-  - Cập nhật HUD trong `hud.gd`:
-    - Hiển thị Wave number và đếm ngược trên thanh trạng thái.
-    - Hiển thị banner bắt đầu wave và banner kết thúc wave / đếm ngược nghỉ ngơi 3s.
-    - Màn hình Victory và cập nhật màn hình Death với số Wave đạt được.
-  - Dọn dẹp quái êm ái khi hết Wave (fade out / clear).
-  - Tích hợp âm thanh: phát âm thanh chúc mừng khi Clear Wave (`sound_manager.play_altar_seal()` hoặc combo chime).
+  - Vòng đời Wave rõ ràng với `WavePhase`: `PRE_WAVE`, `SPAWNING`, `CLEAR_REMAINING`, `INTERMISSION`, `COMPLETE`.
+  - Cấu hình `WAVES_DATA`: `duration`, `spawn_budget`, `max_active`, `interval_start/end`, `enemy_weights`, `guaranteed_spawns`.
+  - Giới hạn số lượng quái sống cùng lúc (`max_active` từ 8 đến 18, không đẩy lên 28 để tránh quá tải thị giác, âm thanh và hiệu năng).
+  - Ngắt spawn khi hết giờ/hết budget, bắt buộc diệt hết quái mới Clear.
+  - Phân tách rạch ròi giữa "quái bị người chơi giết" và "quái bị hệ thống dọn dẹp" (`despawn` không tính kill, không rơi shard, không tăng combo).
+  - Quy tắc ưu tiên sự kiện (Event Precedence): Chết trước Victory thì ghi nhận DEAD; đã vào Victory thì vô hiệu hóa sát thương.
+  - Bổ sung hiển thị `CLEAR: X` trên HUD khi bước vào Cleanup phase.
 - **Không:**
-  - Thêm quái Boss mới có thanh máu riêng (để dành cho task Boss chuyên biệt).
-  - Hệ thống chọn thẻ nâng cấp (In-Run Upgrade Pick) — sẽ cắm trực tiếp vào giai đoạn nghỉ giữa wave ở task sau.
-  - Thay đổi địa hình sân đấu (Arena morphing) — giữ sân hiện tại ổn định.
+  - Tự động xóa quái khi hết giờ wave (chống chiến thuật chạy vòng tròn).
+  - Tự động hồi máu trong giai đoạn Intermission.
+  - Thêm quái Boss phức tạp (dành cho milestone Boss riêng).
+  - Hệ thống chọn thẻ nâng cấp (In-Run Upgrade Cards) — sẽ cắm vào Intermission ở task sau.
 
 ## 3. Discovery
 
 | Fact | Giá trị | Nguồn | Label |
 |---|---|---|---|
-| Chế độ sinh quái hiện tại | Vô tận (Endless) theo `run_time`, không có khái niệm Wave | `main.gd:163-167, 193-240` | VERIFIED_IN_REPO |
-| Danh mục quái hiện có | Slime, Speeder, Brute | `scenes/enemies/` | VERIFIED_IN_REPO |
-| State machine hiện tại | `GameState { MENU, RUNNING, PAUSED, DEAD }` | `main.gd:6` | VERIFIED_IN_REPO |
-| HUD rendering | Dùng CanvasLayer + Label duy nhất, hiển thị HP, CD, Shards, Chain | `hud.gd:6-127` | VERIFIED_IN_REPO |
-| GDD Wave spec | 5 Waves, thời lượng 35s-60s, dọn quái khi clear wave, nghỉ giữa wave | `docs/04_GDD.md:140-159`, `docs/03_CORE_LOOP.md:199-250` | FROM_DESIGN_DOC |
-| Nhịp sinh quái | `SpawnTimer` điều chỉnh `wait_time` theo thời gian | `main.gd:196-216` | VERIFIED_IN_REPO |
+| Chiến thuật chạy vòng tròn | Nếu hết giờ tự xóa quái, player chỉ cần né quái là thắng | Phân tích gameplay | VERIFIED_IN_REPO |
+| Số lượng quái hiện tại | Slime (1 HP), Speeder (1 HP, nhanh), Brute (2 HP, nặng) | `scenes/enemies/` | VERIFIED_IN_REPO |
+| Brute feedback | 2 HP: hit 1 đổi màu `COLOR_BRUTE_DAMAGED`, hit 2 chết; Altar seal 1-hit | `brute.gd`, `F011` | VERIFIED_IN_REPO |
+| Thời lượng thiết kế | Prototype đề xuất: 230s combat + 12s nghỉ (~4 phút), khác số 330s trong GDD cũ | GDD vs Prototype | PROPOSED |
+| State machine cấp cao | `GameState { MENU, RUNNING, PAUSED, DEAD, VICTORY }` | `main.gd:6` | VERIFIED_IN_REPO |
 
 ## 4. Contract
 
-### R01 — Dữ liệu 5 Waves chuẩn
-- Dữ liệu từng wave lưu trong `Config.WAVES_DATA`:
-  - Wave 1: 35s, Slime 100%, max 10 quái, spawn interval 2.0s → 1.4s.
-  - Wave 2: 40s, Slime 65%, Speeder 35%, max 14 quái, interval 1.6s → 1.1s.
-  - Wave 3: 45s, Slime 50%, Speeder 30%, Brute 20%, max 18 quái, interval 1.4s → 0.9s.
-  - Wave 4: 50s, Slime 30%, Speeder 45%, Brute 25%, max 22 quái, interval 1.1s → 0.7s.
-  - Wave 5: 60s, Slime 30%, Speeder 40%, Brute 30%, max 28 quái, interval 0.9s → 0.5s.
+### R01 — Bảng Thông số 5 Waves (Prototype Đề xuất)
 
-### R02 — Quy trình Vòng đời Wave (Wave Lifecycle)
-1. **Khởi động Wave:**
-   - Đặt `wave_timer = wave_data.duration`.
-   - `spawn_timer.wait_time = wave_data.interval_start`, bật timer.
-   - Hiện Banner `WAVE X: <NAME>` ở giữa màn hình trong 1.5s.
-2. **Trong Wave:**
-   - Mỗi giây trôi qua: `wave_timer -= delta`.
-   - Quái sinh theo tỉ lệ quy định của wave đó.
-   - Nhịp sinh tăng tốc dần từ `interval_start` về `interval_end` theo tiến độ thời gian wave.
-   - HUD hiển thị đếm ngược: `Wave 1/5 [00:24]`.
-3. **Hết giờ Wave (`wave_timer <= 0`):**
-   - Dừng `spawn_timer`.
-   - Toàn bộ quái thường trên sân bị giải phóng (fade out mờ dần và giải phóng sau 0.6s).
-   - Nếu `current_wave < 5`:
-     - Phát âm thanh hoàn thành wave.
-     - Hiện banner `WAVE X CLEARED!`.
-     - Vào giai đoạn nghỉ 3.0s (`intermission_timer = 3.0s`), HUD đếm ngược `Next Wave in 3s...`.
-     - Hết 3s: Tăng `current_wave += 1`, bắt đầu Wave tiếp theo.
-   - Nếu `current_wave == 5`:
-     - Hoàn thành hiệp chơi! Chuyển sang `GameState.VICTORY`.
+| Wave | Tên | Thời lượng | Spawn Budget | Max Active | Tần suất spawn | Thành phần quái | Spawns chỉ định đầu |
+|:---:|---|:---:|:---:|:---:|:---:|---|---|
+| **1** | Awakening | 35s | 14 | 8 | 2.2s → 1.5s | 100% Slime | Slime |
+| **2** | The Hunt | 40s | 18 | 10 | 1.8s → 1.2s | 70% Slime, 30% Speeder | 1 Speeder đầu wave |
+| **3** | Heavy Impact | 45s | 22 | 12 | 1.6s → 1.0s | 55% Slime, 30% Speeder, 15% Brute | 1 Brute đầu wave |
+| **4** | The Swarm | 50s | 28 | 15 | 1.3s → 0.8s | 40% Slime, 40% Speeder, 20% Brute | 1 Speeder, 1 Brute |
+| **5** | Final Stand | 60s | 36 | 18 | 1.1s → 0.6s | 35% Slime, 40% Speeder, 25% Brute | 1 Speeder, 1 Brute |
 
-### R03 — Trạng thái VICTORY & Cập nhật DEAD
-- `GameState.VICTORY`:
-  - Dừng spawn, dừng nhận sát thương.
-  - Hiển thị màn hình chiến thắng với màu sắc vinh quang (Rune gold / Cyan), hiển thị tổng kết 4 chỉ số (Run time, Enemies Slain, Best Combo, Shards) cùng nút `Press R to play again`.
-- `GameState.DEAD`:
-  - Bổ sung thêm dòng: `Wave Reached: Wave X/5`.
+### R02 — Trạng thái Vòng đời Wave (WavePhase)
+Trong `GameState.RUNNING`, trạng thái đợt sóng gồm:
+1. `PRE_WAVE` (1.2s):
+   - Banner `WAVE X: <NAME>` xuất hiện.
+   - Chưa sinh quái, đồng hồ wave chưa chạy, player có thể di chuyển định vị.
+2. `SPAWNING`:
+   - Đồng hồ wave đếm lùi `wave_time_left -= delta`.
+   - Sinh quái theo nhịp tăng tốc dần cho tới khi: hết thời gian (`wave_time_left <= 0`) HOẶC hết ngân sách (`wave_spawned_count >= spawn_budget`).
+   - Luôn tôn trọng giới hạn `max_active`.
+3. `CLEAR_REMAINING`:
+   - Ngừng sinh quái (`spawn_timer.stop()`).
+   - Quái còn sống **KHÔNG** tự biến mất.
+   - HUD hiển thị: `Wave X/5 [CLEAR: %d]`.
+   - Khi toàn bộ quái bị tiêu diệt (`enemies_count == 0`): kích hoạt Wave Cleared.
+4. `INTERMISSION` (3.0s):
+   - Hiện banner `WAVE X CLEARED!`, âm thanh chuông chúc mừng.
+   - Đếm ngược 3s chuẩn bị vị trí ("Next Wave in 3s...").
+   - Hết 3s: chuyển sang Wave tiếp theo (`_start_wave(current_wave + 1)`).
+5. `COMPLETE`:
+   - Hoàn thành sau Wave 5. Chuyển sang `GameState.VICTORY`.
 
-### R04 — Pause, Restart & Điều khiển
-- Bấm `Esc` lúc đang trong Wave hoặc Intermission đều pause chính xác thời gian và cây scene.
-- Bấm `R` restart hiệp chơi: đặt lại `current_wave = 1`, làm mới toàn bộ chỉ số và quái.
+### R03 — Quy tắc Ưu tiên Sự kiện (Precedence & Race Conditions)
+- Nếu Player nhận sát thương chết trước khi Victory được xác nhận: Chuyển `GameState.DEAD`.
+- Khi `GameState.VICTORY` đã được xác nhận: Player miễn nhiễm hoàn toàn sát thương contact damage, dừng mọi cập nhật đợt sóng.
+- Bấm `R` restart: Dừng toàn bộ timer, gọi `_despawn_all_entities()` đồng bộ, ngắt toàn bộ callback cũ, khởi động lại từ Wave 1 sạch sẽ.
+
+### R04 — Phân biệt Despawn Hệ thống và Kills
+- Hàm `_despawn_all_entities(reason)`:
+  - Ngắt kết nối các signal `died` và `wall_slammed` trước khi `queue_free()`.
+  - Tuyệt đối KHÔNG cộng `enemies_killed`, KHÔNG rơi Shard, KHÔNG tăng Chain/Combo, KHÔNG phát âm thanh thưởng.
+  - Chỉ dùng khi Restart run, thoát ra Menu hoặc sau khi màn hình Victory hiển thị.
 
 ## 5. Plan nhỏ nhất
 
 | File | Thay đổi |
 |---|---|
-| [MODIFY] `scripts/core/game_config.gd` | Thêm cấu hình `TOTAL_WAVES`, `WAVE_INTERMISSION_DURATION`, mảng `WAVES_DATA` |
-| [MODIFY] `scripts/ui/hud.gd` | Bổ sung hiển thị Wave & timer trên HUD, Banner thông báo Wave Start / Clear, hàm `show_victory()` và cập nhật `show_death()` |
-| [MODIFY] `scripts/main.gd` | Thêm state `VICTORY`, các biến đếm wave (`current_wave`, `wave_timer`, `intermission_timer`), logic chuyển wave và spawn theo cấu hình từng wave |
+| [MODIFY] `scripts/core/game_config.gd` | Cập nhật `WAVES_DATA` với `spawn_budget`, `max_active` hạ xuống 8-18, `WAVE_PRE_DURATION = 1.2` |
+| [MODIFY] `scripts/ui/hud.gd` | Bổ sung hiển thị `CLEAR: X` khi trong phase CLEAR_REMAINING; banner PRE_WAVE; màn hình Victory & Death |
+| [MODIFY] `scripts/actors/player.gd` | Bổ sung cờ `is_invulnerable` kiểm soát miễn nhiễm sát thương khi Victory / Dead |
+| [MODIFY] `scripts/main.gd` | Triển khai `WavePhase` enum, `wave_budget`, `wave_spawned_count`, logic SPAWNING → CLEAR_REMAINING → INTERMISSION, bảo vệ despawn an toàn |
 
 ## 6. Acceptance
 
 | ID | Observable behavior | Check | Expected | Status |
 |---|---|---|---|---|
-| AC01 | Bắt đầu Wave 1 có Banner & thông tin | Runtime | Hiện "WAVE 1: Awakening", HUD hiển thị `Wave 1/5 [00:35]` | NOT_RUN |
-| AC02 | Quái spawn đúng tỉ lệ từng wave | Runtime | Wave 1: 100% Slime; Wave 2: có Speeder; Wave 3: có Brute | NOT_RUN |
-| AC03 | Đếm ngược hết giờ wave | Runtime | Đồng hồ đếm về 00:00 chính xác | NOT_RUN |
-| AC04 | Quái biến mất khi hết giờ | Runtime | Toàn bộ quái còn sót lại fade out và biến mất | NOT_RUN |
-| AC05 | Wave Clear & Nghỉ 3s | Runtime | Hiện "WAVE X CLEARED!", đếm ngược nghỉ 3s trước khi sang Wave mới | NOT_RUN |
-| AC06 | Hoàn thành Wave 5 chuyển Victory | Runtime | Vượt qua Wave 5 hiện màn hình chiến thắng VICTORY đầy đủ chỉ số | NOT_RUN |
-| AC07 | Hy sinh hiển thị Wave đạt được | Runtime | Màn hình Game Over ghi nhận chính xác Wave đạt được (ví dụ Wave 3/5) | NOT_RUN |
-| AC08 | Pause / Restart hoạt động chuẩn | Runtime | Pause đóng băng đúng timer; Restart đưa về Wave 1/5 | NOT_RUN |
+| AC01 | PRE_WAVE 1.2s trước khi sinh quái | Runtime | Hiện banner, quái chưa sinh, player chuẩn bị vị trí an toàn | PASS |
+| AC02 | Quái chỉ định xuất hiện đầu wave | Runtime | Wave 2 quái đầu là Speeder; Wave 3 quái đầu là Brute | PASS |
+| AC03 | Tôn trọng max_active và spawn_budget | Runtime | Số quái sống cùng lúc không vượt max_active; tổng quái không vượt budget | PASS |
+| AC04 | Hết giờ chuyển CLEAR_REMAINING | Runtime | Đồng hồ về 0, quái KHÔNG tự biến mất, HUD hiện `CLEAR: X` | PASS |
+| AC05 | Bắt buộc diệt sạch mới Clear Wave | Runtime | Chạy vòng tròn không thể clear wave; chỉ clear khi quái trên sân về 0 | PASS |
+| AC06 | Intermission 3s chuẩn bị vị trí | Runtime | Đếm ngược 3s không hồi máu; sau 3s tự chuyển wave tiếp theo | PASS |
+| AC07 | Hoàn thành Wave 5 đạt Victory | Runtime | Diệt sạch quái Wave 5 hiện VICTORY, miễn nhiễm sát thương | PASS |
+| AC08 | Hy sinh ghi nhận đúng Wave | Runtime | Chết ở wave nào hiện đúng `Wave Reached: Wave X/5` | PASS |
+| AC09 | Despawn hệ thống không cộng thưởng | Code Logic | Restart/Menu dọn quái ngắt kết nối signal, không tăng kill/shard/combo | PASS |
+| AC10 | Pause / Resume không double-trigger | Runtime | Pause đóng băng timer chính xác; resume tiếp tục đúng nhịp | PASS |
 
 ## 7. Approval
 
-- Chờ chủ dự án xem xét và duyệt bản brief.
+- Chủ dự án duyệt nghiệm thu toàn bộ tính năng Wave System (F017) và các bản sửa lỗi (2026-09-09).

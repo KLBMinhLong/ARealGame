@@ -27,7 +27,7 @@ func _draw() -> void:
 			# F006: Flash trắng → lerp về xanh → fade
 			var progress := dying_timer / Config.DYING_DURATION  # 0→1
 			var alpha := 1.0 - progress
-			var flash := lerpf(1.0, 0.0, minf(progress * 4.0, 1.0))  # Trắng → xanh nhanh
+			var _flash := lerpf(1.0, 0.0, minf(progress * 4.0, 1.0))  # Trắng → xanh nhanh
 			color = Color(
 				lerpf(1.0, Config.COLOR_SLIME.r, minf(progress * 3.0, 1.0)),
 				lerpf(1.0, Config.COLOR_SLIME.g, minf(progress * 3.0, 1.0)),

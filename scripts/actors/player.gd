@@ -13,6 +13,7 @@ var hp: int = Config.PLAYER_MAX_HP
 var max_hp: int = Config.PLAYER_MAX_HP
 var pulse_cooldown_left: float = 0.0
 var grace_timer: float = 0.0  # Bất tử sau nhận damage
+var is_invulnerable: bool = false  # Miễn nhiễm hoàn toàn khi Victory / Dead
 
 # ─── F014: Dash State ─────────────────────────────────────
 var is_dashing: bool = false
@@ -38,6 +39,7 @@ func reset() -> void:
 	position = Config.PLAYER_START
 	pulse_cooldown_left = 0.0
 	grace_timer = 0.0
+	is_invulnerable = false
 	is_dashing = false
 	dash_timer = 0.0
 	dash_cooldown_left = 0.0
@@ -211,7 +213,7 @@ func _handle_pulse_cooldown(delta: float) -> void:
 # ═══════════════════════════════════════════════════════════
 
 func is_damage_immune() -> bool:
-	return grace_timer > 0.0 or is_dashing
+	return is_invulnerable or grace_timer > 0.0 or is_dashing
 
 
 func take_damage(amount: int) -> void:

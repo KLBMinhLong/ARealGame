@@ -128,7 +128,7 @@ func show_death(time_survived: float, enemies_killed: int, shards: int, best_cha
 	hide_banner()
 	if dim_overlay != null:
 		dim_overlay.visible = true
-	var minutes: int = int(time_survived) / 60
+	var minutes: int = int(time_survived / 60.0)
 	var seconds: int = int(time_survived) % 60
 	label.text = "\n💀  RUN OVER  💀\n\nWave Reached: %d/%d\nSurvival Time: %02d:%02d\nEnemies Slain: %d\nBest Combo: x%d\nShards Collected: %d\n\nPress R to restart\n" % [
 		wave_reached, Config.TOTAL_WAVES, minutes, seconds, enemies_killed, best_chain, shards
@@ -142,7 +142,7 @@ func show_victory(time_survived: float, enemies_killed: int, shards: int, best_c
 	hide_banner()
 	if dim_overlay != null:
 		dim_overlay.visible = true
-	var minutes: int = int(time_survived) / 60
+	var minutes: int = int(time_survived / 60.0)
 	var seconds: int = int(time_survived) % 60
 	label.text = "\n🏆  VICTORY — THE SEAL HOLDS!  🏆\n\nAll %d Waves Conquered!\nTotal Time: %02d:%02d\nEnemies Slain: %d\nBest Combo: x%d\nShards Collected: %d\n\nPress R to play again\n" % [
 		Config.TOTAL_WAVES, minutes, seconds, enemies_killed, best_chain, shards
@@ -158,7 +158,8 @@ func show_victory(time_survived: float, enemies_killed: int, shards: int, best_c
 func update_hud(
 	hp: int, max_hp: int, cd_left: float, _cd_max: float, shards: int, best_chain: int,
 	dash_cd: float = 0.0, current_wave: int = 1, total_waves: int = 5,
-	wave_time_left: float = 0.0, is_intermission: bool = false, intermission_time_left: float = 0.0
+	wave_time_left: float = 0.0, is_intermission: bool = false, intermission_time_left: float = 0.0,
+	is_clearing_remaining: bool = false, remaining_count: int = 0, is_pre_wave: bool = false
 ) -> void:
 	if hud_state != HUDState.HUD:
 		return
@@ -182,9 +183,13 @@ func update_hud(
 	if is_intermission:
 		var wait_s := maxi(1, int(ceilf(intermission_time_left)))
 		wave_text = "Wave %d Cleared! (Next in %ds)" % [current_wave, wait_s]
+	elif is_clearing_remaining:
+		wave_text = "Wave %d/%d [CLEAR: %d]" % [current_wave, total_waves, remaining_count]
+	elif is_pre_wave:
+		wave_text = "Wave %d/%d (Get Ready!)" % [current_wave, total_waves]
 	else:
 		var wave_sec := maxi(0, int(ceilf(wave_time_left)))
-		var w_min := wave_sec / 60
+		var w_min := int(float(wave_sec) / 60.0)
 		var w_s := wave_sec % 60
 		wave_text = "Wave %d/%d [%02d:%02d]" % [current_wave, total_waves, w_min, w_s]
 

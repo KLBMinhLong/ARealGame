@@ -5,8 +5,9 @@
 extends Node
 
 signal chain_updated(chain_count: int)
-signal wall_slam_occurred(at_position: Vector2)
-signal altar_seal_occurred(at_position: Vector2)
+# Unused legacy signals (handled via enemy_base.gd):
+# signal wall_slam_occurred(at_position: Vector2)
+# signal altar_seal_occurred(at_position: Vector2)
 signal pulse_hit(enemy_count: int)  # F002: khi pulse trúng quái
 signal chain_hit_visual(at_position: Vector2, chain_count: int)  # F003: combo popup
 

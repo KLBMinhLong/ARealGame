@@ -133,54 +133,65 @@ const PHASE3_BRUTE_FINAL := 0.25  # Brute ở mốc 180s+ (Slime còn lại 30%)
 
 # ─── WAVE SYSTEM (F017) ──────────────────────────────────
 const TOTAL_WAVES := 5
-const WAVE_INTERMISSION_DURATION := 3.0  # s — thời gian nghỉ giữa các wave
-const WAVE_BANNER_DURATION := 1.8  # s — thời gian hiện banner wave start / clear
+const WAVE_PRE_DURATION := 1.2  # s — khoảng chuẩn bị vị trí trước khi quái bắt đầu spawn
+const WAVE_INTERMISSION_DURATION := 3.0  # s — khoảng nghỉ chuẩn bị vị trí giữa các wave
+const WAVE_BANNER_DURATION := 1.5  # s — thời gian hiện banner
 
 const WAVES_DATA: Array[Dictionary] = [
 	{
 		"name": "Awakening",
 		"duration": 35.0,
-		"interval_start": 2.0,
-		"interval_end": 1.4,
-		"max_enemies": 10,
+		"spawn_budget": 14,
+		"max_active": 8,
+		"interval_start": 2.2,
+		"interval_end": 1.5,
 		"speeder_chance": 0.0,
 		"brute_chance": 0.0,
+		"guaranteed_spawns": [],
 	},
 	{
 		"name": "The Hunt",
 		"duration": 40.0,
-		"interval_start": 1.6,
-		"interval_end": 1.1,
-		"max_enemies": 14,
-		"speeder_chance": 0.35,
+		"spawn_budget": 18,
+		"max_active": 10,
+		"interval_start": 1.8,
+		"interval_end": 1.2,
+		"speeder_chance": 0.30,
 		"brute_chance": 0.0,
+		"guaranteed_spawns": ["speeder"],
 	},
 	{
 		"name": "Heavy Impact",
 		"duration": 45.0,
-		"interval_start": 1.4,
-		"interval_end": 0.9,
-		"max_enemies": 18,
+		"spawn_budget": 22,
+		"max_active": 12,
+		"interval_start": 1.6,
+		"interval_end": 1.0,
 		"speeder_chance": 0.30,
-		"brute_chance": 0.20,
+		"brute_chance": 0.15,
+		"guaranteed_spawns": ["brute"],
 	},
 	{
 		"name": "The Swarm",
 		"duration": 50.0,
-		"interval_start": 1.1,
-		"interval_end": 0.7,
-		"max_enemies": 22,
-		"speeder_chance": 0.45,
-		"brute_chance": 0.25,
+		"spawn_budget": 28,
+		"max_active": 15,
+		"interval_start": 1.3,
+		"interval_end": 0.8,
+		"speeder_chance": 0.40,
+		"brute_chance": 0.20,
+		"guaranteed_spawns": ["speeder", "brute"],
 	},
 	{
 		"name": "Final Stand",
 		"duration": 60.0,
-		"interval_start": 0.9,
-		"interval_end": 0.5,
-		"max_enemies": 28,
+		"spawn_budget": 36,
+		"max_active": 18,
+		"interval_start": 1.1,
+		"interval_end": 0.6,
 		"speeder_chance": 0.40,
-		"brute_chance": 0.30,
+		"brute_chance": 0.25,
+		"guaranteed_spawns": ["speeder", "brute"],
 	},
 ]
 
