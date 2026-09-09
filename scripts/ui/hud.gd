@@ -194,7 +194,14 @@ func update_hud(
 		var wave_sec := maxi(0, int(ceilf(wave_time_left)))
 		var w_min := int(float(wave_sec) / 60.0)
 		var w_s := wave_sec % 60
-		wave_text = "Wave %d/%d [%02d:%02d]" % [current_wave, total_waves, w_min, w_s]
+		if current_wave == total_waves:
+			if wave_time_left <= 0.0:
+				wave_text = "BOSS: WARDEN [ENRAGED!]"
+			else:
+				wave_text = "BOSS: WARDEN [%02d:%02d]" % [w_min, w_s]
+		else:
+			wave_text = "Wave %d/%d [%02d:%02d]" % [current_wave, total_waves, w_min, w_s]
+
 
 	label.text = "%s     %s   %s     %s\n\nShards: %d   Chain Best: x%d" % [
 		hearts, pulse_text, dash_text, wave_text, shards, best_chain

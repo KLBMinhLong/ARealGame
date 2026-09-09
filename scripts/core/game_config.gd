@@ -112,6 +112,21 @@ const BRUTE_SIZE := 14  # px (hình vuông to)
 const BRUTE_PUSH_WEIGHT := 1.35  # F019 tuning: 1.8 -> 1.35 giúp quái bay ~55px chạm tường
 const BRUTE_SHARD_DROP := 2
 
+# F020: Mini-Boss — Dungeon Warden (Wave 5 Boss)
+const WARDEN_HP := 10  # Cần 10 lần đập tường thường hoặc 5 lần đập Spike Wall
+const WARDEN_SPEED := 45.0  # px/s
+const WARDEN_SIZE := 24  # px (khối vuông đá khổng lồ)
+const WARDEN_PUSH_WEIGHT := 1.6  # Nặng: cú đẩy 400 bay ~39px; Heavy Push Tier 3 bay ~119px
+const WARDEN_SHARD_DROP := 15  # Thưởng lớn khi hạ gục boss
+const WARDEN_SLAM_RADIUS := 80.0  # px (bán kính dậm đất AoE)
+const WARDEN_SLAM_INTERVAL := 5.0  # s (khoảng cách giữa các lần slam)
+const WARDEN_SLAM_INTERVAL_ENRAGED := 3.5  # s (khi hết 60s cuồng nộ)
+const WARDEN_TELEGRAPH_DURATION := 1.0  # s (thời gian báo trước có thể bị interrupt)
+const WARDEN_RECOVERY_DURATION := 0.6  # s (thời gian khựng sau slam — cơ hội phản công)
+const WARDEN_SLAM_DAMAGE := 1  # Sát thương lên Player nếu dính AoE
+const WARDEN_ENRAGE_SPEED_MULT := 1.2  # Tăng 20% tốc độ khi Enraged
+
+
 # ─── SPAWN ───────────────────────────────────────────────
 const SPAWN_INTERVAL := 2.0  # s — 1 con / 2s (starting)
 const SPAWN_MAX_CONCURRENT := 15  # starting cap
@@ -184,15 +199,15 @@ const WAVES_DATA: Array[Dictionary] = [
 		"guaranteed_spawns": ["speeder", "brute"],
 	},
 	{
-		"name": "Final Stand",
+		"name": "The Warden",
 		"duration": 60.0,
-		"spawn_budget": 36,
-		"max_active": 18,
-		"interval_start": 1.1,
-		"interval_end": 0.6,
+		"spawn_budget": 999,  # Không giới hạn bằng budget; kết thúc khi Warden chết
+		"max_active": 4,  # Quái đệ tối đa 4 con trên sân để hỗ trợ domino
+		"interval_start": 3.5,
+		"interval_end": 3.0,
 		"speeder_chance": 0.40,
-		"brute_chance": 0.25,
-		"guaranteed_spawns": ["speeder", "brute"],
+		"brute_chance": 0.15,
+		"guaranteed_spawns": ["warden"],
 	},
 ]
 
@@ -262,6 +277,15 @@ const COLOR_SPEEDER_PUSHED := Color(1.0, 0.65, 0.3)
 const COLOR_BRUTE := Color(0.75, 0.15, 0.2)  # #bf2633 deep red
 const COLOR_BRUTE_PUSHED := Color(0.9, 0.35, 0.35)
 const COLOR_BRUTE_DAMAGED := Color(0.95, 0.45, 0.45)  # Lighter red with crack (1 HP)
+
+# F020: Warden Boss Colors
+const COLOR_WARDEN := Color(0.60, 0.10, 0.12)  # Đá đỏ thẫm #991b1b
+const COLOR_WARDEN_CORE := Color(0.94, 0.25, 0.25)  # Lõi rune đỏ rực #ef4444
+const COLOR_WARDEN_ARMOR := Color(0.25, 0.08, 0.10)  # Viền giáp đá đen
+const COLOR_WARDEN_PUSHED := Color(0.85, 0.30, 0.35)
+const COLOR_WARDEN_TELEGRAPH := Color(0.95, 0.20, 0.20, 0.35)
+const COLOR_WARDEN_RECOVERY := Color(0.45, 0.45, 0.45)
+
 
 const COLOR_ALTAR := Color(0.659, 0.545, 0.980)  # #a78bfa
 const COLOR_ALTAR_FLASH := Color(0.8, 0.7, 1.0, 0.8)

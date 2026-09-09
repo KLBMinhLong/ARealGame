@@ -23,6 +23,9 @@ var wave_time_left: float = 0.0
 var phase_timer: float = 0.0
 var wave_spawned_count: int = 0
 var guaranteed_spawns_queue: Array[String] = []
+var active_warden: Node2D = null
+var warden_enraged_announced: bool = false
+
 
 var upgrade_manager: UpgradeManager = UpgradeManager.new()
 var upgrade_selection_ui: CanvasLayer = null
@@ -202,7 +205,10 @@ func _reset_run_stats() -> void:
 
 
 func _clear_entities() -> void:
+	active_warden = null
+	warden_enraged_announced = false
 	_despawn_all_entities("clear_entities")
+
 
 
 func _despawn_all_entities(_reason: String = "") -> void:
@@ -252,16 +258,33 @@ func _process_running(delta: float) -> void:
 				_try_spawn_enemy()
 
 		WavePhase.SPAWNING:
-			wave_time_left -= delta
 			var wave_idx := clampi(current_wave - 1, 0, Config.WAVES_DATA.size() - 1)
 			var wave_data: Dictionary = Config.WAVES_DATA[wave_idx]
 			var budget: int = wave_data.get("spawn_budget", 14)
-			if wave_time_left <= 0.0 or wave_spawned_count >= budget:
-				wave_time_left = 0.0
-				spawn_timer.stop()
-				wave_phase = WavePhase.CLEAR_REMAINING
-				if _get_active_enemy_count() == 0:
-					_on_wave_cleared()
+
+			if current_wave == 5:
+				# F020: Wave 5 Boss Fight Rules
+				if wave_time_left > 0.0:
+					wave_time_left -= delta
+					if wave_time_left <= 0.0:
+						wave_time_left = 0.0
+						if not warden_enraged_announced:
+							warden_enraged_announced = true
+							if active_warden != null and is_instance_valid(active_warden):
+								if active_warden.has_method("set_enraged"):
+									active_warden.set_enraged(true)
+							hud.show_banner("🔥  WARDEN ENRAGED!  🔥", 2.2, Color(1.0, 0.4, 0.1))
+				# Wave 5 KHÔNG tự động kết thúc hoặc sang CLEAR_REMAINING khi hết giờ.
+				# Chỉ hoàn thành khi Warden bị tiêu diệt!
+			else:
+				wave_time_left -= delta
+				if wave_time_left <= 0.0 or wave_spawned_count >= budget:
+					wave_time_left = 0.0
+					spawn_timer.stop()
+					wave_phase = WavePhase.CLEAR_REMAINING
+					if _get_active_enemy_count() == 0:
+						_on_wave_cleared()
+
 
 		WavePhase.CLEAR_REMAINING:
 			if _get_active_enemy_count() == 0:
@@ -343,16 +366,20 @@ func _start_wave(wave_num: int) -> void:
 	phase_timer = Config.WAVE_PRE_DURATION
 	spawn_timer.stop()
 	arena.set_layout(current_wave)  # F019: áp dụng layout an toàn trong PRE_WAVE
-	hud.show_banner("⚔  WAVE %d: %s  ⚔" % [current_wave, str(wave_data.get("name", "")).to_upper()], Config.WAVE_BANNER_DURATION)
+	if current_wave == 5:
+		hud.show_banner("⚠  BOSS: THE WARDEN  ⚠", 2.5, Color(1.0, 0.35, 0.35))
+	else:
+		hud.show_banner("⚔  WAVE %d: %s  ⚔" % [current_wave, str(wave_data.get("name", "")).to_upper()], Config.WAVE_BANNER_DURATION)
 
 
 func _on_wave_cleared() -> void:
 	spawn_timer.stop()
 	if current_wave >= Config.TOTAL_WAVES:
 		wave_phase = WavePhase.INTERMISSION
-		phase_timer = 1.6  # Short celebration pause before Victory
+		phase_timer = 2.0  # Celebration pause before Victory
 		sound_manager.play_altar_seal()  # Audio cue
-		hud.show_banner("✨  FINAL WAVE CONQUERED!  ✨", Config.WAVE_BANNER_DURATION, Color(1.0, 0.9, 0.2))
+		hud.show_banner("✨  THE WARDEN VANQUISHED!  ✨", 2.2, Color(1.0, 0.9, 0.2))
+
 	else:
 		# F018: Waves 1-4 trigger 3-card upgrade selection
 		var cards := upgrade_manager.draw_cards(3)
@@ -454,6 +481,11 @@ func _spawn_enemy(wave_data: Dictionary) -> void:
 
 	var enemy: Node2D
 	match enemy_type:
+		"warden":
+			enemy = preload("res://scenes/enemies/warden.tscn").instantiate()
+			active_warden = enemy
+			if enemy.has_signal("slam_triggered"):
+				enemy.slam_triggered.connect(_on_warden_slam)
 		"brute":
 			enemy = preload("res://scenes/enemies/brute.tscn").instantiate()
 		"speeder":
@@ -461,12 +493,36 @@ func _spawn_enemy(wave_data: Dictionary) -> void:
 		_:
 			enemy = preload("res://scenes/enemies/slime.tscn").instantiate()
 
-	enemy.position = _get_spawn_position()
+	if enemy_type == "warden":
+		enemy.position = Vector2(Config.VIEWPORT_W / 2.0, Config.ARENA_ORIGIN.y + 40.0)
+	else:
+		enemy.position = _get_spawn_position()
+
 	enemy.target = player
 	enemy.arena_ref = arena  # F019: reference cho va chạm hazard
 	enemy.died.connect(_on_enemy_died)
 	enemy.wall_slammed.connect(_on_wall_slam)
 	enemies_container.add_child(enemy)
+
+
+func _on_warden_slam(at_position: Vector2, _radius: float) -> void:
+	camera.request_shake(0.30)
+	vfx.spawn_dust(at_position)
+	sound_manager.play_wall_slam()
+
+
+func _on_warden_defeated() -> void:
+	camera.request_shake(0.35)
+	sound_manager.play_altar_seal()
+	# Xóa toàn bộ quái đệ còn lại trên sân
+	for child in enemies_container.get_children():
+		if child != active_warden and is_instance_valid(child):
+			vfx.spawn_death_burst(child.position, child.enemy_color)
+			child.queue_free()
+	spawn_timer.stop()
+	active_warden = null
+	_on_wave_cleared()
+
 
 
 func _get_spawn_position() -> Vector2:
@@ -513,9 +569,15 @@ func _on_enemy_died(enemy_position: Vector2, shard_amount: int, is_altar_seal: b
 			_spawn_shard(enemy_position)
 		vfx.spawn_death_burst(enemy_position, color)  # F006 + F009: dùng enemy color
 
+	# F020: Kiểm tra nếu Warden bị tiêu diệt ở Wave 5
+	if current_wave == 5 and active_warden != null and (active_warden.hp <= 0 or active_warden.enemy_state == EnemyBase.EnemyState.DYING):
+		_on_warden_defeated()
+		return
+
 	# If in cleanup phase, check if this was the last remaining enemy
 	if wave_phase == WavePhase.CLEAR_REMAINING and _get_active_enemy_count() == 0:
 		_on_wave_cleared()
+
 
 
 func _spawn_shard(at_position: Vector2) -> void:
