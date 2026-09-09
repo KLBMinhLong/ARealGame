@@ -131,6 +131,59 @@ const PHASE2_SPEEDER_MAX := 0.40  # Speeder đạt 40% ở mốc 150s
 const PHASE3_SPEEDER_FINAL := 0.45  # Speeder ở mốc 180s+
 const PHASE3_BRUTE_FINAL := 0.25  # Brute ở mốc 180s+ (Slime còn lại 30%)
 
+# ─── WAVE SYSTEM (F017) ──────────────────────────────────
+const TOTAL_WAVES := 5
+const WAVE_INTERMISSION_DURATION := 3.0  # s — thời gian nghỉ giữa các wave
+const WAVE_BANNER_DURATION := 1.8  # s — thời gian hiện banner wave start / clear
+
+const WAVES_DATA: Array[Dictionary] = [
+	{
+		"name": "Awakening",
+		"duration": 35.0,
+		"interval_start": 2.0,
+		"interval_end": 1.4,
+		"max_enemies": 10,
+		"speeder_chance": 0.0,
+		"brute_chance": 0.0,
+	},
+	{
+		"name": "The Hunt",
+		"duration": 40.0,
+		"interval_start": 1.6,
+		"interval_end": 1.1,
+		"max_enemies": 14,
+		"speeder_chance": 0.35,
+		"brute_chance": 0.0,
+	},
+	{
+		"name": "Heavy Impact",
+		"duration": 45.0,
+		"interval_start": 1.4,
+		"interval_end": 0.9,
+		"max_enemies": 18,
+		"speeder_chance": 0.30,
+		"brute_chance": 0.20,
+	},
+	{
+		"name": "The Swarm",
+		"duration": 50.0,
+		"interval_start": 1.1,
+		"interval_end": 0.7,
+		"max_enemies": 22,
+		"speeder_chance": 0.45,
+		"brute_chance": 0.25,
+	},
+	{
+		"name": "Final Stand",
+		"duration": 60.0,
+		"interval_start": 0.9,
+		"interval_end": 0.5,
+		"max_enemies": 28,
+		"speeder_chance": 0.40,
+		"brute_chance": 0.30,
+	},
+]
+
 # ─── SHARDS ──────────────────────────────────────────────
 const SHARD_SIZE := 4  # px
 const SHARD_MAGNET_RADIUS := 40.0  # px
