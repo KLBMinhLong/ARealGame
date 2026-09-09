@@ -22,7 +22,13 @@ func _process(delta: float) -> void:
 	var dist := position.distance_to(player_ref.position)
 	
 	# Magnet: lerp toward player when in range
-	if dist <= Config.SHARD_MAGNET_RADIUS:
+	var magnet_range: float = Config.SHARD_MAGNET_RADIUS
+	if player_ref.has_method("get_shard_magnet_radius"):
+		magnet_range = player_ref.get_shard_magnet_radius()
+	elif "effective_magnet_radius" in player_ref:
+		magnet_range = player_ref.effective_magnet_radius
+
+	if dist <= magnet_range:
 		is_magnetized = true
 	
 	if is_magnetized:

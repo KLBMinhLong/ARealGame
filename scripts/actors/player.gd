@@ -3,7 +3,7 @@
 ## Placeholder: cyan square 12×12 px.
 extends Node2D
 
-signal pulse_fired(position: Vector2, radius: float)
+signal pulse_fired(position: Vector2, radius: float, force: float)
 signal player_hit(hp_remaining: int)
 signal player_died
 signal dash_started  # F016: audio feedback
@@ -14,6 +14,13 @@ var max_hp: int = Config.PLAYER_MAX_HP
 var pulse_cooldown_left: float = 0.0
 var grace_timer: float = 0.0  # Bất tử sau nhận damage
 var is_invulnerable: bool = false  # Miễn nhiễm hoàn toàn khi Victory / Dead
+
+# ─── F018: Effective Stats (Đồng bộ từ UpgradeManager) ────
+var effective_speed: float = Config.PLAYER_SPEED
+var effective_pulse_radius: float = Config.PULSE_RADIUS
+var effective_pulse_force: float = Config.PULSE_VELOCITY
+var effective_pulse_cooldown_max: float = Config.PULSE_COOLDOWN
+var effective_magnet_radius: float = Config.SHARD_MAGNET_RADIUS
 
 # ─── F014: Dash State ─────────────────────────────────────
 var is_dashing: bool = false
@@ -48,6 +55,34 @@ func reset() -> void:
 	ghost_timer = 0.0
 	ghost_trail.clear()
 	pulse_vfx_timer = 0.0
+	effective_speed = Config.PLAYER_SPEED
+	effective_pulse_radius = Config.PULSE_RADIUS
+	effective_pulse_force = Config.PULSE_VELOCITY
+	effective_pulse_cooldown_max = Config.PULSE_COOLDOWN
+	effective_magnet_radius = Config.SHARD_MAGNET_RADIUS
+
+
+## Đồng bộ toàn bộ chỉ số từ UpgradeManager (F018)
+func sync_upgrades(mgr: UpgradeManager) -> void:
+	if mgr == null:
+		return
+	effective_speed = mgr.get_effective_player_speed()
+	effective_pulse_radius = mgr.get_effective_pulse_radius()
+	effective_pulse_force = mgr.get_effective_pulse_force()
+	effective_pulse_cooldown_max = mgr.get_effective_pulse_cooldown()
+	effective_magnet_radius = mgr.get_effective_magnet_radius()
+	var new_max_hp := mgr.get_effective_max_hp()
+	if new_max_hp > max_hp:
+		var diff := new_max_hp - max_hp
+		max_hp = new_max_hp
+		hp = mini(hp + diff, max_hp)
+	elif new_max_hp < max_hp:
+		max_hp = new_max_hp
+		hp = mini(hp, max_hp)
+
+
+func get_shard_magnet_radius() -> float:
+	return effective_magnet_radius
 
 
 func _process(delta: float) -> void:
@@ -85,7 +120,7 @@ func _handle_movement(delta: float) -> void:
 		input_dir = input_dir.normalized()
 		last_facing_dir = input_dir
 
-	var velocity := input_dir * Config.PLAYER_SPEED
+	var velocity := input_dir * effective_speed
 	position += velocity * delta
 	_clamp_to_arena()
 
@@ -197,10 +232,10 @@ func _can_pulse() -> bool:
 
 
 func _fire_pulse() -> void:
-	pulse_cooldown_left = Config.PULSE_COOLDOWN
+	pulse_cooldown_left = effective_pulse_cooldown_max
 	pulse_vfx_timer = Config.PULSE_VFX_DURATION
 	pulse_vfx_radius = 0.0
-	pulse_fired.emit(position, Config.PULSE_RADIUS)
+	pulse_fired.emit(position, effective_pulse_radius, effective_pulse_force)
 
 
 func _handle_pulse_cooldown(delta: float) -> void:
@@ -241,7 +276,7 @@ func _handle_pulse_vfx(delta: float) -> void:
 	if pulse_vfx_timer > 0.0:
 		pulse_vfx_timer -= delta
 		var progress := 1.0 - (pulse_vfx_timer / Config.PULSE_VFX_DURATION)
-		pulse_vfx_radius = Config.PULSE_RADIUS * progress
+		pulse_vfx_radius = effective_pulse_radius * progress
 
 
 # ═══════════════════════════════════════════════════════════

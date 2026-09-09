@@ -14,8 +14,8 @@ var current_chain: int = 0
 var run_time: float = 0.0  # F010: difficulty scaling
 var enemies_killed: int = 0  # F013: run summary
 
-# ─── Wave System (F017) ──────────────────────────────────
-enum WavePhase { PRE_WAVE, SPAWNING, CLEAR_REMAINING, INTERMISSION, COMPLETE }
+# ─── Wave System (F017) & Upgrades (F018) ───────────────
+enum WavePhase { PRE_WAVE, SPAWNING, CLEAR_REMAINING, UPGRADE_SELECTION, INTERMISSION, COMPLETE }
 
 var current_wave: int = 1
 var wave_phase: WavePhase = WavePhase.PRE_WAVE
@@ -23,6 +23,9 @@ var wave_time_left: float = 0.0
 var phase_timer: float = 0.0
 var wave_spawned_count: int = 0
 var guaranteed_spawns_queue: Array[String] = []
+
+var upgrade_manager: UpgradeManager = UpgradeManager.new()
+var upgrade_selection_ui: CanvasLayer = null
 
 # ─── Node references ────────────────────────────────────
 @onready var arena: Node2D = $Arena
@@ -46,6 +49,7 @@ func _ready() -> void:
 	$PushSystem.process_mode = Node.PROCESS_MODE_PAUSABLE
 	$SpawnTimer.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_setup_spawn_timer()
+	_setup_upgrade_ui()
 	push_system.setup(player, enemies_container)
 	push_system.chain_updated.connect(on_chain_updated)
 	player.player_died.connect(on_player_died)
@@ -65,6 +69,13 @@ func _ready() -> void:
 	_enter_state(GameState.MENU)
 
 
+func _setup_upgrade_ui() -> void:
+	var ui_scene = preload("res://scenes/ui/upgrade_selection.tscn")
+	upgrade_selection_ui = ui_scene.instantiate()
+	upgrade_selection_ui.upgrade_selected.connect(_on_upgrade_card_selected)
+	add_child(upgrade_selection_ui)
+
+
 func _process(delta: float) -> void:
 	match state:
 		GameState.RUNNING:
@@ -78,6 +89,8 @@ func _process(delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause_game"):
+		if wave_phase == WavePhase.UPGRADE_SELECTION:
+			return
 		match state:
 			GameState.RUNNING:
 				_enter_state(GameState.PAUSED)
@@ -104,6 +117,8 @@ func _enter_state(new_state: GameState) -> void:
 	match new_state:
 		GameState.MENU:
 			get_tree().paused = false
+			if upgrade_selection_ui != null:
+				upgrade_selection_ui.hide_selection()
 			_show_menu()
 
 		GameState.RUNNING:
@@ -121,6 +136,8 @@ func _enter_state(new_state: GameState) -> void:
 
 		GameState.DEAD:
 			get_tree().paused = false
+			if upgrade_selection_ui != null:
+				upgrade_selection_ui.hide_selection()
 			spawn_timer.stop()
 			player.is_invulnerable = true
 			camera.clear()  # F001
@@ -130,6 +147,8 @@ func _enter_state(new_state: GameState) -> void:
 
 		GameState.VICTORY:
 			get_tree().paused = false
+			if upgrade_selection_ui != null:
+				upgrade_selection_ui.hide_selection()
 			spawn_timer.stop()
 			player.is_invulnerable = true
 			camera.clear()
@@ -144,9 +163,14 @@ func _enter_state(new_state: GameState) -> void:
 # ═══════════════════════════════════════════════════════════
 
 func _start_run() -> void:
+	get_tree().paused = false
+	if upgrade_selection_ui != null:
+		upgrade_selection_ui.hide_selection()
 	_reset_run_stats()
 	_clear_entities()
 	player.reset()
+	upgrade_manager.reset()
+	player.sync_upgrades(upgrade_manager)
 	player.visible = true
 	hud.show_hud()
 	camera.clear()  # F001
@@ -201,6 +225,17 @@ func _despawn_all_entities(_reason: String = "") -> void:
 # ═══════════════════════════════════════════════════════════
 
 func _process_running(delta: float) -> void:
+	if wave_phase == WavePhase.UPGRADE_SELECTION:
+		hud.update_hud(
+			player.hp, player.max_hp, player.pulse_cooldown_left,
+			player.effective_pulse_cooldown_max, shard_count, best_chain,
+			player.dash_cooldown_left, current_wave, Config.TOTAL_WAVES,
+			0.0, false, 0.0,
+			false, 0, false,
+			true
+		)
+		return
+
 	run_time += delta  # F010: total run timer
 
 	# F017: Wave lifecycle state machine
@@ -231,6 +266,9 @@ func _process_running(delta: float) -> void:
 			if _get_active_enemy_count() == 0:
 				_on_wave_cleared()
 
+		WavePhase.UPGRADE_SELECTION:
+			pass
+
 		WavePhase.INTERMISSION:
 			phase_timer -= delta
 			if phase_timer <= 0.0:
@@ -246,14 +284,16 @@ func _process_running(delta: float) -> void:
 	var is_interm := (wave_phase == WavePhase.INTERMISSION)
 	var is_clearing := (wave_phase == WavePhase.CLEAR_REMAINING)
 	var is_pre := (wave_phase == WavePhase.PRE_WAVE)
+	var is_upg := (wave_phase == WavePhase.UPGRADE_SELECTION)
 	var active_enemies := _get_active_enemy_count()
 
 	hud.update_hud(
 		player.hp, player.max_hp, player.pulse_cooldown_left,
-		Config.PULSE_COOLDOWN, shard_count, best_chain,
+		player.effective_pulse_cooldown_max, shard_count, best_chain,
 		player.dash_cooldown_left, current_wave, Config.TOTAL_WAVES,
 		wave_time_left, is_interm, phase_timer,
-		is_clearing, active_enemies, is_pre
+		is_clearing, active_enemies, is_pre,
+		is_upg
 	)
 
 
@@ -281,7 +321,7 @@ func _show_menu() -> void:
 
 
 # ═══════════════════════════════════════════════════════════
-# WAVE SYSTEM (F017)
+# WAVE SYSTEM (F017) & UPGRADES (F018)
 # ═══════════════════════════════════════════════════════════
 
 func _start_wave(wave_num: int) -> void:
@@ -306,14 +346,35 @@ func _start_wave(wave_num: int) -> void:
 
 func _on_wave_cleared() -> void:
 	spawn_timer.stop()
-	wave_phase = WavePhase.INTERMISSION
-	sound_manager.play_altar_seal()  # Audio cue
 	if current_wave >= Config.TOTAL_WAVES:
+		wave_phase = WavePhase.INTERMISSION
 		phase_timer = 1.6  # Short celebration pause before Victory
+		sound_manager.play_altar_seal()  # Audio cue
 		hud.show_banner("✨  FINAL WAVE CONQUERED!  ✨", Config.WAVE_BANNER_DURATION, Color(1.0, 0.9, 0.2))
 	else:
-		phase_timer = Config.WAVE_INTERMISSION_DURATION
-		hud.show_banner("✨  WAVE %d CLEARED!  ✨" % current_wave, Config.WAVE_BANNER_DURATION, Color(0.4, 1.0, 0.6))
+		# F018: Waves 1-4 trigger 3-card upgrade selection
+		var cards := upgrade_manager.draw_cards(3)
+		if cards.is_empty():
+			_start_intermission()
+		else:
+			wave_phase = WavePhase.UPGRADE_SELECTION
+			sound_manager.play_altar_seal()
+			get_tree().paused = true
+			upgrade_selection_ui.show_selection(cards)
+
+
+func _on_upgrade_card_selected(upgrade_id: String) -> void:
+	get_tree().paused = false
+	upgrade_manager.apply_upgrade(upgrade_id)
+	player.sync_upgrades(upgrade_manager)
+	sound_manager.play_shard()
+	_start_intermission()
+
+
+func _start_intermission() -> void:
+	wave_phase = WavePhase.INTERMISSION
+	phase_timer = Config.WAVE_INTERMISSION_DURATION
+	hud.show_banner("✨  WAVE %d CLEARED!  ✨" % current_wave, Config.WAVE_BANNER_DURATION, Color(0.4, 1.0, 0.6))
 
 
 func _get_active_enemy_count() -> int:
@@ -484,7 +545,7 @@ func on_chain_updated(chain_count: int) -> void:
 # F001: CAMERA SHAKE EVENT ADAPTERS
 # ═══════════════════════════════════════════════════════════
 
-func _on_pulse_for_shake(_position: Vector2, _radius: float) -> void:
+func _on_pulse_for_shake(_position: Vector2, _radius: float, _force: float = 0.0) -> void:
 	camera.request_shake(Config.SHAKE_PULSE)
 
 
@@ -498,7 +559,7 @@ func _on_wall_slam(at_position: Vector2) -> void:
 # F016: SOUND EVENT ADAPTERS
 # ═══════════════════════════════════════════════════════════
 
-func _on_pulse_for_sound(_position: Vector2, _radius: float) -> void:
+func _on_pulse_for_sound(_position: Vector2, _radius: float, _force: float = 0.0) -> void:
 	sound_manager.play_pulse()
 
 

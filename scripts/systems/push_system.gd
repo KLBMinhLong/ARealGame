@@ -44,7 +44,7 @@ func _process(delta: float) -> void:
 # PULSE — Khi player nhấn Space
 # ═══════════════════════════════════════════════════════════
 
-func _on_pulse_fired(pulse_position: Vector2, radius: float) -> void:
+func _on_pulse_fired(pulse_position: Vector2, radius: float, force: float = Config.PULSE_VELOCITY) -> void:
 	var enemies := _get_enemies_in_radius(pulse_position, radius)
 	
 	if enemies.size() == 0:
@@ -59,7 +59,7 @@ func _on_pulse_fired(pulse_position: Vector2, radius: float) -> void:
 		
 		# Distance falloff: gần = 100%, rìa = 50%
 		var falloff := lerpf(1.0, Config.PULSE_DISTANCE_FALLOFF, distance / radius)
-		var push_speed := Config.PULSE_VELOCITY * falloff
+		var push_speed := force * falloff
 		
 		var push_vel := direction * push_speed
 		enemy.receive_push(push_vel)

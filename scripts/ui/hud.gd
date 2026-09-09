@@ -159,7 +159,8 @@ func update_hud(
 	hp: int, max_hp: int, cd_left: float, _cd_max: float, shards: int, best_chain: int,
 	dash_cd: float = 0.0, current_wave: int = 1, total_waves: int = 5,
 	wave_time_left: float = 0.0, is_intermission: bool = false, intermission_time_left: float = 0.0,
-	is_clearing_remaining: bool = false, remaining_count: int = 0, is_pre_wave: bool = false
+	is_clearing_remaining: bool = false, remaining_count: int = 0, is_pre_wave: bool = false,
+	is_upgrading: bool = false
 ) -> void:
 	if hud_state != HUDState.HUD:
 		return
@@ -178,11 +179,13 @@ func update_hud(
 	# Dash Cooldown
 	var dash_text := "Dash: READY" if dash_cd <= 0 else "Dash: %.1fs" % dash_cd
 
-	# Wave & Timer info (F017)
+	# Wave & Timer info (F017 + F018)
 	var wave_text := ""
 	if is_intermission:
 		var wait_s := maxi(1, int(ceilf(intermission_time_left)))
 		wave_text = "Wave %d Cleared! (Next in %ds)" % [current_wave, wait_s]
+	elif is_upgrading:
+		wave_text = "Wave %d/%d (Evolving...)" % [current_wave, total_waves]
 	elif is_clearing_remaining:
 		wave_text = "Wave %d/%d [CLEAR: %d]" % [current_wave, total_waves, remaining_count]
 	elif is_pre_wave:
