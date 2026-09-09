@@ -60,6 +60,7 @@ const CHAIN_MAX_DEPTH := 8  # Safety limit
 
 # ─── DAMAGE ──────────────────────────────────────────────
 const DAMAGE_WALL_SLAM := 1
+const DAMAGE_SPIKE_SLAM := 2  # F019: Sát thương đập tường gai (2x)
 const DAMAGE_DOMINO := 1  # Cả 2 entity nhận
 const DAMAGE_ALTAR_SEAL := 999  # Instant kill
 const DAMAGE_PIT_FALL := 999  # Instant kill, no shard drop
@@ -206,6 +207,45 @@ const SHARD_ALTAR_BONUS := 2  # Shards bonus khi altar seal (thay vì drop 1)
 const ALTAR_SIZE := 24  # px (zone)
 const ALTAR_POSITION := Vector2(240, 90)  # Giữa-trên playable area
 
+# ─── HAZARDS & SPIKE WALLS (F019) ────────────────────────
+const SPIKE_DEPTH := 6.0   # px — độ nhô của gai vào trong sân
+
+const ARENA_LAYOUTS: Array[Dictionary] = [
+	{
+		"wave": 1,
+		"spike_walls": [],
+	},
+	{
+		"wave": 2,
+		"spike_walls": [],
+	},
+	{
+		"wave": 3,
+		# Giới thiệu Spike Wall: 2 đoạn ngắn ở giữa thành trái & phải
+		"spike_walls": [
+			Rect2(30, 105, 6, 60),   # Thành trái (y: 105 -> 165)
+			Rect2(444, 105, 6, 60),  # Thành phải (y: 105 -> 165)
+		],
+	},
+	{
+		"wave": 4,
+		# 2 đoạn gai ở thành trên (2 bên Altar)
+		"spike_walls": [
+			Rect2(110, 30, 60, 6),  # Trên bên trái (x: 110 -> 170)
+			Rect2(310, 30, 60, 6),  # Trên bên phải (x: 310 -> 370)
+		],
+	},
+	{
+		"wave": 5,
+		# 3 đoạn gai phân bổ chiến lược (Trái, Phải, Đáy trung tâm)
+		"spike_walls": [
+			Rect2(30, 105, 6, 60),   # Thành trái
+			Rect2(444, 105, 6, 60),  # Thành phải
+			Rect2(210, 234, 60, 6),  # Thành đáy trung tâm (x: 210 -> 270)
+		],
+	},
+]
+
 # ─── COLORS (Placeholder) ───────────────────────────────
 const COLOR_BACKGROUND := Color(0.039, 0.055, 0.078)  # #0a0e14
 const COLOR_ARENA_FLOOR := Color(0.086, 0.110, 0.141)  # #161c24
@@ -224,6 +264,12 @@ const COLOR_BRUTE_DAMAGED := Color(0.95, 0.45, 0.45)  # Lighter red with crack (
 
 const COLOR_ALTAR := Color(0.659, 0.545, 0.980)  # #a78bfa
 const COLOR_ALTAR_FLASH := Color(0.8, 0.7, 1.0, 0.8)
+
+const COLOR_PILLAR := Color(0.18, 0.22, 0.28)  # Xám đá cổ
+const COLOR_PILLAR_BORDER := Color(0.98, 0.80, 0.15)  # Vàng rune phát sáng
+const COLOR_PILLAR_RUNE := Color(1.0, 0.92, 0.4, 0.8)  # Ký tự rune
+const COLOR_SPIKE_WALL := Color(0.94, 0.25, 0.25)  # Đỏ gai
+const COLOR_SPIKE_TIP := Color(1.0, 0.5, 0.3)  # Cam đầu gai
 
 const COLOR_SHARD := Color(0.980, 0.800, 0.082)  # #facc15
 const COLOR_PULSE_RING := Color(0.0, 0.898, 1.0, 0.9)  # Cyan, match player (F005)

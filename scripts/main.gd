@@ -171,6 +171,7 @@ func _start_run() -> void:
 	player.reset()
 	upgrade_manager.reset()
 	player.sync_upgrades(upgrade_manager)
+	arena.set_layout(1)  # F019: reset layout sạch về Wave 1
 	player.visible = true
 	hud.show_hud()
 	camera.clear()  # F001
@@ -341,6 +342,7 @@ func _start_wave(wave_num: int) -> void:
 	wave_phase = WavePhase.PRE_WAVE
 	phase_timer = Config.WAVE_PRE_DURATION
 	spawn_timer.stop()
+	arena.set_layout(current_wave)  # F019: áp dụng layout an toàn trong PRE_WAVE
 	hud.show_banner("⚔  WAVE %d: %s  ⚔" % [current_wave, str(wave_data.get("name", "")).to_upper()], Config.WAVE_BANNER_DURATION)
 
 
@@ -461,6 +463,7 @@ func _spawn_enemy(wave_data: Dictionary) -> void:
 
 	enemy.position = _get_spawn_position()
 	enemy.target = player
+	enemy.arena_ref = arena  # F019: reference cho va chạm hazard
 	enemy.died.connect(_on_enemy_died)
 	enemy.wall_slammed.connect(_on_wall_slam)
 	enemies_container.add_child(enemy)
@@ -549,9 +552,14 @@ func _on_pulse_for_shake(_position: Vector2, _radius: float, _force: float = 0.0
 	camera.request_shake(Config.SHAKE_PULSE)
 
 
-func _on_wall_slam(at_position: Vector2) -> void:
-	camera.request_shake(Config.SHAKE_WALL_SLAM)  # F001
-	vfx.spawn_dust(at_position)  # F004
+func _on_wall_slam(at_position: Vector2, is_spike: bool = false) -> void:
+	var shake_val: float = clampf(Config.SHAKE_WALL_SLAM * 1.5, 0.0, 0.35) if is_spike else Config.SHAKE_WALL_SLAM
+	camera.request_shake(shake_val)  # F001 + F019
+	if is_spike:
+		vfx.spawn_floating_text(at_position + Vector2(0, -10), "SPIKE!", Config.COLOR_SPIKE_WALL)
+		vfx.spawn_death_burst(at_position, Config.COLOR_SPIKE_WALL)
+	else:
+		vfx.spawn_dust(at_position)  # F004
 	sound_manager.play_wall_slam()  # F016
 
 

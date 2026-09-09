@@ -5,7 +5,7 @@ class_name EnemyBase
 extends Node2D
 
 signal died(enemy_position: Vector2, shard_amount: int, is_altar_seal: bool, enemy_color: Color)
-signal wall_slammed(at_position: Vector2)
+signal wall_slammed(at_position: Vector2, is_spike: bool)
 
 enum EnemyState { NORMAL, PUSHED, DYING, SEALING }
 
@@ -24,9 +24,11 @@ var velocity: Vector2 = Vector2.ZERO
 var pushed_timer: float = 0.0
 var dying_timer: float = 0.0
 var sealing_timer: float = 0.0  # F015: Altar seal
+var impact_processed: bool = false  # F019: Chống multi-hit per push episode
 
 # ─── References ──────────────────────────────────────────
 var target: Node2D = null  # Player reference
+var arena_ref: Node2D = null  # F019: Arena reference for hazard detection
 
 
 func _ready() -> void:
@@ -127,6 +129,7 @@ func receive_push(push_velocity: Vector2) -> void:
 	velocity = push_velocity / push_weight
 	enemy_state = EnemyState.PUSHED
 	pushed_timer = 0.0
+	impact_processed = false  # Reset cho đợt push mới
 
 
 # ═══════════════════════════════════════════════════════════
@@ -154,31 +157,60 @@ func _die(is_altar_seal: bool = false) -> void:
 # ═══════════════════════════════════════════════════════════
 
 func _check_wall_collision() -> void:
+	# F019: Chỉ kiểm tra khi đang PUSHED và chưa xử lý va chạm cho đợt đẩy này
+	if enemy_state != EnemyState.PUSHED or impact_processed:
+		return
+
 	var half := enemy_size / 2.0
 	var hit_wall := false
-	
+	var hit_points: Array[Vector2] = []
+
+	# 1. Kiểm tra biên ngang (trái / phải)
 	if velocity.x < 0 and position.x - half <= Config.ARENA_ORIGIN.x:
 		position.x = Config.ARENA_ORIGIN.x + half
 		velocity.x = 0
 		hit_wall = true
+		hit_points.append(Vector2(Config.ARENA_ORIGIN.x, position.y))
 	elif velocity.x > 0 and position.x + half >= Config.ARENA_END.x:
 		position.x = Config.ARENA_END.x - half
 		velocity.x = 0
 		hit_wall = true
-	
+		hit_points.append(Vector2(Config.ARENA_END.x, position.y))
+
+	# 2. Kiểm tra biên dọc (trên / dưới)
 	if velocity.y < 0 and position.y - half <= Config.ARENA_ORIGIN.y:
 		position.y = Config.ARENA_ORIGIN.y + half
 		velocity.y = 0
 		hit_wall = true
+		hit_points.append(Vector2(position.x, Config.ARENA_ORIGIN.y))
 	elif velocity.y > 0 and position.y + half >= Config.ARENA_END.y:
 		position.y = Config.ARENA_END.y - half
 		velocity.y = 0
 		hit_wall = true
-	
+		hit_points.append(Vector2(position.x, Config.ARENA_END.y))
+
+	# 3. Single Impact Resolution — Chỉ giải quyết đúng 1 lần va chạm
 	if hit_wall:
-		take_damage(Config.DAMAGE_WALL_SLAM)
-		wall_slammed.emit(position)
+		impact_processed = true
 		velocity = Vector2.ZERO
+
+		# Lấy arena reference nếu chưa có
+		if arena_ref == null and get_tree() != null and get_tree().current_scene != null:
+			arena_ref = get_tree().current_scene.get_node_or_null("Arena")
+
+		var is_spike := false
+		var final_hit_pos := hit_points[0] if not hit_points.is_empty() else position
+
+		if arena_ref != null and arena_ref.has_method("is_spike_contact"):
+			for pt in hit_points:
+				if arena_ref.is_spike_contact(pt):
+					is_spike = true
+					final_hit_pos = pt
+					break
+
+		var damage_amount := Config.DAMAGE_SPIKE_SLAM if is_spike else Config.DAMAGE_WALL_SLAM
+		take_damage(damage_amount)
+		wall_slammed.emit(final_hit_pos, is_spike)
 
 
 # ═══════════════════════════════════════════════════════════

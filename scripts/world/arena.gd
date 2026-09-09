@@ -5,9 +5,35 @@ extends Node2D
 
 var altar_flash_timer: float = 0.0
 
+# ─── F019: Spike Wall Layouts ────────────────────────────
+var active_spikes: Array[Rect2] = []
+
 
 func _ready() -> void:
-	pass
+	set_layout(1)
+
+
+func set_layout(wave_num: int) -> void:
+	active_spikes.clear()
+	var idx := clampi(wave_num - 1, 0, Config.ARENA_LAYOUTS.size() - 1)
+	var layout_data: Dictionary = Config.ARENA_LAYOUTS[idx]
+	var spikes: Array = layout_data.get("spike_walls", [])
+	for s in spikes:
+		if s is Rect2:
+			active_spikes.append(s)
+	queue_redraw()
+
+
+func get_active_spikes() -> Array[Rect2]:
+	return active_spikes
+
+
+## Kiểm tra điểm va chạm biên có nằm trong đoạn tường gai nào không
+func is_spike_contact(contact_pos: Vector2, tolerance: float = 6.0) -> bool:
+	for spike_rect in active_spikes:
+		if spike_rect.grow(tolerance).has_point(contact_pos):
+			return true
+	return false
 
 
 func _process(delta: float) -> void:
@@ -69,3 +95,38 @@ func _draw() -> void:
 							inner_size, inner_size)
 	var inner_color := Color.WHITE if altar_flash_timer > 0.0 else Color(Config.COLOR_ALTAR.r, Config.COLOR_ALTAR.g, Config.COLOR_ALTAR.b, 0.4)
 	draw_rect(inner_rect, inner_color)
+
+	# 5. F019: Spike Walls
+	for spike_rect in active_spikes:
+		draw_rect(spike_rect, Config.COLOR_SPIKE_WALL)
+
+		var is_vertical := spike_rect.size.x <= 10.0
+		var tooth_len := 10.0
+		var tooth_depth := Config.SPIKE_DEPTH
+
+		if is_vertical:
+			var is_left := spike_rect.position.x < Config.VIEWPORT_W / 2.0
+			var x_base := spike_rect.position.x + (spike_rect.size.x if is_left else 0.0)
+			var dir_x := 1.0 if is_left else -1.0
+			var y_curr := spike_rect.position.y
+			var y_end := spike_rect.position.y + spike_rect.size.y
+
+			while y_curr + tooth_len <= y_end + 0.1:
+				var p1 := Vector2(x_base, y_curr)
+				var p2 := Vector2(x_base + dir_x * tooth_depth, y_curr + tooth_len * 0.5)
+				var p3 := Vector2(x_base, y_curr + tooth_len)
+				draw_colored_polygon(PackedVector2Array([p1, p2, p3]), Config.COLOR_SPIKE_TIP)
+				y_curr += tooth_len
+		else:
+			var is_top := spike_rect.position.y < Config.VIEWPORT_H / 2.0
+			var y_base := spike_rect.position.y + (spike_rect.size.y if is_top else 0.0)
+			var dir_y := 1.0 if is_top else -1.0
+			var x_curr := spike_rect.position.x
+			var x_end := spike_rect.position.x + spike_rect.size.x
+
+			while x_curr + tooth_len <= x_end + 0.1:
+				var p1 := Vector2(x_curr, y_base)
+				var p2 := Vector2(x_curr + tooth_len * 0.5, y_base + dir_y * tooth_depth)
+				var p3 := Vector2(x_curr + tooth_len, y_base)
+				draw_colored_polygon(PackedVector2Array([p1, p2, p3]), Config.COLOR_SPIKE_TIP)
+				x_curr += tooth_len
