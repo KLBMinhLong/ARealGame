@@ -109,7 +109,7 @@ const SPEEDER_SHARD_DROP := 1
 const BRUTE_HP := 2
 const BRUTE_SPEED := 20.0  # px/s (chậm hơn slime)
 const BRUTE_SIZE := 14  # px (hình vuông to)
-const BRUTE_PUSH_WEIGHT := 1.8  # nặng → bay ít hơn
+const BRUTE_PUSH_WEIGHT := 1.35  # F019 tuning: 1.8 -> 1.35 giúp quái bay ~55px chạm tường
 const BRUTE_SHARD_DROP := 2
 
 # ─── SPAWN ───────────────────────────────────────────────
@@ -208,7 +208,8 @@ const ALTAR_SIZE := 24  # px (zone)
 const ALTAR_POSITION := Vector2(240, 90)  # Giữa-trên playable area
 
 # ─── HAZARDS & SPIKE WALLS (F019) ────────────────────────
-const SPIKE_DEPTH := 6.0   # px — độ nhô của gai vào trong sân
+const SPIKE_DEPTH := 8.0   # px — độ nhô của gai vào trong sân
+const SHARD_SPIKE_BONUS := 1  # F019 tuning: Thưởng thêm +1 Shard khi quái bị đập vào Tường Gai
 
 const ARENA_LAYOUTS: Array[Dictionary] = [
 	{
@@ -221,27 +222,27 @@ const ARENA_LAYOUTS: Array[Dictionary] = [
 	},
 	{
 		"wave": 3,
-		# Giới thiệu Spike Wall: 2 đoạn ngắn ở giữa thành trái & phải
+		# F019 tuning: Mở rộng đoạn gai lên 120px (~60% thành bên) để dễ căn góc
 		"spike_walls": [
-			Rect2(30, 105, 6, 60),   # Thành trái (y: 105 -> 165)
-			Rect2(444, 105, 6, 60),  # Thành phải (y: 105 -> 165)
+			Rect2(30, 75, 8, 120),   # Thành trái (y: 75 -> 195)
+			Rect2(442, 75, 8, 120),  # Thành phải (y: 75 -> 195)
 		],
 	},
 	{
 		"wave": 4,
-		# 2 đoạn gai ở thành trên (2 bên Altar)
+		# 2 đoạn gai 100px ở thành trên (2 bên Altar)
 		"spike_walls": [
-			Rect2(110, 30, 60, 6),  # Trên bên trái (x: 110 -> 170)
-			Rect2(310, 30, 60, 6),  # Trên bên phải (x: 310 -> 370)
+			Rect2(80, 30, 100, 8),   # Trên bên trái (x: 80 -> 180)
+			Rect2(300, 30, 100, 8),  # Trên bên phải (x: 300 -> 400)
 		],
 	},
 	{
 		"wave": 5,
-		# 3 đoạn gai phân bổ chiến lược (Trái, Phải, Đáy trung tâm)
+		# 3 đoạn gai phân bổ chiến lược (Trái 120px, Phải 120px, Đáy 100px)
 		"spike_walls": [
-			Rect2(30, 105, 6, 60),   # Thành trái
-			Rect2(444, 105, 6, 60),  # Thành phải
-			Rect2(210, 234, 60, 6),  # Thành đáy trung tâm (x: 210 -> 270)
+			Rect2(30, 75, 8, 120),   # Thành trái
+			Rect2(442, 75, 8, 120),  # Thành phải
+			Rect2(190, 232, 100, 8), # Thành đáy trung tâm (x: 190 -> 290)
 		],
 	},
 ]

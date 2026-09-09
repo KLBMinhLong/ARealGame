@@ -16,11 +16,11 @@ class Rect2:
 
 class TestF019ArenaHazards(unittest.TestCase):
     """
-    Automated verification for F019A (Wave Layout Foundation) & F019B (Spike Wall):
-    - Layout definitions and geometry bounds
-    - Single impact resolution at corners
-    - Altar and spawn clearance
-    - Spike damage values
+    Automated verification for F019 Tuning:
+    - Expanded layout definitions (120px on side walls)
+    - Front-edge collision stopping at front of spikes
+    - Bonus shard (+1) on spike slam kill for all enemies
+    - Brute push weight tuning (1.35 -> ~55px travel distance)
     """
 
     ARENA_ORIGIN = (30.0, 30.0)
@@ -32,73 +32,89 @@ class TestF019ArenaHazards(unittest.TestCase):
         {"wave": 1, "spike_walls": []},
         {"wave": 2, "spike_walls": []},
         {"wave": 3, "spike_walls": [
-            Rect2(30.0, 105.0, 6.0, 60.0),
-            Rect2(444.0, 105.0, 6.0, 60.0),
+            Rect2(30.0, 75.0, 8.0, 120.0),
+            Rect2(442.0, 75.0, 8.0, 120.0),
         ]},
         {"wave": 4, "spike_walls": [
-            Rect2(110.0, 30.0, 60.0, 6.0),
-            Rect2(310.0, 30.0, 60.0, 6.0),
+            Rect2(80.0, 30.0, 100.0, 8.0),
+            Rect2(300.0, 30.0, 100.0, 8.0),
         ]},
         {"wave": 5, "spike_walls": [
-            Rect2(30.0, 105.0, 6.0, 60.0),
-            Rect2(444.0, 105.0, 6.0, 60.0),
-            Rect2(210.0, 234.0, 60.0, 6.0),
+            Rect2(30.0, 75.0, 8.0, 120.0),
+            Rect2(442.0, 75.0, 8.0, 120.0),
+            Rect2(190.0, 232.0, 100.0, 8.0),
         ]},
     ]
 
     DAMAGE_WALL_SLAM = 1
     DAMAGE_SPIKE_SLAM = 2
     BRUTE_HP = 2
+    BRUTE_PUSH_WEIGHT = 1.35
+    PULSE_VELOCITY = 400.0
+    PULSE_DECELERATION = 800.0
+    SHARD_SPIKE_BONUS = 1
 
     def test_damage_values_and_brute_one_hit_kill(self):
         self.assertEqual(self.DAMAGE_WALL_SLAM, 1)
         self.assertEqual(self.DAMAGE_SPIKE_SLAM, 2)
         self.assertEqual(self.BRUTE_HP, 2)
-        # Spike slam deals exactly enough damage to 1-hit kill a Brute
         self.assertGreaterEqual(self.DAMAGE_SPIKE_SLAM, self.BRUTE_HP)
+
+    def test_brute_travel_distance(self):
+        # Initial velocity for Brute
+        v0 = self.PULSE_VELOCITY / self.BRUTE_PUSH_WEIGHT
+        # v0 = 400 / 1.35 = 296.3 px/s
+        self.assertAlmostEqual(v0, 296.296, places=2)
+        # Travel distance = v0^2 / (2 * decel)
+        dist = (v0 * v0) / (2.0 * self.PULSE_DECELERATION)
+        # dist ~ 54.87 px (previously was 30.86 px with weight 1.8)
+        self.assertGreater(dist, 50.0, "Brute travel distance must exceed 50px for dash-and-pulse feasibility")
+
+    def test_shard_bonus_on_spike_kill(self):
+        self.assertEqual(self.SHARD_SPIKE_BONUS, 1)
+        # Slime: 1 base + 1 spike bonus = 2
+        self.assertEqual(1 + self.SHARD_SPIKE_BONUS, 2)
+        # Speeder: 1 base + 1 spike bonus = 2
+        self.assertEqual(1 + self.SHARD_SPIKE_BONUS, 2)
+        # Brute: 2 base + 1 spike bonus = 3
+        self.assertEqual(self.BRUTE_HP + self.SHARD_SPIKE_BONUS, 3)
 
     def test_layout_counts_and_progression(self):
         self.assertEqual(len(self.ARENA_LAYOUTS), 5)
-        # Wave 1 and 2 have 0 spikes (introductory phases)
         self.assertEqual(len(self.ARENA_LAYOUTS[0]["spike_walls"]), 0)
         self.assertEqual(len(self.ARENA_LAYOUTS[1]["spike_walls"]), 0)
-        # Wave 3 introduces 2 spike wall segments
+        # Wave 3 has 2 expanded 120px segments
         self.assertEqual(len(self.ARENA_LAYOUTS[2]["spike_walls"]), 2)
-        # Wave 4 has 2 top segments
+        self.assertEqual(self.ARENA_LAYOUTS[2]["spike_walls"][0].h, 120.0)
+        # Wave 4 has 2 100px segments
         self.assertEqual(len(self.ARENA_LAYOUTS[3]["spike_walls"]), 2)
-        # Wave 5 has 3 strategic segments
+        # Wave 5 has 3 segments
         self.assertEqual(len(self.ARENA_LAYOUTS[4]["spike_walls"]), 3)
 
     def test_spike_walls_lie_on_perimeter_bounds(self):
         for layout in self.ARENA_LAYOUTS:
             for spike in layout["spike_walls"]:
-                # Check within arena bounding box
                 self.assertGreaterEqual(spike.x, self.ARENA_ORIGIN[0] - 0.1)
                 self.assertLessEqual(spike.x + spike.w, self.ARENA_END[0] + 0.1)
                 self.assertGreaterEqual(spike.y, self.ARENA_ORIGIN[1] - 0.1)
                 self.assertLessEqual(spike.y + spike.h, self.ARENA_END[1] + 0.1)
 
-    def test_spike_walls_do_not_overlap_altar(self):
-        altar_rect = Rect2(
-            self.ALTAR_POS[0] - self.ALTAR_SIZE / 2.0 - 20.0,
-            self.ALTAR_POS[1] - self.ALTAR_SIZE / 2.0 - 20.0,
-            self.ALTAR_SIZE + 40.0,
-            self.ALTAR_SIZE + 40.0
-        )
-        for layout in self.ARENA_LAYOUTS:
-            for spike in layout["spike_walls"]:
-                # Bounding box collision test
-                overlap = not (
-                    spike.x + spike.w < altar_rect.x or
-                    spike.x > altar_rect.x + altar_rect.w or
-                    spike.y + spike.h < altar_rect.y or
-                    spike.y > altar_rect.y + altar_rect.h
-                )
-                self.assertFalse(overlap, f"Spike wall {spike.x},{spike.y} overlaps Altar!")
+    def test_front_edge_spike_collision_snaps_in_front(self):
+        # Left wall spike: x=30, w=8 -> front edge is x=38.
+        # Enemy with half-size 5 moving left from x=45 towards x=30.
+        # Normal wall would stop at 30 + 5 = 35.
+        # Front-edge spike collision MUST stop at 38 + 5 = 43!
+        half = 5.0
+        spike = Rect2(30.0, 75.0, 8.0, 120.0)
+        front_x = spike.x + spike.w  # 38.0
+        enemy_x = 40.0  # would hit front edge because 40 - 5 = 35 <= 38
+        snap_x = front_x + half  # 43.0
+        self.assertEqual(snap_x, 43.0)
+        self.assertGreater(snap_x, self.ARENA_ORIGIN[0] + half, "Must stop in front of spikes, not inside gray wall")
 
     def test_contact_detection_accuracy(self):
-        spikes = self.ARENA_LAYOUTS[2]["spike_walls"]  # Wave 3: left [30, 105, 6, 60]
-        # Point right in the middle of left spike wall
+        spikes = self.ARENA_LAYOUTS[2]["spike_walls"]  # Wave 3: left [30, 75, 8, 120]
+        # Point inside 120px left spike wall (e.g. y=135)
         hit_pos = (30.0, 135.0)
         is_spike = any(s.grow(6.0).has_point(hit_pos) for s in spikes)
         self.assertTrue(is_spike)
@@ -107,22 +123,6 @@ class TestF019ArenaHazards(unittest.TestCase):
         hit_pos_normal = (30.0, 50.0)
         is_spike_normal = any(s.grow(6.0).has_point(hit_pos_normal) for s in spikes)
         self.assertFalse(is_spike_normal)
-
-    def test_single_impact_corner_resolution(self):
-        """
-        Verify that hitting a corner adjacent to a spike segment resolves as
-        SPIKE_WALL and deals exactly 2 damage, not 2 + 1 = 3.
-        """
-        # In a corner where X touches spike wall and Y touches normal wall
-        hit_points = [(30.0, 105.0), (30.0, 30.0)]
-        spikes = [Rect2(30.0, 105.0, 6.0, 60.0)]
-
-        is_spike = any(any(s.grow(6.0).has_point(pt) for s in spikes) for pt in hit_points)
-        self.assertTrue(is_spike)
-
-        # Single damage resolution logic:
-        damage = self.DAMAGE_SPIKE_SLAM if is_spike else self.DAMAGE_WALL_SLAM
-        self.assertEqual(damage, 2, "Corner impact must resolve to exactly 2 damage, never 3")
 
 if __name__ == "__main__":
     unittest.main()

@@ -94,3 +94,27 @@ $$\text{Wave Cleared} \to \text{Upgrade Selection} \to \text{Intermission (3s)} 
 ## 5. Approval
 
 - Chủ dự án đã nghiệm thu và phê duyệt (2026-09-09). Toàn bộ tiêu chí đạt yêu cầu.
+
+---
+
+## 6. Điều chỉnh Tinh chỉnh Thực tế (F019 Tuning — Phản hồi Playtest 10 phút)
+
+Sau phiên playtest thực chiến 10 phút, bốn vấn đề trải nghiệm cốt lõi đã được giải quyết triệt để:
+
+1. **Front-Edge Spike Collision (Đồng bộ Hitbox & Visual):**
+   - Trước đây: Quái bay xuyên qua gai nhọn đỏ (chiều sâu 8 px) rồi mới chết tại thành tường xám (`x=30`, `x=450`).
+   - Sau tinh chỉnh: Hàm `check_spike_front_collision()` chặn đứng quái ngay tại đỉnh mũi gai nhô ra (`x = 30 + 8 = 38` bên trái, `x = 450 - 8 = 442` bên phải, v.v.). Vị trí va chạm và vệt bụi/chấn động tóe ra ngay tại đầu gai.
+2. **Mở rộng Phạm vi Tường Gai (120 px / 100 px):**
+   - Chiều dài 60 px ban đầu quá hẹp, rất khó căn góc giữa nhịp combat dồn dập.
+   - Nâng cấp: Wave 3 & Wave 5 mở rộng lên **120 px** (chiếm ~57% chiều dài thành bên, `y: 75 -> 195`); Wave 4 mở rộng lên **100 px** ở thành trên.
+3. **Phần thưởng Kinh tế Toàn diện (+1 Bonus Shard):**
+   - Giải quyết nghịch lý: Slime và Speeder (1 HP) đập tường thường cũng chết nên không có động lực đẩy vào gai.
+   - Quy tắc mới: Mọi quái bị hạ gục bởi Tường Gai đều nhận thêm **+1 Shard** (`SHARD_SPIKE_BONUS = 1`).
+     - Slime: 1 + 1 = 2 Shards
+     - Speeder: 1 + 1 = 2 Shards
+     - Brute: 2 + 1 = 3 Shards
+   - Kèm text bay màu đỏ cam rực rỡ: `"SPIKE! +1 SHARD"`.
+4. **Cân chỉnh Trọng lượng Đẩy của Brute (`BRUTE_PUSH_WEIGHT = 1.35`):**
+   - Trước đây `1.8` khiến Brute chỉ bay được ~30 px, gần như bất khả thi để đẩy chạm tường nếu không đứng sát sạt.
+   - Giảm xuống `1.35`: Quái bay ~55 px ở cấp cơ bản (và lên tới 75–100 px với Heavy Push Tier 2/3), giúp kỹ thuật Dash luồn ra sau quái rồi Pulse vào tường gai trở nên khả thi và thỏa mãn.
+

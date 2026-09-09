@@ -556,7 +556,7 @@ func _on_wall_slam(at_position: Vector2, is_spike: bool = false) -> void:
 	var shake_val: float = clampf(Config.SHAKE_WALL_SLAM * 1.5, 0.0, 0.35) if is_spike else Config.SHAKE_WALL_SLAM
 	camera.request_shake(shake_val)  # F001 + F019
 	if is_spike:
-		vfx.spawn_floating_text(at_position + Vector2(0, -10), "SPIKE!", Config.COLOR_SPIKE_WALL)
+		vfx.spawn_floating_text(at_position + Vector2(0, -10), "SPIKE! +1 SHARD", Config.COLOR_SPIKE_WALL)
 		vfx.spawn_death_burst(at_position, Config.COLOR_SPIKE_WALL)
 	else:
 		vfx.spawn_dust(at_position)  # F004

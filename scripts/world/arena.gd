@@ -36,6 +36,56 @@ func is_spike_contact(contact_pos: Vector2, tolerance: float = 6.0) -> bool:
 	return false
 
 
+## F019: Kiểm tra va chạm với mặt trước của Tường Gai (Front-Edge Collision)
+## Quái chạm vào đỉnh gai nhô ra sẽ dừng ngay lập tức tại mặt trước gai, không lọt vào tường xám.
+func check_spike_front_collision(pos: Vector2, half: float, vel: Vector2) -> Dictionary:
+	for spike in active_spikes:
+		var is_vertical := spike.size.x <= 12.0
+		if is_vertical:
+			var is_left := spike.position.x < Config.VIEWPORT_W / 2.0
+			var y_min := spike.position.y - half
+			var y_max := spike.position.y + spike.size.y + half
+			if pos.y >= y_min and pos.y <= y_max:
+				if is_left and vel.x < 0:
+					var front_x := spike.position.x + spike.size.x
+					if pos.x - half <= front_x:
+						return {
+							"hit": true,
+							"snap_pos": Vector2(front_x + half, pos.y),
+							"hit_pos": Vector2(front_x, pos.y),
+						}
+				elif not is_left and vel.x > 0:
+					var front_x := spike.position.x
+					if pos.x + half >= front_x:
+						return {
+							"hit": true,
+							"snap_pos": Vector2(front_x - half, pos.y),
+							"hit_pos": Vector2(front_x, pos.y),
+						}
+		else:
+			var is_top := spike.position.y < Config.VIEWPORT_H / 2.0
+			var x_min := spike.position.x - half
+			var x_max := spike.position.x + spike.size.x + half
+			if pos.x >= x_min and pos.x <= x_max:
+				if is_top and vel.y < 0:
+					var front_y := spike.position.y + spike.size.y
+					if pos.y - half <= front_y:
+						return {
+							"hit": true,
+							"snap_pos": Vector2(pos.x, front_y + half),
+							"hit_pos": Vector2(pos.x, front_y),
+						}
+				elif not is_top and vel.y > 0:
+					var front_y := spike.position.y
+					if pos.y + half >= front_y:
+						return {
+							"hit": true,
+							"snap_pos": Vector2(pos.x, front_y - half),
+							"hit_pos": Vector2(pos.x, front_y),
+						}
+	return {"hit": false}
+
+
 func _process(delta: float) -> void:
 	if altar_flash_timer > 0.0:
 		altar_flash_timer = maxf(altar_flash_timer - delta, 0.0)
