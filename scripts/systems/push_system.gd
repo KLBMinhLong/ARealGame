@@ -19,6 +19,7 @@ var player: Node2D
 var chain_count: int = 0
 var chain_timer: float = 0.0
 var chain_active: bool = false
+var _domino_pairs: Dictionary = {}  # Chống domino lặp giữa cùng cặp enemy
 
 
 func setup(p_player: Node2D, p_enemies: Node2D) -> void:
@@ -52,6 +53,7 @@ func _on_pulse_fired(pulse_position: Vector2, radius: float, force: float = Conf
 	
 	# Start chain tracking
 	_start_chain()
+	_domino_pairs.clear()  # Reset pairs cho đợt push mới
 	
 	for enemy: EnemyBase in enemies:
 		var direction := (enemy.position - pulse_position).normalized()
@@ -84,7 +86,9 @@ func _check_domino_collisions() -> void:
 	var enemies: Array = []
 	for child in enemies_container.get_children():
 		if child is EnemyBase:
-			enemies.append(child)
+			# Quái đang DYING không tham gia domino nữa
+			if child.enemy_state != EnemyBase.EnemyState.DYING and child.enemy_state != EnemyBase.EnemyState.SEALING:
+				enemies.append(child)
 	
 	for i in range(enemies.size()):
 		var a: EnemyBase = enemies[i]
@@ -108,32 +112,54 @@ func _check_domino_collisions() -> void:
 func _resolve_domino(a: EnemyBase, b: EnemyBase) -> void:
 	if chain_count >= Config.CHAIN_MAX_DEPTH:
 		return
-	
+
+	# Chống domino lặp: cùng cặp chỉ va 1 lần per push episode
+	var pair_key := _make_pair_key(a, b)
+	if _domino_pairs.has(pair_key):
+		# Chỉ tách vị trí, không damage/chain lại
+		var sep_dir := (b.position - a.position).normalized()
+		var sep_overlap := (a.enemy_size + b.enemy_size) / 2.0 - a.position.distance_to(b.position)
+		if sep_overlap > 0:
+			b.position += sep_dir * (sep_overlap + 1)
+		return
+	_domino_pairs[pair_key] = true
+
 	# Direction: A → B
 	var direction := (b.position - a.position).normalized()
-	
+
 	# Transfer velocity
 	var transfer_speed := a.velocity.length() * Config.PUSHED_FORCE_TRANSFER
 	var transfer_vel := direction * transfer_speed
-	
+
 	# Both take domino damage
 	a.take_damage(Config.DAMAGE_DOMINO)
 	b.take_damage(Config.DAMAGE_DOMINO)
-	
-	# B receives push (becomes PUSHED)
-	if b.enemy_state != EnemyBase.EnemyState.DYING:
+
+	# B receives push (becomes PUSHED) — chỉ khi B còn sống
+	if b.enemy_state != EnemyBase.EnemyState.DYING and b.enemy_state != EnemyBase.EnemyState.SEALING:
 		b.receive_push(transfer_vel)
-	
+
 	# Separate to avoid repeated collision
 	var overlap := (a.enemy_size + b.enemy_size) / 2.0 - a.position.distance_to(b.position)
 	if overlap > 0:
 		b.position += direction * (overlap + 1)
-	
+
 	# Update chain
 	_increment_chain()
 	# F003: visual event tại trung điểm va chạm
 	var midpoint := (a.position + b.position) / 2.0
 	chain_hit_visual.emit(midpoint, chain_count)
+
+
+func _make_pair_key(a: EnemyBase, b: EnemyBase) -> int:
+	var id_a := a.get_instance_id()
+	var id_b := b.get_instance_id()
+	# Sắp xếp để (a,b) và (b,a) cùng key
+	if id_a > id_b:
+		var tmp := id_a
+		id_a = id_b
+		id_b = tmp
+	return id_a * 100000 + id_b
 
 
 # ═══════════════════════════════════════════════════════════
@@ -157,3 +183,4 @@ func _end_chain() -> void:
 	chain_active = false
 	chain_count = 0
 	chain_timer = 0.0
+	_domino_pairs.clear()

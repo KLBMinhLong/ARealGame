@@ -66,6 +66,14 @@ var current_tiers: Dictionary = {}
 # RNG riêng biệt cho việc rút thẻ, không làm lệch seed sinh quái của Wave
 var upgrade_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
+# F021.4/F021.5: Permanent bonuses được inject từ main.gd khi start run
+var perm_hp_bonus: int = 0          # Từ MetaProgression.get_perm_hp_bonus()
+var perm_force_bonus: float = 0.0   # Từ MetaProgression.get_perm_force_bonus()
+var perm_speed_bonus: float = 0.0   # Từ MetaProgression.get_perm_speed_bonus()
+var perm_cd_reduction: float = 0.0  # Từ MetaProgression.get_perm_cd_reduction()
+var perm_magnet_bonus: float = 0.0  # Từ MetaProgression.get_perm_magnet_bonus()
+var rerolls_remaining: int = 0      # F021.6: 1 lần reroll/run nếu có Rune Foresight
+
 
 func _init() -> void:
 	upgrade_rng.randomize()
@@ -76,6 +84,37 @@ func reset() -> void:
 	current_tiers.clear()
 	for upg in UPGRADE_POOL:
 		current_tiers[upg["id"]] = 0
+	rerolls_remaining = 0
+	# F021.5: perm bonuses KHÔNG reset ở đây — chúng được set bởi inject_perm_bonuses()
+
+
+## F021.5 & F021.6: Inject tất cả permanent bonuses từ MetaProgression.
+## Gọi 1 lần khi start run, trước sync_upgrades đầu tiên.
+func inject_perm_bonuses(
+		hp_bonus: int = 0,
+		force_bonus: float = 0.0,
+		speed_bonus: float = 0.0,
+		cd_reduction: float = 0.0,
+		magnet_bonus: float = 0.0,
+		has_reroll: bool = false,
+) -> void:
+	perm_hp_bonus = hp_bonus
+	perm_force_bonus = force_bonus
+	perm_speed_bonus = speed_bonus
+	perm_cd_reduction = cd_reduction
+	perm_magnet_bonus = magnet_bonus
+	rerolls_remaining = 1 if has_reroll else 0
+
+
+func can_reroll() -> bool:
+	return rerolls_remaining > 0
+
+
+func use_reroll() -> bool:
+	if rerolls_remaining > 0:
+		rerolls_remaining -= 1
+		return true
+	return false
 
 
 func get_tier(upgrade_id: String) -> int:
@@ -88,32 +127,41 @@ func get_tier(upgrade_id: String) -> int:
 
 func get_effective_pulse_force() -> float:
 	var tier := get_tier("UPG_FORCE")
-	return Config.PULSE_VELOCITY * (1.0 + 0.25 * tier)
+	var in_run_bonus: float = 0.25 * tier
+	# F021.5: True-additive = base * (1 + perm + in_run)
+	return Config.PULSE_VELOCITY * (1.0 + perm_force_bonus + in_run_bonus)
 
 
 func get_effective_pulse_radius() -> float:
 	var tier := get_tier("UPG_RADIUS")
-	return Config.PULSE_RADIUS * (1.0 + 0.20 * tier)
+	return Config.PULSE_RADIUS * (1.0 + 0.20 * tier)  # Radius không có perm upgrade
 
 
 func get_effective_pulse_cooldown() -> float:
 	var tier := get_tier("UPG_CD")
-	return maxf(1.5, Config.PULSE_COOLDOWN - 0.4 * tier)
+	var in_run_reduction: float = 0.4 * tier
+	# F021.5: True-additive subtractive = base - perm - in_run (có floor)
+	return maxf(1.5, Config.PULSE_COOLDOWN - perm_cd_reduction - in_run_reduction)
 
 
 func get_effective_player_speed() -> float:
 	var tier := get_tier("UPG_SPEED")
-	return Config.PLAYER_SPEED * (1.0 + 0.15 * tier)
+	var in_run_bonus: float = 0.15 * tier
+	# F021.5: True-additive = base * (1 + perm + in_run)
+	return Config.PLAYER_SPEED * (1.0 + perm_speed_bonus + in_run_bonus)
 
 
 func get_effective_magnet_radius() -> float:
 	var tier := get_tier("UPG_MAGNET")
-	return Config.SHARD_MAGNET_RADIUS * (1.0 + 0.50 * tier)
+	var in_run_bonus: float = 0.50 * tier
+	# F021.4: True-additive = base * (1 + perm + in_run)
+	return Config.SHARD_MAGNET_RADIUS * (1.0 + perm_magnet_bonus + in_run_bonus)
 
 
 func get_effective_max_hp() -> int:
 	var tier := get_tier("UPG_HP")
-	return Config.PLAYER_MAX_HP + tier
+	# F021.5: True-additive = base + perm + in_run
+	return Config.PLAYER_MAX_HP + perm_hp_bonus + tier
 
 
 # ═══════════════════════════════════════════════════════════
@@ -121,7 +169,8 @@ func get_effective_max_hp() -> int:
 # ═══════════════════════════════════════════════════════════
 
 ## Rút ngẫu nhiên count thẻ chưa đạt max tier, không trùng lặp, dùng upgrade_rng.
-func draw_cards(count: int = 3) -> Array[Dictionary]:
+## Nếu exclude_ids được truyền, ưu tiên loại bỏ các thẻ bị exclude (nếu pool còn đủ count thẻ).
+func draw_cards(count: int = 3, exclude_ids: Array = []) -> Array[Dictionary]:
 	var available: Array[Dictionary] = []
 	for upg in UPGRADE_POOL:
 		var upg_id: String = upg["id"]
@@ -132,6 +181,15 @@ func draw_cards(count: int = 3) -> Array[Dictionary]:
 
 	if available.is_empty():
 		return []
+
+	# Nếu có exclude_ids và sau khi lọc vẫn còn ít nhất count thẻ, loại bỏ các thẻ bị exclude
+	if not exclude_ids.is_empty():
+		var filtered: Array[Dictionary] = []
+		for card in available:
+			if not exclude_ids.has(card["id"]):
+				filtered.append(card)
+		if filtered.size() >= count:
+			available = filtered
 
 	# Fisher-Yates shuffle bằng upgrade_rng riêng biệt
 	var n := available.size()

@@ -25,6 +25,8 @@ var pushed_timer: float = 0.0
 var dying_timer: float = 0.0
 var sealing_timer: float = 0.0  # F015: Altar seal
 var impact_processed: bool = false  # F019: Chống multi-hit per push episode
+var can_be_altar_sealed: bool = true  # F020: Boss hoặc quái đặc biệt có thể miễn nhiễm Altar seal
+
 
 # ─── References ──────────────────────────────────────────
 var target: Node2D = null  # Player reference
@@ -241,8 +243,11 @@ func _process_sealing(delta: float) -> void:
 
 
 func _check_altar_collision() -> void:
+	if not can_be_altar_sealed:
+		return
 	if enemy_state == EnemyState.SEALING or enemy_state == EnemyState.DYING:
 		return
+
 
 	var altar_pos := Config.ALTAR_POSITION
 	var altar_half := Config.ALTAR_SIZE / 2.0
@@ -271,7 +276,7 @@ func _clamp_to_arena() -> void:
 # ═══════════════════════════════════════════════════════════
 
 func is_pushed() -> bool:
-	return enemy_state == EnemyState.PUSHED or enemy_state == EnemyState.DYING
+	return enemy_state == EnemyState.PUSHED
 
 
 func get_push_velocity() -> Vector2:

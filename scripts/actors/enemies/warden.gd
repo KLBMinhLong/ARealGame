@@ -15,6 +15,11 @@ var telegraph_timer: float = 0.0
 var recovery_timer: float = 0.0
 var is_enraged: bool = false
 
+# F020 Sandbox: Đo quãng đường đẩy thực tế trong engine
+var push_start_pos: Vector2 = Vector2.ZERO
+var last_push_distance: float = 0.0
+var is_measuring_push: bool = false
+
 
 func _ready() -> void:
 	max_hp = Config.WARDEN_HP
@@ -24,6 +29,7 @@ func _ready() -> void:
 	shard_drop = Config.WARDEN_SHARD_DROP
 	enemy_size = Config.WARDEN_SIZE
 	enemy_color = Config.COLOR_WARDEN
+	can_be_altar_sealed = false  # Miễn nhiễm Altar Seal tức tử
 	super._ready()
 
 
@@ -34,6 +40,12 @@ func set_enraged(enraged: bool) -> void:
 
 
 func _process(delta: float) -> void:
+	# Đo quãng đường thực tế khi bị đẩy
+	if is_measuring_push:
+		if enemy_state != EnemyState.PUSHED or velocity.length() < 5.0:
+			last_push_distance = position.distance_to(push_start_pos)
+			is_measuring_push = false
+
 	# Cập nhật redraw cho hiệu ứng vòng cảnh báo đang mở rộng
 	if action_state == WardenAction.TELEGRAPH:
 		queue_redraw()
@@ -69,7 +81,7 @@ func _process_normal(delta: float) -> void:
 				_execute_slam()
 
 		WardenAction.RECOVERY:
-			# Khựng lại sau khi đập búa — cơ hội phản công của Player
+			# Khựng lại sau khi đập búa — Player đổi vị trí, căn góc chuẩn bị cú Pulse tiếp
 			recovery_timer += delta
 			if recovery_timer >= Config.WARDEN_RECOVERY_DURATION:
 				action_state = WardenAction.CHASE
@@ -92,39 +104,46 @@ func _execute_slam() -> void:
 	# Phát tín hiệu để Main tạo VFX bụi đất, âm thanh chấn động và camera shake
 	slam_triggered.emit(position, Config.WARDEN_SLAM_RADIUS)
 
-	# Kiểm tra sát thương AoE lên Player
+	# Kiểm tra sát thương AoE lên Player (CHỈ xét một lần duy nhất tại thời điểm impact)
 	if target != null and is_instance_valid(target):
 		var dist := target.position.distance_to(position)
 		if dist <= Config.WARDEN_SLAM_RADIUS:
-			if target.has_method("take_damage"):
-				target.take_damage(Config.WARDEN_SLAM_DAMAGE)
-			# Đẩy văng nhẹ Player ra khỏi tâm chấn
-			if target is CharacterBody2D or "velocity" in target:
+			var is_immune := false
+			if target.has_method("is_damage_immune"):
+				is_immune = target.is_damage_immune()
+			if not is_immune:
+				if target.has_method("take_damage"):
+					target.take_damage(Config.WARDEN_SLAM_DAMAGE)
+				# Đẩy văng nhẹ Player nếu không bất tử
 				var knockback_dir := (target.position - position).normalized()
 				if knockback_dir == Vector2.ZERO:
 					knockback_dir = Vector2.DOWN
-				target.position += knockback_dir * 8.0
+				target.position += knockback_dir * 10.0
 
 
-## Counter-Play / Interrupt: Khi bị Pulse trong lúc Telegraph, đòn slam bị hủy!
+## Counter-Play / Interrupt: Khi bị Pulse trong lúc Telegraph, đòn slam bị hủy ngay lập tức!
 func receive_push(push_velocity: Vector2) -> void:
+	push_start_pos = position
+	is_measuring_push = true
+
 	if action_state == WardenAction.TELEGRAPH:
 		# Bị ngắt chiêu gồng!
 		action_state = WardenAction.CHASE
-		slam_timer = 3.0  # Cho người chơi 3 giây hồi phục nhịp độ
+		slam_timer = 3.0  # Reset hồi chiêu 3s để Player không bị dập liên tục
 		queue_redraw()
 	elif action_state == WardenAction.RECOVERY:
 		# Đang khựng mà bị đẩy -> tiếp tục bị đẩy bình thường
 		action_state = WardenAction.CHASE
-		slam_timer = 2.0
+		slam_timer = 2.5
 		queue_redraw()
 
 	super.receive_push(push_velocity)
 
 
 ## F020: Miễn nhiễm Altar Seal tức tử — Chạm Altar chỉ nhận 1 damage và bị nảy lùi ra ngoài
+## Bảo đảm death order: nếu chết vì đòn này thì kết thúc luôn, không sửa velocity làm zombie bounce
 func _check_altar_collision() -> void:
-	if enemy_state != EnemyState.PUSHED:
+	if enemy_state != EnemyState.PUSHED or impact_processed:
 		return
 
 	var altar_pos := Config.ALTAR_POSITION
@@ -133,15 +152,15 @@ func _check_altar_collision() -> void:
 
 	if abs(position.x - altar_pos.x) < (altar_half + my_half) and \
 	   abs(position.y - altar_pos.y) < (altar_half + my_half):
-		# Không seal chết ngay! Nhận 1 holy damage
 		impact_processed = true
 		take_damage(1, true)
-		# Bật lùi ra khỏi tâm Altar
-		var bounce_dir := (position - altar_pos).normalized()
-		if bounce_dir == Vector2.ZERO:
-			bounce_dir = Vector2.DOWN
-		velocity = bounce_dir * 100.0
-		wall_slammed.emit(position, false)
+		if hp > 0:
+			var bounce_dir := (position - altar_pos).normalized()
+			if bounce_dir == Vector2.ZERO:
+				bounce_dir = Vector2.DOWN
+			velocity = bounce_dir * 100.0
+			wall_slammed.emit(position, false)
+
 
 
 func _draw() -> void:

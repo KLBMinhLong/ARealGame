@@ -25,10 +25,22 @@ var wave_spawned_count: int = 0
 var guaranteed_spawns_queue: Array[String] = []
 var active_warden: Node2D = null
 var warden_enraged_announced: bool = false
+var warden_defeated_in_run: bool = false
 
+# F021: Meta Progression & Idempotent Settlement
+const MetaProgressionScript = preload("res://scripts/systems/meta_progression.gd")
+var meta_progression = MetaProgressionScript.new()
+var current_run_id: String = ""
+var settlement_committed: bool = false
+var current_receipt: Dictionary = {}
 
 var upgrade_manager: UpgradeManager = UpgradeManager.new()
 var upgrade_selection_ui: CanvasLayer = null
+var rune_forge_ui: CanvasLayer = null
+
+# F021.3: Return context khi đóng Forge
+enum ForgeReturnContext { NONE, MAIN_MENU, DEATH_SUMMARY, VICTORY_SUMMARY }
+var forge_return_context: ForgeReturnContext = ForgeReturnContext.NONE
 
 # ─── Node references ────────────────────────────────────
 @onready var arena: Node2D = $Arena
@@ -53,6 +65,7 @@ func _ready() -> void:
 	$SpawnTimer.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_setup_spawn_timer()
 	_setup_upgrade_ui()
+	_setup_rune_forge()
 	push_system.setup(player, enemies_container)
 	push_system.chain_updated.connect(on_chain_updated)
 	player.player_died.connect(on_player_died)
@@ -69,6 +82,7 @@ func _ready() -> void:
 	player.dash_started.connect(sound_manager.play_dash)
 	player.player_hit.connect(_on_player_hit_for_sound)
 	push_system.chain_hit_visual.connect(_on_domino_for_sound)
+	meta_progression.load_from_file()
 	_enter_state(GameState.MENU)
 
 
@@ -76,7 +90,15 @@ func _setup_upgrade_ui() -> void:
 	var ui_scene = preload("res://scenes/ui/upgrade_selection.tscn")
 	upgrade_selection_ui = ui_scene.instantiate()
 	upgrade_selection_ui.upgrade_selected.connect(_on_upgrade_card_selected)
+	upgrade_selection_ui.reroll_requested.connect(_on_upgrade_reroll_requested)
 	add_child(upgrade_selection_ui)
+
+
+func _setup_rune_forge() -> void:
+	var forge_scene = preload("res://scenes/ui/rune_forge.tscn")
+	rune_forge_ui = forge_scene.instantiate()
+	rune_forge_ui.forge_closed.connect(_on_forge_closed)
+	add_child(rune_forge_ui)
 
 
 func _process(delta: float) -> void:
@@ -91,6 +113,10 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Nếu Forge đang mở, nó tự xử lý input và consume. Không làm gì ở đây.
+	if _is_forge_open():
+		return
+
 	if event.is_action_pressed("pause_game"):
 		if wave_phase == WavePhase.UPGRADE_SELECTION:
 			return
@@ -107,6 +133,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pulse"):
 		if state == GameState.MENU:
 			_start_run()
+
+	if event is InputEventKey and event.pressed and not event.echo:
+		# F: Mở Rune Forge từ Menu, Death hoặc Victory
+		if event.keycode == KEY_F:
+			_try_open_forge()
+
+		# B: Boss Sandbox (chỉ từ Menu)
+		if event.keycode == KEY_B:
+			if state == GameState.MENU:
+				get_tree().change_scene_to_file("res://scenes/boss_sandbox.tscn")
+
 
 
 # ═══════════════════════════════════════════════════════════
@@ -146,7 +183,8 @@ func _enter_state(new_state: GameState) -> void:
 			camera.clear()  # F001
 			hitstop.clear()  # F002: restore time_scale
 			sound_manager.play_game_over()  # F016: stops combat & plays game over
-			hud.show_death(run_time, enemies_killed, shard_count, best_chain, current_wave)
+			var receipt: Dictionary = settle_run(false)
+			hud.show_death(run_time, enemies_killed, shard_count, best_chain, current_wave, receipt)
 
 		GameState.VICTORY:
 			get_tree().paused = false
@@ -158,7 +196,8 @@ func _enter_state(new_state: GameState) -> void:
 			hitstop.clear()
 			sound_manager.stop_combat_sounds()
 			sound_manager.play_altar_seal()
-			hud.show_victory(run_time, enemies_killed, shard_count, best_chain)
+			var receipt: Dictionary = settle_run(true)
+			hud.show_victory(run_time, enemies_killed, shard_count, best_chain, receipt)
 
 
 # ═══════════════════════════════════════════════════════════
@@ -169,10 +208,22 @@ func _start_run() -> void:
 	get_tree().paused = false
 	if upgrade_selection_ui != null:
 		upgrade_selection_ui.hide_selection()
+	current_run_id = str(int(Time.get_unix_time_from_system())) + "_" + str(randi())
+	settlement_committed = false
+	current_receipt.clear()
 	_reset_run_stats()
 	_clear_entities()
 	player.reset()
 	upgrade_manager.reset()
+	# F021.5 & F021.6: Inject tất cả permanent bonuses trước sync đầu tiên
+	upgrade_manager.inject_perm_bonuses(
+		meta_progression.get_perm_hp_bonus(),
+		meta_progression.get_perm_force_bonus(),
+		meta_progression.get_perm_speed_bonus(),
+		meta_progression.get_perm_cd_reduction(),
+		meta_progression.get_perm_magnet_bonus(),
+		meta_progression.has_reroll(),
+	)
 	player.sync_upgrades(upgrade_manager)
 	arena.set_layout(1)  # F019: reset layout sạch về Wave 1
 	player.visible = true
@@ -202,6 +253,7 @@ func _reset_run_stats() -> void:
 	phase_timer = 0.0
 	wave_spawned_count = 0
 	guaranteed_spawns_queue.clear()
+	warden_defeated_in_run = false
 
 
 func _clear_entities() -> void:
@@ -268,7 +320,7 @@ func _process_running(delta: float) -> void:
 					wave_time_left -= delta
 					if wave_time_left <= 0.0:
 						wave_time_left = 0.0
-						if not warden_enraged_announced:
+						if Config.WARDEN_ENRAGE_ENABLED and not warden_enraged_announced:
 							warden_enraged_announced = true
 							if active_warden != null and is_instance_valid(active_warden):
 								if active_warden.has_method("set_enraged"):
@@ -337,11 +389,87 @@ func _show_menu() -> void:
 	player.visible = false
 	_clear_entities()
 	spawn_timer.stop()
-	hud.show_menu()
+	hud.show_menu(meta_progression.total_runs, meta_progression.rune_stones, meta_progression.best_wave)
 	camera.clear()  # F001
 	hitstop.clear()  # F002
 	combo_popup.clear()  # F003
 	vfx.clear()  # F004
+
+
+## F021: Idempotent Run Settlement
+## Tính toán biên lai thanh toán duy nhất cho mỗi run_id.
+## Không cộng tiền lần hai nếu đã commit.
+func settle_run(is_victory: bool) -> Dictionary:
+	if settlement_committed:
+		return current_receipt
+
+	var boss_reward: int = Config.WARDEN_SHARD_DROP if warden_defeated_in_run else 0
+	var victory_bonus: int = 5 if is_victory else 0
+	var total_earned: int = shard_count + boss_reward + victory_bonus
+
+	meta_progression.total_runs += 1
+	meta_progression.best_wave = maxi(meta_progression.best_wave, current_wave)
+	meta_progression.add_rune_stones(total_earned)
+
+	current_receipt = {
+		"run_id": current_run_id,
+		"is_victory": is_victory,
+		"wave_reached": current_wave,
+		"collected_shards": shard_count,
+		"boss_reward": boss_reward,
+		"victory_bonus": victory_bonus,
+		"total_earned": total_earned,
+		"total_balance": meta_progression.rune_stones,
+	}
+	settlement_committed = true
+	return current_receipt
+
+
+## F021.3: Callback khi đóng Rune Forge — quay về đúng context, không settlement lại
+func _on_forge_closed() -> void:
+	match forge_return_context:
+		ForgeReturnContext.MAIN_MENU:
+			hud.show_menu(meta_progression.total_runs, meta_progression.rune_stones, meta_progression.best_wave)
+		ForgeReturnContext.DEATH_SUMMARY:
+			# Cập nhật receipt balance mới nhất (nếu đã mua trong Forge)
+			var updated_receipt := current_receipt.duplicate()
+			updated_receipt["total_balance"] = meta_progression.rune_stones
+			hud.show_death(run_time, enemies_killed, shard_count, best_chain, current_wave, updated_receipt)
+		ForgeReturnContext.VICTORY_SUMMARY:
+			var updated_receipt := current_receipt.duplicate()
+			updated_receipt["total_balance"] = meta_progression.rune_stones
+			hud.show_victory(run_time, enemies_killed, shard_count, best_chain, updated_receipt)
+	forge_return_context = ForgeReturnContext.NONE
+
+
+## F021.3: Kiểm tra Forge có đang mở không — nguồn sự thật duy nhất
+func _is_forge_open() -> bool:
+	return rune_forge_ui != null and rune_forge_ui.is_open
+
+
+## F021.3: Mở Forge với settlement gate và return context
+func _try_open_forge() -> void:
+	if _is_forge_open():
+		return  # Không mở chồng
+	if rune_forge_ui == null:
+		return
+
+	# Settlement gate: Death/Victory phải settlement xong
+	if state == GameState.DEAD or state == GameState.VICTORY:
+		if not settlement_committed:
+			return  # Settlement chưa xong, không cho mở
+
+	match state:
+		GameState.MENU:
+			forge_return_context = ForgeReturnContext.MAIN_MENU
+		GameState.DEAD:
+			forge_return_context = ForgeReturnContext.DEATH_SUMMARY
+		GameState.VICTORY:
+			forge_return_context = ForgeReturnContext.VICTORY_SUMMARY
+		_:
+			return  # Không mở từ RUNNING/PAUSED
+
+	rune_forge_ui.show_forge(meta_progression)
 
 
 # ═══════════════════════════════════════════════════════════
@@ -389,7 +517,12 @@ func _on_wave_cleared() -> void:
 			wave_phase = WavePhase.UPGRADE_SELECTION
 			sound_manager.play_altar_seal()
 			get_tree().paused = true
-			upgrade_selection_ui.show_selection(cards)
+			upgrade_selection_ui.show_selection(
+				cards,
+				upgrade_manager.can_reroll(),
+				upgrade_manager.rerolls_remaining,
+				meta_progression.has_reroll()
+			)
 
 
 func _on_upgrade_card_selected(upgrade_id: String) -> void:
@@ -398,6 +531,26 @@ func _on_upgrade_card_selected(upgrade_id: String) -> void:
 	player.sync_upgrades(upgrade_manager)
 	sound_manager.play_shard()
 	_start_intermission()
+
+
+## F021.6: Xử lý khi người chơi yêu cầu reroll thẻ in-run
+func _on_upgrade_reroll_requested() -> void:
+	if not upgrade_manager.can_reroll() or wave_phase != WavePhase.UPGRADE_SELECTION:
+		return
+
+	var current_card_ids: Array = []
+	for card in upgrade_selection_ui.displayed_cards:
+		current_card_ids.append(card.get("id", ""))
+
+	if upgrade_manager.use_reroll():
+		var new_cards := upgrade_manager.draw_cards(3, current_card_ids)
+		sound_manager.play_altar_seal()
+		upgrade_selection_ui.show_selection(
+			new_cards,
+			upgrade_manager.can_reroll(),
+			upgrade_manager.rerolls_remaining,
+			meta_progression.has_reroll()
+		)
 
 
 func _start_intermission() -> void:
@@ -514,6 +667,9 @@ func _on_warden_slam(at_position: Vector2, _radius: float) -> void:
 func _on_warden_defeated() -> void:
 	camera.request_shake(0.35)
 	sound_manager.play_altar_seal()
+	# F021: Đánh dấu Warden đã bị tiêu diệt để settlement cộng boss_reward tách bạch
+	warden_defeated_in_run = true
+	vfx.spawn_floating_text(active_warden.position + Vector2(0, -15), "+%d BOSS REWARD" % Config.WARDEN_SHARD_DROP, Config.COLOR_SHARD)
 	# Xóa toàn bộ quái đệ còn lại trên sân
 	for child in enemies_container.get_children():
 		if child != active_warden and is_instance_valid(child):
@@ -556,6 +712,12 @@ func _get_spawn_position() -> Vector2:
 
 func _on_enemy_died(enemy_position: Vector2, shard_amount: int, is_altar_seal: bool, color: Color) -> void:
 	enemies_killed += 1  # F013
+
+	# F020: Kiểm tra nếu Warden bị tiêu diệt ở Wave 5 — xử lý trước shard drop
+	if current_wave == 5 and active_warden != null and (active_warden.hp <= 0 or active_warden.enemy_state == EnemyBase.EnemyState.DYING):
+		_on_warden_defeated()
+		return
+
 	if is_altar_seal:
 		# F015: Altar Seal — tiền tự động cộng thẳng vào túi, không rơi ra đất
 		shard_count += shard_amount
@@ -568,11 +730,6 @@ func _on_enemy_died(enemy_position: Vector2, shard_amount: int, is_altar_seal: b
 		for i in shard_amount:
 			_spawn_shard(enemy_position)
 		vfx.spawn_death_burst(enemy_position, color)  # F006 + F009: dùng enemy color
-
-	# F020: Kiểm tra nếu Warden bị tiêu diệt ở Wave 5
-	if current_wave == 5 and active_warden != null and (active_warden.hp <= 0 or active_warden.enemy_state == EnemyBase.EnemyState.DYING):
-		_on_warden_defeated()
-		return
 
 	# If in cleanup phase, check if this was the last remaining enemy
 	if wave_phase == WavePhase.CLEAR_REMAINING and _get_active_enemy_count() == 0:

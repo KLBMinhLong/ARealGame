@@ -95,12 +95,17 @@ func hide_banner() -> void:
 # STATES
 # ═══════════════════════════════════════════════════════════
 
-func show_menu() -> void:
+func show_menu(total_runs: int = 0, rune_stones: int = 0, best_wave: int = 0) -> void:
 	hud_state = HUDState.MENU
 	hide_banner()
 	if dim_overlay != null:
 		dim_overlay.visible = false
-	label.text = "\n\n⚔  STONE KNIGHT  ⚔\n\nPress SPACE or CLICK to start\n"
+	if total_runs > 0:
+		label.text = "\n\n⚔  STONE KNIGHT  ⚔\n\n💎 Rune Stones: %d  |  Best: Wave %d  |  Runs: %d\n\nPress SPACE or CLICK to start\n[F] RUNE FORGE    [B] BOSS SANDBOX\n" % [
+			rune_stones, best_wave, total_runs
+		]
+	else:
+		label.text = "\n\n⚔  STONE KNIGHT  ⚔\n\nPress SPACE or CLICK to start\n[F] RUNE FORGE    [B] BOSS SANDBOX\n"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
@@ -123,29 +128,62 @@ func show_pause() -> void:
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 
-func show_death(time_survived: float, enemies_killed: int, shards: int, best_chain: int, wave_reached: int = 1) -> void:
+func show_death(time_survived: float, enemies_killed: int, shards: int, best_chain: int, wave_reached: int = 1, receipt: Dictionary = {}) -> void:
 	hud_state = HUDState.DEATH
 	hide_banner()
 	if dim_overlay != null:
 		dim_overlay.visible = true
 	var minutes: int = int(time_survived / 60.0)
 	var seconds: int = int(time_survived) % 60
-	label.text = "\n💀  RUN OVER  💀\n\nWave Reached: %d/%d\nSurvival Time: %02d:%02d\nEnemies Slain: %d\nBest Combo: x%d\nShards Collected: %d\n\nPress R to restart\n" % [
-		wave_reached, Config.TOTAL_WAVES, minutes, seconds, enemies_killed, best_chain, shards
+
+	var settlement_text := ""
+	if not receipt.is_empty():
+		var col_shards: int = receipt.get("collected_shards", shards)
+		var boss_rew: int = receipt.get("boss_reward", 0)
+		var total_earned: int = receipt.get("total_earned", shards)
+		var balance: int = receipt.get("total_balance", total_earned)
+
+		settlement_text = "\n\n💎 RUN SETTLEMENT 💎\nShards Collected: %d" % col_shards
+		if boss_rew > 0:
+			settlement_text += "\nWarden Slayer: +%d RS" % boss_rew
+		settlement_text += "\nTotal Earned: +%d Rune Stones\nBalance: %d Rune Stones" % [total_earned, balance]
+	else:
+		settlement_text = "\nShards Collected: %d" % shards
+
+	label.text = "\n💀  RUN OVER  💀\n\nWave Reached: %d/%d\nSurvival Time: %02d:%02d\nEnemies Slain: %d\nBest Combo: x%d%s\n\n[R] Restart    [F] Rune Forge\n" % [
+		wave_reached, Config.TOTAL_WAVES, minutes, seconds, enemies_killed, best_chain, settlement_text
 	]
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 
-func show_victory(time_survived: float, enemies_killed: int, shards: int, best_chain: int) -> void:
+func show_victory(time_survived: float, enemies_killed: int, shards: int, best_chain: int, receipt: Dictionary = {}) -> void:
 	hud_state = HUDState.VICTORY
 	hide_banner()
 	if dim_overlay != null:
 		dim_overlay.visible = true
 	var minutes: int = int(time_survived / 60.0)
 	var seconds: int = int(time_survived) % 60
-	label.text = "\n🏆  VICTORY — THE SEAL HOLDS!  🏆\n\nAll %d Waves Conquered!\nTotal Time: %02d:%02d\nEnemies Slain: %d\nBest Combo: x%d\nShards Collected: %d\n\nPress R to play again\n" % [
-		Config.TOTAL_WAVES, minutes, seconds, enemies_killed, best_chain, shards
+
+	var settlement_text := ""
+	if not receipt.is_empty():
+		var col_shards: int = receipt.get("collected_shards", shards)
+		var boss_rew: int = receipt.get("boss_reward", 0)
+		var vic_bonus: int = receipt.get("victory_bonus", 0)
+		var total_earned: int = receipt.get("total_earned", shards)
+		var balance: int = receipt.get("total_balance", total_earned)
+
+		settlement_text = "\n\n💎 RUN SETTLEMENT 💎\nShards Collected: %d" % col_shards
+		if boss_rew > 0:
+			settlement_text += "\nWarden Vanquished: +%d RS" % boss_rew
+		if vic_bonus > 0:
+			settlement_text += "\nVictory Bonus: +%d RS" % vic_bonus
+		settlement_text += "\nTotal Earned: +%d Rune Stones\nBalance: %d Rune Stones" % [total_earned, balance]
+	else:
+		settlement_text = "\nShards Collected: %d" % shards
+
+	label.text = "\n🏆  VICTORY — THE SEAL HOLDS!  🏆\n\nAll %d Waves Conquered!\nTotal Time: %02d:%02d\nEnemies Slain: %d\nBest Combo: x%d%s\n\n[R] Play Again    [F] Rune Forge\n" % [
+		Config.TOTAL_WAVES, minutes, seconds, enemies_killed, best_chain, settlement_text
 	]
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

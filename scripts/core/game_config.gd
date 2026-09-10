@@ -113,8 +113,9 @@ const BRUTE_PUSH_WEIGHT := 1.35  # F019 tuning: 1.8 -> 1.35 giúp quái bay ~55p
 const BRUTE_SHARD_DROP := 2
 
 # F020: Mini-Boss — Dungeon Warden (Wave 5 Boss)
-const WARDEN_HP := 10  # Cần 10 lần đập tường thường hoặc 5 lần đập Spike Wall
+const WARDEN_HP := 6  # Prototype V0: 6 HP (6 đập tường thường hoặc 3 đập Spike Wall)
 const WARDEN_SPEED := 45.0  # px/s
+
 const WARDEN_SIZE := 24  # px (khối vuông đá khổng lồ)
 const WARDEN_PUSH_WEIGHT := 1.6  # Nặng: cú đẩy 400 bay ~39px; Heavy Push Tier 3 bay ~119px
 const WARDEN_SHARD_DROP := 15  # Thưởng lớn khi hạ gục boss
@@ -125,6 +126,7 @@ const WARDEN_TELEGRAPH_DURATION := 1.0  # s (thời gian báo trước có thể
 const WARDEN_RECOVERY_DURATION := 0.6  # s (thời gian khựng sau slam — cơ hội phản công)
 const WARDEN_SLAM_DAMAGE := 1  # Sát thương lên Player nếu dính AoE
 const WARDEN_ENRAGE_SPEED_MULT := 1.2  # Tăng 20% tốc độ khi Enraged
+const WARDEN_ENRAGE_ENABLED := false  # V0: tắt Enrage, bật khi sandbox cơ bản đã vui
 
 
 # ─── SPAWN ───────────────────────────────────────────────
@@ -201,12 +203,12 @@ const WAVES_DATA: Array[Dictionary] = [
 	{
 		"name": "The Warden",
 		"duration": 60.0,
-		"spawn_budget": 999,  # Không giới hạn bằng budget; kết thúc khi Warden chết
-		"max_active": 4,  # Quái đệ tối đa 4 con trên sân để hỗ trợ domino
-		"interval_start": 3.5,
-		"interval_end": 3.0,
-		"speeder_chance": 0.40,
-		"brute_chance": 0.15,
+		"spawn_budget": 999,  # Kết thúc khi Warden chết
+		"max_active": 3,  # Tối đa 3 minion trên sân để không che khuất telegraph
+		"interval_start": 4.5,
+		"interval_end": 4.0,
+		"speeder_chance": 0.0,  # Bản thử đầu chỉ có Slime làm đạn domino
+		"brute_chance": 0.0,
 		"guaranteed_spawns": ["warden"],
 	},
 ]

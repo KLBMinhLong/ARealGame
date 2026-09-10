@@ -1,13 +1,16 @@
-## upgrade_selection.gd — Stone Knight M0 + F018
+## upgrade_selection.gd — Stone Knight M0 + F018 + F021.6
 ## UI độc lập quản lý màn hình chọn 1 trong 3 thẻ nâng cấp.
 ## An toàn tuyệt đối: cờ selection_committed chống chọn đúp, hỗ trợ phím 1/2/3 & click chuột.
+## F021.6: Hỗ trợ Rune Foresight (Reroll 1 lần/run với phím R hoặc click).
 extends CanvasLayer
 
 signal upgrade_selected(upgrade_id: String)
+signal reroll_requested
 
 var is_open: bool = false
 var selection_committed: bool = false
 var displayed_cards: Array[Dictionary] = []
+var can_reroll: bool = false
 
 var dim_overlay: ColorRect
 var center_container: Control
@@ -15,6 +18,7 @@ var title_label: Label
 var subtitle_label: Label
 var cards_box: HBoxContainer
 var card_buttons: Array[Button] = []
+var reroll_button: Button = null
 var just_opened: bool = false
 
 
@@ -82,17 +86,57 @@ func _setup_ui() -> void:
 	cards_box.add_theme_constant_override("separation", 16)
 	center_container.add_child(cards_box)
 
+	# 6. Reroll button (F021.6: Rune Foresight)
+	reroll_button = Button.new()
+	reroll_button.name = "RerollButton"
+	reroll_button.custom_minimum_size = Vector2(140, 22)
+	reroll_button.offset_left = 170
+	reroll_button.offset_right = 310
+	reroll_button.offset_top = 236
+	reroll_button.offset_bottom = 258
+	reroll_button.focus_mode = Control.FOCUS_ALL
+	reroll_button.text = "⟳ Reroll [R] (1 left)"
+	reroll_button.add_theme_font_size_override("font_size", 8)
+
+	var btn_normal := StyleBoxFlat.new()
+	btn_normal.bg_color = Color(0.1, 0.12, 0.2, 0.9)
+	btn_normal.border_color = Color(0.0, 0.8, 0.95, 0.8)
+	btn_normal.set_border_width_all(1)
+	btn_normal.set_corner_radius_all(3)
+
+	var btn_hover := StyleBoxFlat.new()
+	btn_hover.bg_color = Color(0.15, 0.18, 0.3, 0.95)
+	btn_hover.border_color = Color(0.2, 1.0, 1.0, 1.0)
+	btn_hover.set_border_width_all(1)
+	btn_hover.set_corner_radius_all(3)
+
+	var btn_disabled := StyleBoxFlat.new()
+	btn_disabled.bg_color = Color(0.07, 0.07, 0.1, 0.6)
+	btn_disabled.border_color = Color(0.3, 0.3, 0.35, 0.4)
+	btn_disabled.set_border_width_all(1)
+	btn_disabled.set_corner_radius_all(3)
+
+	reroll_button.add_theme_stylebox_override("normal", btn_normal)
+	reroll_button.add_theme_stylebox_override("hover", btn_hover)
+	reroll_button.add_theme_stylebox_override("focus", btn_hover)
+	reroll_button.add_theme_stylebox_override("disabled", btn_disabled)
+
+	reroll_button.pressed.connect(_on_reroll_pressed)
+	center_container.add_child(reroll_button)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_open or selection_committed or just_opened:
 		return
 
-	if event.is_action_pressed("select_card_1") or _is_key_pressed(event, KEY_1, KEY_KP_1):
+	if _is_key_pressed(event, KEY_1, KEY_KP_1):
 		_commit_choice(0)
-	elif event.is_action_pressed("select_card_2") or _is_key_pressed(event, KEY_2, KEY_KP_2):
+	elif _is_key_pressed(event, KEY_2, KEY_KP_2):
 		_commit_choice(1)
-	elif event.is_action_pressed("select_card_3") or _is_key_pressed(event, KEY_3, KEY_KP_3):
+	elif _is_key_pressed(event, KEY_3, KEY_KP_3):
 		_commit_choice(2)
+	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:
+		_on_reroll_pressed()
 
 
 func _process(_delta: float) -> void:
@@ -107,12 +151,31 @@ func _is_key_pressed(event: InputEvent, key_a: Key, key_b: Key) -> bool:
 	return false
 
 
-func show_selection(cards: Array[Dictionary]) -> void:
+func show_selection(cards: Array[Dictionary], p_can_reroll: bool = false, rerolls_left: int = 0, has_foresight: bool = false) -> void:
 	displayed_cards = cards.duplicate()
 	selection_committed = false
+	can_reroll = p_can_reroll
 	just_opened = true
 	is_open = true
 	visible = true
+
+	# Cập nhật trạng thái nút Reroll
+	if reroll_button != null:
+		if not has_foresight:
+			reroll_button.visible = false
+			subtitle_label.text = "Press 1, 2, 3 or Click a card to evolve"
+		else:
+			reroll_button.visible = true
+			if p_can_reroll:
+				reroll_button.disabled = false
+				reroll_button.text = "⟳ REROLL [R] (%d left)" % rerolls_left
+				reroll_button.add_theme_color_override("font_color", Color(0.0, 0.9, 1.0))
+				subtitle_label.text = "Press 1, 2, 3 or Click a card  |  [R] to Reroll (%d left)" % rerolls_left
+			else:
+				reroll_button.disabled = true
+				reroll_button.text = "⟳ Reroll (0 left)"
+				reroll_button.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
+				subtitle_label.text = "Press 1, 2, 3 or Click a card to evolve  |  Reroll: 0 left"
 
 	# Clear old card buttons
 	for child in cards_box.get_children():
@@ -131,6 +194,7 @@ func hide_selection() -> void:
 	is_open = false
 	visible = false
 	selection_committed = false
+	can_reroll = false
 
 
 func _create_card_button(index: int, card: Dictionary) -> Button:
@@ -202,11 +266,10 @@ func _create_card_button(index: int, card: Dictionary) -> Button:
 	vbox.add_child(tier_lbl)
 
 	# Click callback
-	btn.pressed.connect(func() -> void:
-		_commit_choice(index)
-	)
+	btn.pressed.connect(_commit_choice.bind(index))
 
 	return btn
+
 
 
 func _commit_choice(index: int) -> void:
@@ -220,8 +283,19 @@ func _commit_choice(index: int) -> void:
 	for btn in card_buttons:
 		if is_instance_valid(btn):
 			btn.disabled = true
+	if is_instance_valid(reroll_button):
+		reroll_button.disabled = true
 
 	var chosen_card: Dictionary = displayed_cards[index]
 	var card_id: String = chosen_card.get("id", "")
 	hide_selection()
 	upgrade_selected.emit(card_id)
+
+
+func _on_reroll_pressed() -> void:
+	if not is_open or selection_committed or not can_reroll:
+		return
+	can_reroll = false
+	if is_instance_valid(reroll_button):
+		reroll_button.disabled = true
+	reroll_requested.emit()

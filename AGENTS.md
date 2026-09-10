@@ -42,6 +42,19 @@ Do not ingest all eight historical design files into every task. Read only the n
 14. **Protect data.** Keep secrets, credentials and personal saves out of prompts, artifacts and commits. Do not upload repository content or logs to a new service without authorization.
 15. **Do not weaken tests to pass.** If a test conflicts with the approved behavior, explain the conflict and propose the corrected expectation. Do not delete the failing test or hide the error.
 16. **Preserve reproducibility.** Separate visual randomness from gameplay randomness; document seeds, units and timing domains when relevant.
+17. **Strict 9-Step Iterative Loop.** Every new feature MUST follow this cycle sequentially:
+    - (1) AI proposes & analyzes next candidates.
+    - (2) Owner selects one.
+    - (3) AI writes/updates Feature Brief & Contract.
+    - (4) Owner reviews, comments, and requests improvements.
+    - (5) AI revises doc until Owner explicitly APPROVES (Doc Gate).
+    - (6) AI implements code in small slices with tests.
+    - (7) Owner playtests in real engine and provides feedback.
+    - (8) AI refines code/assets until Owner explicitly APPROVES (Playtest Gate).
+    - (9) Loop back to (1) for next candidates. Never skip steps, never assume approval.
+18. **Scope Reality (< 10% of v1.0).** Current features (F001–F021) are strictly the Greybox/Alpha logic skeleton (< 10% of a finished 1.0 commercial game). Do not declare core completion prematurely.
+19. **Expanded High-Touch Pipeline (UX, UI, Animation, Audio, Character/Monster Assets).** For sensory and game-feel features, expand the workflow into: Reference & Spec -> Mockup/Sheet -> Engine Integration -> Tactile / Game Feel Tuning -> Hands-on Playtest Gate -> Iterative Polish.
+20. **Mandatory Commits per Feature/Milestone.** Execute a clean Git commit upon completing each feature or major milestone approved by the owner. Commit messages must be descriptive, referencing the feature ID, changes, and verification status.
 
 ## Ask or proceed?
 

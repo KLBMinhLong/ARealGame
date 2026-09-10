@@ -103,5 +103,97 @@ class TestF018Upgrades(unittest.TestCase):
             drawn = available[:3]
             self.assertNotIn("UPG_FORCE", drawn)
 
+    def test_reroll_state_and_usage(self):
+        """F021.6: Verify rerolls_remaining tracking, can_reroll, and use_reroll."""
+        class MockUpgradeManager:
+            def __init__(self):
+                self.rerolls_remaining = 0
+
+            def inject_perm_bonuses(self, has_reroll=False):
+                self.rerolls_remaining = 1 if has_reroll else 0
+
+            def can_reroll(self):
+                return self.rerolls_remaining > 0
+
+            def use_reroll(self):
+                if self.rerolls_remaining > 0:
+                    self.rerolls_remaining -= 1
+                    return True
+                return False
+
+            def reset(self):
+                self.rerolls_remaining = 0
+
+        mgr = MockUpgradeManager()
+        self.assertFalse(mgr.can_reroll())
+        self.assertEqual(mgr.rerolls_remaining, 0)
+
+        # Without Foresight
+        mgr.inject_perm_bonuses(has_reroll=False)
+        self.assertFalse(mgr.can_reroll())
+        self.assertFalse(mgr.use_reroll())
+
+        # With Foresight
+        mgr.inject_perm_bonuses(has_reroll=True)
+        self.assertTrue(mgr.can_reroll())
+        self.assertEqual(mgr.rerolls_remaining, 1)
+
+        # Use reroll
+        self.assertTrue(mgr.use_reroll())
+        self.assertEqual(mgr.rerolls_remaining, 0)
+        self.assertFalse(mgr.can_reroll())
+
+        # Second use in same run must fail
+        self.assertFalse(mgr.use_reroll())
+
+        # Reset run resets rerolls
+        mgr.reset()
+        self.assertEqual(mgr.rerolls_remaining, 0)
+
+    def test_reroll_draw_excludes_current_cards(self):
+        """F021.6: Verify draw_cards filters exclude_ids when pool is sufficient."""
+        pool = ["UPG_FORCE", "UPG_RADIUS", "UPG_CD", "UPG_SPEED", "UPG_MAGNET", "UPG_HP"]
+
+        def simulate_draw_cards(count=3, exclude_ids=None, current_tiers=None):
+            if exclude_ids is None:
+                exclude_ids = []
+            if current_tiers is None:
+                current_tiers = {}
+
+            available = [c for c in pool if current_tiers.get(c, 0) < 3]
+            if not available:
+                return []
+
+            if exclude_ids:
+                filtered = [c for c in available if c not in exclude_ids]
+                if len(filtered) >= count:
+                    available = filtered
+
+            rng = random.Random(999)
+            rng.shuffle(available)
+            return available[:min(count, len(available))]
+
+        # Initial draw: 3 cards
+        initial = pool[:3]  # ["UPG_FORCE", "UPG_RADIUS", "UPG_CD"]
+
+        # Reroll with initial excluded: must return the other 3
+        rerolled = simulate_draw_cards(3, exclude_ids=initial)
+        self.assertEqual(len(rerolled), 3)
+        for card in initial:
+            self.assertNotIn(card, rerolled)
+        expected_other = set(pool[3:])
+        self.assertEqual(set(rerolled), expected_other)
+
+        # Edge case: only 2 cards available total (4 cards at max tier)
+        tiers = {c: 3 for c in pool}
+        tiers["UPG_FORCE"] = 0
+        tiers["UPG_RADIUS"] = 0
+        # When exclude_ids has 1 of them, filtered has 1 card (< count 2), so fallback returns both
+        drawn_limited = simulate_draw_cards(2, exclude_ids=["UPG_FORCE"], current_tiers=tiers)
+        self.assertEqual(len(drawn_limited), 2)
+        self.assertIn("UPG_FORCE", drawn_limited)
+        self.assertIn("UPG_RADIUS", drawn_limited)
+
 if __name__ == "__main__":
     unittest.main()
+

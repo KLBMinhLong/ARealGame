@@ -9,19 +9,18 @@
 - `PROPOSED`: khuyến nghị mới, không tự biến thành yêu cầu đã duyệt.
 - `UNKNOWN`: chưa có bằng chứng.
 
-## Những điều đã biết từ tài liệu
+## Những điều đã biết từ thực tế Repository & Định vị Milestone
 
 | Chủ đề | Nội dung | Trạng thái |
 |---|---|---|
-| Game | Stone Knight; top-down arena action roguelite; cơ chế Pulse đẩy và chain | FROM_DESIGN_DOC |
-| Công nghệ dự kiến | Godot 4.x, GDScript, 2D, Compatibility renderer | FROM_DESIGN_DOC |
-| Nền tảng đầu | PC/Windows, offline, một người chơi | FROM_DESIGN_DOC |
-| Phạm vi v1 đã cắt | Một nhân vật, một Pulse cơ bản, ba quái thường + boss, năm wave; chưa mobile/online | FROM_DESIGN_DOC: 05_SCOPE |
-| Ưu tiên | Push/positioning/chain phải được kiểm chứng bằng greybox trước art và meta | FROM_DESIGN_DOC |
-| Task được đề xuất gần nhất | Screen Shake chỉ tác động camera | Yêu cầu trong trao đổi; chưa có code để xác minh |
-| Signal/config/camera hiện có | Chưa khảo sát repository | UNKNOWN |
-| Phiên bản Godot đang cài | Chưa nhận executable/version output | UNKNOWN |
-| Trạng thái gameplay hiện tại | Chưa có build hoặc source trong bộ kit | UNKNOWN |
+| Game | Stone Knight; top-down arena action roguelite; cơ chế Pulse đẩy và chain domino | VERIFIED_IN_REPO |
+| Công nghệ | Godot 4.x, GDScript, 2D, Viewport 480×270, Compatibility renderer | VERIFIED_IN_REPO |
+| Nền tảng | PC/Windows, offline, một người chơi | VERIFIED_IN_REPO |
+| **Định vị Milestone hiện tại** | **Mới hoàn thành khung Greybox / Alpha logic (F001–F021), chiếm < 10% của bản 1.0. Toàn bộ nhân vật, quái, sàn đấu, âm thanh, animation và UX thương mại đều thuộc giai đoạn M2+ sắp tới.** | **VERIFIED_IN_REPO** |
+| Quy trình hợp tác bắt buộc | **Chu trình 9 bước tuần tự**: AI đề xuất → Chủ duyệt chọn → AI soạn spec → Chủ nhận xét → AI sửa đến khi DUYỆT spec → AI code & test → Chủ playtest thực tế → AI sửa đến khi DUYỆT code → Lặp lại | **VERIFIED_IN_REPO** |
+| Quy trình High-Touch | Mảng UX/UI, Animation, Audio, Assets bắt buộc mở rộng các chặng: Moodboard/Ref → Spec/Sheet → Engine Integration → Game Feel Tuning → Playtest Gate | **VERIFIED_IN_REPO** |
+| Khung Gameplay hiện có | Player (Pulse + Dash), 3 quái thường (Slime, Speeder, Brute), Boss Warden, 5 Wave, Hazards, 6 In-Run Upgrades, 6 Permanent Upgrades trong Rune Forge | VERIFIED_IN_REPO |
+| Lưu trữ dữ liệu | Atomic Write (.tmp) + Backup (.bak) + Corrupt isolation tại `user://save_data.json` | VERIFIED_IN_REPO |
 
 ## Thứ tự giải quyết yêu cầu
 
